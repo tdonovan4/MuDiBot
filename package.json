@@ -1,6 +1,6 @@
 {
   "name": "little-discord-bot",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Just a little bot...",
   "main": "bot.js",
   "scripts": {
@@ -11,7 +11,6 @@
   "dependencies": {
     "discord.js": "^11.0.0",
     "erlpack": "github:hammerandchisel/erlpack#master",
-    "moment": "^2.18.1",
     "node-opus": "^0.2.5",
     "opusscript": "0.0.1",
     "winston": "^2.3.1"
