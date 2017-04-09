@@ -1,4 +1,4 @@
 #!/bin/bash
 echo "Starting bot"
-node bot.js
+node ./src/bot.js
 $SHELL

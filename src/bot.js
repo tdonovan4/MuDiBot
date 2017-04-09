@@ -1,31 +1,35 @@
 const Discord = require("discord.js");
 const client = new Discord.Client();
-const config = require('../config.json');
+const config = require('../config.js')
+const data = require('./data.json');
+var localization;
 
 client.login(config.botID);
 
 client.on('ready', () => {
 	console.log(`Logged in as ${client.user.username}!`);
-	client.user.setGame('Being a badass bot');
+	if(config.language === 'french') {
+		localization = data.localization.french
+		console.log('french');
+		} else {
+		localization = data.localization.english
+		console.log('english');
+	}
+		client.user.setGame(localization.status);
 });
-
-var commands = ['ping', '$gif', '$clearlog', '$join', '$hello', '$quit', '$help',
-'$restart', '$info', '$tnt', '$stop'];
-var perm = ['everyone', config.roleMember, config.roleModo, config.roleMember,
-'everyone', 'everyone', 'everyone', config.roleModo, 'everyone', 'everyone', config.roleModo];
 
 client.on('message', msg => {
 	if (msg.author.id != "290581674343792651") {
-		if (msg.content === commands[0] && checkRole(msg, perm[0])) {
-			msg.reply('Pong!');
-			console.log(commands[0]);
+		if (msg.content === data.commands[0] && checkRole(msg, data.perm[0])) {
+			msg.reply(localization.botReply[0]);
+			console.log(data.commands[0]);
 		}
 		
-		if (msg.content === commands[1] && checkRole(msg, perm[1])) {
+		if (msg.content === data.commands[1] && checkRole(msg, data.perm[1])) {
 			msg.reply('http://giphy.com/gifs/l4FGBpKfVMG4qraJG');
-			console.log(commands[1]);
+			console.log(data.commands[1]);
 		}
-		if (msg.content.includes(commands[2]) && checkRole(msg, perm[2])) {
+		if (msg.content.includes(data.commands[2]) && checkRole(msg, data.perm[2])) {
 			let args = msg.content.split(" ").slice(1);
 			let num = args[0];
 			
@@ -34,40 +38,34 @@ client.on('message', msg => {
 			}
 			
 			clear(msg, num);
-			console.log(commands[2]);			
+			console.log(data.commands[2]);			
 		}
-		if (msg.content === commands[3] && checkRole(msg, perm[3])) {  		
+		if (msg.content === data.commands[3] && checkRole(msg, data.perm[3])) {  		
 			play(1, msg);
-			console.log(commands[3]);			
+			console.log(data.commands[3]);			
 		}
 		
-		if (msg.content === commands[4] && checkRole(msg, perm[4])) {  	
+		if (msg.content === data.commands[4] && checkRole(msg, data.perm[4])) {  	
 			play(2, msg);
-			msg.reply('Hi!')
-			console.log(commands[4]);
+			msg.reply(localization.botReply[1])
+			console.log(data.commands[4]);
 		}
 		
-		if (msg.content === commands[5] && checkRole(msg, perm[5])) {
+		if (msg.content === data.commands[5] && checkRole(msg, data.perm[5])) {
 			play(0, msg);
-			console.log(commands[5]);
+			console.log(data.commands[5]);
 		}
-		if (msg.content === commands[6] && checkRole(msg, perm[6])) {
+		if (msg.content === data.commands[6] && checkRole(msg, data.perm[6])) {
 			var roles = msg.channel.guild.roles;
-			msg.channel.send('~Help~'+ '\n' +
-			commands[0] + ' : [' + mention(roles, perm[0]) + '] Pong!'+ '\n' +
-			commands[1] + ' : [' + mention(roles, perm[1]) + '] Inserts a little GIF'+ '\n' +
-			commands[2] + ' <messages to check> : [' + mention(roles, perm[2]) + '] Deletes all commands related to the bot'+ '\n' +
-			commands[3] + ' : [' + mention(roles, perm[3]) + '] Makes the bot play a nice song'+ '\n' +
-			commands[4] + ' : [' + mention(roles, perm[4]) + '] Hello!'+ '\n' +
-			commands[5] + ' : [' + mention(roles, perm[5]) + '] Makes the bot quit the voice channel'+ '\n' +
-			commands[6] + ' : [' + mention(roles, perm[6]) + '] Displays this'+ '\n' +
-			commands[7] + ' : [' + mention(roles, perm[7]) + '] Restarts the bot'+ '\n' +
-			commands[8] + ' : [' + mention(roles, perm[8]) + '] Displays information about the bot'+ '\n' +
-			commands[9] + ' : [' + mention(roles, perm[9]) + '] TNT <3'+ '\n' +
-			commands[10] + ' : [' + mention(roles, perm[10]) + '] Kills the process');
-			console.log(commands[6]);
+			var helpString = '~Help~'+ '\n'
+			for(i = 0; i < data.commands.length; i++) {
+				helpString += data.commands[i] + localization.helpArg[i] + ' : [' + mention(roles, data.perm[i]) + 
+				'] ' + localization.helpMsg[i] + '\n'
+			}
+			msg.channel.send(helpString);
+			console.log(data.commands[6]);
 		}
-		if (msg.content === commands[7] && checkRole(msg, perm[7])) {
+		if (msg.content === data.commands[7] && checkRole(msg, data.perm[7])) {
 			
 			var spawn = require('child_process').spawn;
 			
@@ -81,31 +79,31 @@ client.on('message', msg => {
 			
 			console.log('Restarting');
 			
-			console.log(commands[7]);
+			console.log(data.commands[7]);
 			process.exitCode = 0;
 			process.exit();
 		}
-		if (msg.content === commands[8] && checkRole(msg, perm[8])) {
-			var pjson = require('./package.json');
+		if (msg.content === data.commands[8] && checkRole(msg, data.perm[8])) {
+			var pjson = require('../package.json');
 			
 			msg.channel.send('~Infos~ \n' +
-			'Name: ' + pjson.name + '\n' +
-			'Version: ' + pjson.version + '\n' +
-			'Description: ' + pjson.description + '\n' +
-			'Author: ' + pjson.author + '\n' +
-			'Uptime: ' + time() + '\n' +
-			'RoleMember: ' + config.roleMember + '\n' +
-			'RoleModo: ' + config.roleModo);
+			localization.info[0] + pjson.name + '\n' +
+			localization.info[1] + pjson.version + '\n' +
+			localization.info[2] + localization.botReply[2] + '\n' +
+			localization.info[3] + pjson.author + '\n' +
+			localization.info[4] + time() + '\n' +
+			localization.info[5] + config.roleMember + '\n' +
+			localization.info[6] + config.roleModo);
 			
-			console.log(commands[8]);
+			console.log(data.commands[8]);
 		}
-		if (msg.content === commands[9] && checkRole(msg, perm[9])) {
-			msg.reply('ssSSSsss...');
+		if (msg.content === data.commands[9] && checkRole(msg, data.perm[9])) {
+			msg.reply(localization.botReply[3]);
 			play(3, msg);
-			console.log(commands[9]);
+			console.log(data.commands[9]);
 		}
-		if (msg.content === commands[10] && checkRole(msg, perm[10])) {
-			console.log(commands[10]);
+		if (msg.content === data.commands[10] && checkRole(msg, data.perm[10])) {
+			console.log(data.commands[10]);
 			process.exitCode = 0;
 			process.exit();
 		}			
@@ -131,11 +129,11 @@ function clear(msg, num) {
 			if(messages.array()[i].author.id === "290581674343792651" || 
 			messages.array()[i].author.id === "155149108183695360") {
 				messages.array()[i].delete()
-				} else if(messages.array()[i].content.includes(commands[2])) {
+				} else if(messages.array()[i].content.includes(data.commands[2])) {
 				messages.array()[i].delete()
 				} else {
-				for(var n = 0; n < commands.length; n++) {
-					if(messages.array()[i].content === commands[n]) {
+				for(var n = 0; n < data.commands.length; n++) {
+					if(messages.array()[i].content === data.commands[n]) {
 						messages.array()[i].delete()
 					}
 				}
@@ -154,8 +152,12 @@ function clear(msg, num) {
 function mention(roles, role) {
 	if(role === 'everyone') {
 		return '@everyone';
+		} else if(role === "roleMember") {
+		return roles.find("name", config.roleMember);
+		} else if(role === "roleModo") {
+		return roles.find("name", config.roleModo);
 		} else {
-		return roles.find("name", role);
+		return null;
 	}
 }
 
@@ -163,7 +165,7 @@ var currentVoice;
 
 function play(i, message) {
 	var channel = message.member.voiceChannel;
-	if(channel != null) {
+	if(typeof channel !== "undefined") {
 		if(i === 0) {
 			channel.connection.disconnect();
 		}	
@@ -208,9 +210,9 @@ function checkRole(msg, role) {
 	if(permissions.hasPermission('ADMINISTRATOR') || permissions.hasPermission('MANAGE_CHANNELS')) {
 		return true;
 	}
-	if(role === config.roleMember) {
+	if(role === roleMember) {
 		permLevel = 1;
-		} else if(role === config.roleModo) {
+		} else if(role === roleModo) {
 		permLevel = 2;
 	}
 	for(i = 0; i < msg.member.roles.array().length; i++) {
@@ -223,7 +225,7 @@ function checkRole(msg, role) {
 		}
 	}
 	if(currentPermLevel < permLevel) {
-		console.log("Not enough permissions");
+		console.log("Not enough data.permissions");
 		return false;
 		} else {
 		return true;
@@ -232,4 +234,4 @@ function checkRole(msg, role) {
 
 process.on('SIGINT', function () {
 	process.exit(2);
-});											
+});													
