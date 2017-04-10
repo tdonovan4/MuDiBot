@@ -1,8 +1,8 @@
 {
 	"commands": ["ping", "$gif", "$clearlog", "$join", "$hello", "$quit", "$help",
-	"$restart", "$info", "$tnt", "$kill"],
+	"$restart", "$info", "$tnt", "$kill", "$warn"],
 	"perm": ["everyone", "roleMember", "roleModo", "roleMember",
-		"everyone", "everyone", "everyone", "roleModo", "everyone", "everyone", "roleModo"],
+		"everyone", "everyone", "everyone", "roleModo", "everyone", "everyone", "roleModo", "roleModo"],
 	
 	"localization": {
 		"english": {
@@ -10,8 +10,8 @@
 			"botReply": ["Pong!","Hi!", "Just a little bot...", "ssSSSsss..."],
 			"helpMsg": ["Pong!", "Inserts a little GIF", "Deletes all commands related to the bot",
 				"Makes the bot play a nice song", "Hello!", "Makes the bot quit the voice channel", "Displays this",
-				"Restarts the bot", "Displays information about the bot", "TNT <3", "Kills the process"],
-			"helpArg":	["", "", " <messages to check>", "", "", "", "", "", "", "", ""],
+				"Restarts the bot", "Displays information about the bot", "TNT <3", "Kills the process", "Puts a warning on user"],
+			"helpArg":	["", "", " <messages to check>", "", "", "", "", "", "", "", "", " <user>"],
 			"info": ["Name: ", "Version: ", "Description: ", "Author: ", "Uptime: ", "RoleMember: ", "RoleModo: "]
 		},
 		"french": {
@@ -19,8 +19,8 @@
 			"botReply": ["Pong!","Salut!", "ssSSSsss...", "Seulement un petit serviteur..."],			
 			"helpMsg": ["Pong!", "Met un petit GIF ", "Supprime les commandes du script",
 				"Joue une petite musique", "Salut!", "Fait quitter le script du salon vocal", "Affiche ceci",
-				"Redémarre le script", "Affiche des informations sur le script", "TNT <3", "Tue le script"],
-			"helpArg":	["", "", " <messages à regarder>", "", "", "", "", "", "", "", ""],
+				"Redémarre le script", "Affiche des informations sur le script", "TNT <3", "Tue le script", "Met un avertissement sur l'utilisateur"],
+			"helpArg":	["", "", " <messages à regarder>", "", "", "", "", "", "", "", "", "<utilisateur>"],
 			"info": ["Nom: ", "Version: ", "Description: ", "Auteur: ", "Temps de fonctionnement: ", "RoleMembre: ", "RoleModo: "]			
 		}
 	}
