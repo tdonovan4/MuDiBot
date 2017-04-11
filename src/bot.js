@@ -1,7 +1,8 @@
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const config = require('../config.js')
-const data = require('./data.json');
+const data = require('./command-data.json');
+const storage = require('./storage.js');
 var localization;
 
 client.login(config.botID);
@@ -15,7 +16,7 @@ client.on('ready', () => {
 		localization = data.localization.english
 		console.log('english');
 	}
-		client.user.setGame(localization.status);
+	client.user.setGame(localization.status);
 });
 
 client.on('message', msg => {
@@ -106,7 +107,36 @@ client.on('message', msg => {
 			console.log(data.commands[10]);
 			process.exitCode = 0;
 			process.exit();
-		}			
+		}
+		if (msg.content.includes(data.commands[11]) && checkRole(msg, data.perm[11])) {
+			let args = msg.content.split(" ").slice(1);
+			let members = msg.guild.members.array();
+			var warningList;
+			
+			storage.exist();
+			if(storage.empty()) {
+				warningList = {}
+				storage.write(warningList);
+				} else {
+				warningList = storage.read();
+			}		
+			if(args[0] == null) {
+				console.log('Not enough arguments');
+				} else {
+				for (i = 0; i < members.length; i++) {
+					if(members[i].user.username === args[0]) {
+						if (args[0] in warningList) {
+							warningList[args[0]] += 1;
+						} else {
+							warningList[args[0]] = 1;
+						}
+						storage.write(warningList);
+						msg.reply(args[0] + ': ' + warningList[args[0]] + ' warnings');
+					}
+				}
+			}
+			console.log(data.commands[11]);
+		}	
 	}
 });
 
@@ -129,7 +159,7 @@ function clear(msg, num) {
 			if(messages.array()[i].author.id === "290581674343792651" || 
 			messages.array()[i].author.id === "155149108183695360") {
 				messages.array()[i].delete()
-				} else if(messages.array()[i].content.includes(data.commands[2])) {
+				} else if(messages.array()[i].content.includes(data.commands[2]) || messages.array()[i].content.includes(data.commands[11])) {
 				messages.array()[i].delete()
 				} else {
 				for(var n = 0; n < data.commands.length; n++) {
@@ -225,7 +255,7 @@ function checkRole(msg, role) {
 		}
 	}
 	if(currentPermLevel < permLevel) {
-		console.log("Not enough data.permissions");
+		console.log("Not enough permissions");
 		return false;
 		} else {
 		return true;
@@ -234,4 +264,4 @@ function checkRole(msg, role) {
 
 process.on('SIGINT', function () {
 	process.exit(2);
-});													
+});	

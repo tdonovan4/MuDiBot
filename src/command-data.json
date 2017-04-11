@@ -7,7 +7,7 @@
 	"localization": {
 		"english": {
 			"status": "Being a badass bot",
-			"botReply": ["Pong!","Hi!", "Just a little bot...", "ssSSSsss..."],
+			"botReply": ["Pong!","Hi!", "Just a little bot...", "ssSSSsss...", " warnings"],
 			"helpMsg": ["Pong!", "Inserts a little GIF", "Deletes all commands related to the bot",
 				"Makes the bot play a nice song", "Hello!", "Makes the bot quit the voice channel", "Displays this",
 				"Restarts the bot", "Displays information about the bot", "TNT <3", "Kills the process", "Puts a warning on user"],
@@ -16,7 +16,7 @@
 		},
 		"french": {
 			"status": "Être un formidable serviteur",
-			"botReply": ["Pong!","Salut!", "ssSSSsss...", "Seulement un petit serviteur..."],			
+			"botReply": ["Pong!","Salut!", "ssSSSsss...", "Seulement un petit serviteur...", " avertissements"],			
 			"helpMsg": ["Pong!", "Met un petit GIF ", "Supprime les commandes du script",
 				"Joue une petite musique", "Salut!", "Fait quitter le script du salon vocal", "Affiche ceci",
 				"Redémarre le script", "Affiche des informations sur le script", "TNT <3", "Tue le script", "Met un avertissement sur l'utilisateur"],
