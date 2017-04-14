@@ -141,6 +141,14 @@ client.on('message', msg => {
 						}
 					}
 				}
+				}else if(args[0] === 'list') {
+				var string = '';
+				for(i = 0; i < Object.keys(warningList).length; i++) {
+					var user = Object.keys(warningList)[i]
+					string += user + ': ' + warningList[user] + ' warnings\n';
+					console.log(user);
+				}
+				msg.channel.send(string);
 				} else {
 				for(i = 0; i < users.length; i++) {
 					if(args[0].includes(users[i].id)) {
@@ -150,9 +158,9 @@ client.on('message', msg => {
 							warningList[args[0]] = 1;
 						}
 						storage.write(warningList);
-						msg.channel.send(users[i].username + ': ' + warningList[args[0]] + ' warnings');
+						msg.channel.send(args[0] + ': ' + warningList[args[0]] + ' warnings');
 					}
-					}
+				}
 			}
 			console.log(data.commands[11]);
 		}	
@@ -161,11 +169,11 @@ client.on('message', msg => {
 
 function time() {
 	var time = process.uptime();
-	var days = ~~(time / 86400)
-	var hrs = ~~((time % 86400) / 3600);
-	var mins = ~~((time % 3600) / 60);
-	var secs = ~~(time % 60);
-	return days + 'd:' + hrs + 'h:' + mins + 'm:' + secs + 's'
+var days = ~~(time / 86400)
+var hrs = ~~((time % 86400) / 3600);
+var mins = ~~((time % 3600) / 60);
+var secs = ~~(time % 60);
+return days + 'd:' + hrs + 'h:' + mins + 'm:' + secs + 's'
 }
 
 var commandsToClear = ['.play', '.q', '.skip', '.stop'];
