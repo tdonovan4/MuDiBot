@@ -1,4 +1,5 @@
 const fs = require('fs');
+//TODO: Add argument for path
 module.exports = {
 	write: function (obj) {
 		var json = JSON.stringify(obj);
@@ -24,5 +25,9 @@ module.exports = {
 		if (!fs.existsSync('warning-list.json')) {
 			fs.openSync('warning-list.json', 'w');
 		}	
+	},
+	
+	delete: function () {
+		fs.unlinkSync('./warning-list.json');
 	}
 }	
