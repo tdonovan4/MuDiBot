@@ -110,7 +110,7 @@ client.on('message', msg => {
 		}
 		if (msg.content.includes(data.commands[11]) && checkRole(msg, data.perm[11])) {
 			let args = msg.content.split(" ").slice(1);
-			let members = msg.guild.members.array();
+			let users = msg.mentions.users.array();
 			var warningList;
 			
 			storage.exist();
@@ -123,15 +123,15 @@ client.on('message', msg => {
 			if(args[0] == null) {
 				console.log('Not enough arguments');
 				} else {
-				for (i = 0; i < members.length; i++) {
-					if(members[i].user.username === args[0]) {
-						if (args[0] in warningList) {
+				for (i = 0; i < users.length; i++) {
+					if(args[0].includes(users[0].id)) {
+						if (users[i] in warningList) {
 							warningList[args[0]] += 1;
 						} else {
 							warningList[args[0]] = 1;
 						}
 						storage.write(warningList);
-						msg.reply(args[0] + ': ' + warningList[args[0]] + ' warnings');
+						msg.reply(users[i].username + ': ' + warningList[args[0]] + ' warnings');
 					}
 				}
 			}
