@@ -1,8 +1,6 @@
 //Configuration file
 //Please fill the fields
 module.exports = {
-	//Your server ID
-	serverID: '',
 	//The ID of the bot
 	botID: '',
 	//Role name for "botMember"
@@ -10,5 +8,10 @@ module.exports = {
 	//Role name for "botModp"
 	roleModo: '',
 	//Localization ('english' or 'french')
-	language: ''
+	language: '',
+	//List of commands to clear with "$clearlog"
+	commandsToClear: [''],
+	//List of users (id) to clear with "$clearlog"
+	usersToClear: ['']
 }
+
