@@ -1,6 +1,6 @@
 {
   "name": "little-discord-bot",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "Just a little bot...",
   "main": "bot.js",
   "scripts": {

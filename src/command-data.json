@@ -8,7 +8,7 @@
 	"localization": {
 		"commands": ["ping", "$gif", "$clearlog", "$join", "$hello", "$quit", "$help",
 			"$restart", "$info", "$tnt", "$kill", "$warn", "$warn clear", "$warn clear all",
-			"warn list", "warn list", "warn remove"],
+			"$warn list", "$warn list", "$warn remove"],
 		"english": {
 			"status": "Being a badass bot",
 			"botReply": ["Pong!", "Hi!", "Just a little bot...", "ssSSSsss...", " warnings"],
