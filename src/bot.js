@@ -1,3 +1,5 @@
+//TODO: Put more comments
+//TODO: Divide this class in multiple smaller classes
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const config = require('../config.js')
@@ -119,15 +121,23 @@ client.on('message', msg => {
 				storage.write(warningList);
 				} else {
 				warningList = storage.read();
-			}		
+			}
+			//TODO: Use switch
 			if(args[0] == null) {
 				console.log('Not enough arguments');
+				} else if(args[0] === 'clear') {
+				if(args[1] == null) {
+					console.log('Not enough arguments');
+					} else if(args[1] === 'all') {
+					storage.delete();
+					console.log('Storage cleared');
+					}
 				} else {
-				for (i = 0; i < users.length; i++) {
-					if(args[0].includes(users[0].id)) {
-						if (users[i] in warningList) {
+				for(i = 0; i < users.length; i++) {
+					if(args[0].includes(users[i].id)) {
+						if (args[0] in warningList) {
 							warningList[args[0]] += 1;
-						} else {
+							} else {
 							warningList[args[0]] = 1;
 						}
 						storage.write(warningList);
