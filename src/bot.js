@@ -157,6 +157,21 @@ client.on('message', msg => {
 				}
 				msg.channel.send(string);
 				break;
+			case 'remove':
+				for (i = 0; i < users.length; i++) {
+					if (args[1].includes(users[i].id)) {
+						if (args[1]in warningList) {
+							warningList[args[1]] -= 1;
+							msg.channel.send(args[1] + ': ' + warningList[args[1]] + ' warnings');
+							if (warningList[args[1]] <= 0) {
+								warningList[args[1]] = undefined;
+								console.log('User cleared');
+							}
+							storage.write(warningList);
+						}
+					}
+				}
+				break;
 			default:
 				for (i = 0; i < users.length; i++) {
 					if (args[0].includes(users[i].id)) {
