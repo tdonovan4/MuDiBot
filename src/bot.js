@@ -131,7 +131,7 @@ client.on('message', msg => {
 							warningList[args[0]] = 1;
 						}
 						storage.write(warningList);
-						msg.reply(users[i].username + ': ' + warningList[args[0]] + ' warnings');
+						msg.channel.send(users[i].username + ': ' + warningList[args[0]] + ' warnings');
 					}
 				}
 			}
