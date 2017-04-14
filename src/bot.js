@@ -143,10 +143,17 @@ client.on('message', msg => {
 				break;
 			case 'list':
 				var string = '';
-				for (i = 0; i < Object.keys(warningList).length; i++) {
-					var user = Object.keys(warningList)[i]
-						string += user + ': ' + warningList[user] + ' warnings\n';
-					console.log(user);
+				if (args[1] != null) {
+					for (i = 0; i < users.length; i++) {
+						if (args[1].includes(users[i].id)) {
+							string += args[1] + ': ' + warningList[args[1]] + ' warnings\n';
+						}
+					}
+				} else {
+					for (i = 0; i < Object.keys(warningList).length; i++) {
+						var user = Object.keys(warningList)[i]
+							string += user + ': ' + warningList[user] + ' warnings\n';
+					}
 				}
 				msg.channel.send(string);
 				break;
@@ -186,6 +193,7 @@ function clear(msg, num) {
 	.then(messages => {
 		console.log(num)
 		for (var i = 0; i < messages.array().length; i++) {
+			//TODO: argument for author to ignore
 			if (messages.array()[i].author.id === "290581674343792651" ||
 				messages.array()[i].author.id === "155149108183695360") {
 				messages.array()[i].delete ()
