@@ -27,7 +27,6 @@ client.on('message', msg => {
 			msg.reply(localization.botReply[0]);
 			console.log(data.commands[0]);
 		}
-
 		if (msg.content === data.commands[1] && checkRole(msg, data.perm[1])) {
 			msg.reply('http://giphy.com/gifs/l4FGBpKfVMG4qraJG');
 			console.log(data.commands[1]);
@@ -53,7 +52,6 @@ client.on('message', msg => {
 			msg.reply(localization.botReply[1])
 			console.log(data.commands[4]);
 		}
-
 		if (msg.content === data.commands[5] && checkRole(msg, data.perm[5])) {
 			play(0, msg);
 			console.log(data.commands[5]);
@@ -61,9 +59,9 @@ client.on('message', msg => {
 		if (msg.content === data.commands[6] && checkRole(msg, data.perm[6])) {
 			var roles = msg.channel.guild.roles;
 			var helpString = '~Help~' + '\n'
-				for (i = 0; i < data.commands.length; i++) {
-					helpString += data.commands[i] + localization.helpArg[i] + ' : [' + mention(roles, data.perm[i]) +
-					'] ' + localization.helpMsg[i] + '\n'
+				for (i = 0; i < data.localization.commands.length; i++) {
+					helpString += data.localization.commands[i] + localization.helpArg[i] + ' : [' +
+					mention(roles, data.perm[i]) + '] ' + localization.helpMsg[i] + '\n'
 				}
 				msg.channel.send(helpString);
 			console.log(data.commands[6]);
