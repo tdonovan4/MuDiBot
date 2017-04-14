@@ -3,7 +3,7 @@
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const config = require('../config.js')
-const data = require('./command-data.json');
+	const data = require('./command-data.json');
 const warning = require('./warning.js');
 var localization;
 
@@ -112,7 +112,8 @@ function time() {
 }
 
 //TODO: argument commands to clear
-var commandsToClear = ['.play', '.q', '.skip', '.stop'];
+var commandsToClear = config.commandsToClear;
+var usersToClear = config.usersToClear;
 
 function clear(msg, num) {
 	msg.channel.fetchMessages({
@@ -122,27 +123,36 @@ function clear(msg, num) {
 		console.log(num)
 		for (var i = 0; i < messages.array().length; i++) {
 			//TODO: argument of author to ignore
-			if (messages.array()[i].author.id === client.user.id ||
-				messages.array()[i].author.id === "155149108183695360") {
-				messages.array()[i].delete ()
-			} else if (messages.array()[i].content.includes(data.commands[2]) || messages.array()[i].content.includes(data.commands[11])) {
+			if (messages.array()[i].author.id === client.user.id) {
 				messages.array()[i].delete ()
 			} else {
-				for (var n = 0; n < data.commands.length; n++) {
-					if (messages.array()[i].content === data.commands[n]) {
-						messages.array()[i].delete ()
-					}
-				}
-				for (var y = 0; y < commandsToClear.length; y++) {
-					if (messages.array()[i].content.includes(commandsToClear[y])) {
-						messages.array()[i].delete ()
-					}
-				}
+				clearLoops(messages.array()[i]);
 			}
 		}
 		console.log('Messages cleared!');
 	})
 	.catch (console.error);
+}
+
+function clearLoops(messages) {
+	for (var n = 0; n < data.commands.length; n++) {
+		if (messages.content.substring(0, data.commands[n].length) == data.commands[n]) {
+			messages.delete()
+			return;
+		}
+	}
+	for (var n = 0; n < commandsToClear.length; n++) {
+		if (messages.content.includes(commandsToClear[n])) {
+			messages.delete()
+			return;
+		}
+	}
+	for (var n = 0; n < usersToClear.length; n++) {
+		if (messages.author.id === usersToClear[n]) {
+			messages.delete()
+			return;
+		}
+	}
 }
 
 function mention(roles, role) {
