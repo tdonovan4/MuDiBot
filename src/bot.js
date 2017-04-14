@@ -131,7 +131,16 @@ client.on('message', msg => {
 					} else if(args[1] === 'all') {
 					storage.delete();
 					console.log('Storage cleared');
+					} else {
+					for(i = 0; i < users.length; i++) {
+						if(args[1].includes(users[i].id)) {
+							console.log(args[1]);
+							warningList[args[1]] = undefined;
+							storage.write(warningList);
+							console.log('User cleared');
+						}
 					}
+				}
 				} else {
 				for(i = 0; i < users.length; i++) {
 					if(args[0].includes(users[i].id)) {
@@ -143,7 +152,7 @@ client.on('message', msg => {
 						storage.write(warningList);
 						msg.channel.send(users[i].username + ': ' + warningList[args[0]] + ' warnings');
 					}
-				}
+					}
 			}
 			console.log(data.commands[11]);
 		}	
