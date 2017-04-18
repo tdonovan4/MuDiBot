@@ -2,9 +2,10 @@
 //TODO: Divide this class in multiple smaller classes
 const Discord = require("discord.js");
 const client = new Discord.Client();
-const config = require('../config.js')
-	const data = require('./command-data.json');
+const config = require('../config.js');
+const data = require('./command-data.json');
 const warning = require('./warning.js');
+const player = require('./audio-player.js');
 var localization;
 
 client.login(config.botID);
@@ -39,14 +40,14 @@ client.on('message', msg => {
 			clear(msg, num);
 			console.log(data.commands[2]);
 		} else if (msg.content === data.commands[3] && checkRole(msg, data.perm[3])) {
-			play(1, msg);
+			player.play(1, msg);
 			console.log(data.commands[3]);
 		} else if (msg.content === data.commands[4] && checkRole(msg, data.perm[4])) {
-			play(2, msg);
+			player.play(2, msg);
 			msg.reply(localization.botReply[1])
 			console.log(data.commands[4]);
 		} else if (msg.content === data.commands[5] && checkRole(msg, data.perm[5])) {
-			play(0, msg);
+			player.play(0, msg);
 			console.log(data.commands[5]);
 		} else if (msg.content === data.commands[6] && checkRole(msg, data.perm[6])) {
 			var roles = msg.channel.guild.roles;
@@ -89,7 +90,7 @@ client.on('message', msg => {
 			console.log(data.commands[8]);
 		} else if (msg.content === data.commands[9] && checkRole(msg, data.perm[9])) {
 			msg.reply(localization.botReply[3]);
-			play(3, msg);
+			player.play(3, msg);
 			console.log(data.commands[9]);
 		} else if (msg.content === data.commands[10] && checkRole(msg, data.perm[10])) {
 			console.log(data.commands[10]);
@@ -137,19 +138,19 @@ function clear(msg, num) {
 function clearLoops(messages) {
 	for (var n = 0; n < data.commands.length; n++) {
 		if (messages.content.substring(0, data.commands[n].length) == data.commands[n]) {
-			messages.delete()
+			messages.delete ()
 			return;
 		}
 	}
 	for (var n = 0; n < commandsToClear.length; n++) {
 		if (messages.content.includes(commandsToClear[n])) {
-			messages.delete()
+			messages.delete ()
 			return;
 		}
 	}
 	for (var n = 0; n < usersToClear.length; n++) {
 		if (messages.author.id === usersToClear[n]) {
-			messages.delete()
+			messages.delete ()
 			return;
 		}
 	}
@@ -164,47 +165,6 @@ function mention(roles, role) {
 		return roles.find("name", config.roleModo);
 	} else {
 		return null;
-	}
-}
-
-var currentVoice;
-
-function play(i, message) {
-	var channel = message.member.voiceChannel;
-	if (typeof channel !== "undefined") {
-		if (i === 0 && channel.connection != null) {
-			channel.connection.disconnect();
-		}
-		if (i === 1) {
-			channel.join()
-			.then(connection => {
-				dispatcher = connection.playFile('./sound/sound.mp3');
-				dispatcher.on('end', () => connection.disconnect());
-			})
-			.catch (console.error);
-		}
-		if (i === 2) {
-			channel.join()
-			.then(connection => {
-				dispatcher = connection.playFile('./sound/hello.wav');
-				dispatcher.on('end', () => connection.disconnect());
-			})
-			.catch (console.error);
-		}
-		if (i === 3) {
-			channel.join()
-			.then(connection => {
-				dispatcher = connection.playFile('./sound/explosion.wav');
-				dispatcher.on('end', () => {
-					connection.disconnect();
-					message.reply('Boom!');
-				});
-			})
-			.catch (console.error);
-		}
-		currentVoice = channel;
-	} else if (i === 3) {
-		message.reply('Boom!');
 	}
 }
 
