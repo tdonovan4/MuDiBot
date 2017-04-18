@@ -172,7 +172,7 @@ var currentVoice;
 function play(i, message) {
 	var channel = message.member.voiceChannel;
 	if (typeof channel !== "undefined") {
-		if (i === 0) {
+		if (i === 0 && channel.connection != null) {
 			channel.connection.disconnect();
 		}
 		if (i === 1) {
