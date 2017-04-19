@@ -1,7 +1,12 @@
 module.exports = {
 	currentVoice: null,
 	play: function(i, message) {
+		var emoji = message.guild.emojis.find('name', 'tnt');
+		if (emoji === null) {
+			emoji = '';
+		}
 		var channel = message.member.voiceChannel;
+		
 		if (typeof channel !== "undefined") {
 			if (i === 0 && channel.connection != null) {
 				channel.connection.disconnect();
@@ -28,14 +33,14 @@ module.exports = {
 					dispatcher = connection.playFile('./sound/explosion.wav');
 					dispatcher.on('end', () => {
 						connection.disconnect();
-						message.reply('Boom!');
+						message.reply('Boom! ' + emoji);
 					});
 				})
 				.catch (console.error);
 			}
 			currentVoice = channel;
 		} else if (i === 3) {
-			message.reply('Boom!');
+			message.reply('Boom! ' + emoji);
 		}
 	}
 }
