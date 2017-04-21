@@ -1,16 +1,13 @@
 module.exports = {
 	currentVoice: null,
-	play: function(i, message) {
+	play: function (i, message) {
 		var emoji = message.guild.emojis.find('name', 'tnt');
 		if (emoji === null) {
 			emoji = '';
 		}
 		var channel = message.member.voiceChannel;
-		
+
 		if (typeof channel !== "undefined") {
-			if (i === 0 && channel.connection != null) {
-				channel.connection.disconnect();
-			}
 			if (i === 1) {
 				channel.join()
 				.then(connection => {
@@ -41,6 +38,12 @@ module.exports = {
 			currentVoice = channel;
 		} else if (i === 3) {
 			message.reply('Boom! ' + emoji);
+		}
+	},
+	stop: function (message) {
+		var channel = message.member.voiceChannel;
+		if (typeof channel !== "undefined" && channel.connection != null) {
+			channel.connection.disconnect();
 		}
 	}
 }
