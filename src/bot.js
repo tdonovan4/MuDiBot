@@ -98,6 +98,9 @@ client.on('message', msg => {
 		} else if (msg.content.includes(data.commands[11]) && checkRole(msg, data.perm[11])) {
 			warning.warn(msg);
 			console.log(data.commands[11]);
+		} else if (msg.content.includes(data.commands[12]) && checkRole(msg, data.perm[12])) {
+			player.playStream(msg, '');
+			console.log(data.commands[12]);
 		}
 	}
 });
