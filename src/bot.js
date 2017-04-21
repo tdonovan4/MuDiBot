@@ -1,5 +1,4 @@
 //TODO: Put more comments
-//TODO: Divide this class in multiple smaller classes
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const config = require('../config.js');
@@ -47,7 +46,7 @@ client.on('message', msg => {
 			msg.reply(localization.botReply[1])
 			console.log(data.commands[4]);
 		} else if (msg.content === data.commands[5] && checkRole(msg, data.perm[5])) {
-			player.play(0, msg);
+			player.stop(msg);
 			console.log(data.commands[5]);
 		} else if (msg.content === data.commands[6] && checkRole(msg, data.perm[6])) {
 			var roles = msg.channel.guild.roles;
