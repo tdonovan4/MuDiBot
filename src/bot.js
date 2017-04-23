@@ -99,7 +99,7 @@ client.on('message', msg => {
 			warning.warn(msg);
 			console.log(data.commands[11]);
 		} else if (msg.content.includes(data.commands[12]) && checkRole(msg, data.perm[12])) {
-			player.playStream(msg, '');
+			player.playStream(msg, msg.content.split(" ").slice(1)[0]);
 			console.log(data.commands[12]);
 		}
 	}
@@ -114,7 +114,6 @@ function time() {
 	return days + 'd:' + hrs + 'h:' + mins + 'm:' + secs + 's'
 }
 
-//TODO: argument commands to clear
 var commandsToClear = config.commandsToClear;
 var usersToClear = config.usersToClear;
 
@@ -125,7 +124,6 @@ function clear(msg, num) {
 	.then(messages => {
 		console.log(num)
 		for (var i = 0; i < messages.array().length; i++) {
-			//TODO: argument of author to ignore
 			if (messages.array()[i].author.id === client.user.id) {
 				messages.array()[i].delete ()
 			} else {
