@@ -46,7 +46,7 @@ module.exports = {
 		if (typeof channel !== "undefined") {
 			channel.join()
 			.then(connection => {
-				const stream = ytdl('https://www.youtube.com/watch?v=dQw4w9WgXcQ', {filter : 'audioonly'});
+				const stream = ytdl(link, {filter : 'audioonly'});
 				dispatcher = connection.playStream(stream);
 				dispatcher.on('end', () => connection.disconnect());
 			})
