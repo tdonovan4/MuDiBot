@@ -62,13 +62,13 @@ module.exports = {
 	},
 	playYoutube: function (message, link) {
 		var regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-\/]))?/;
-		console.log(link.embeds[0].provider.name);
-		if (regex.test(link) && link.embeds[0].provider.name === 'YouTube') {
-			queue.push(ytdl(link.embeds[0].url, {
+		console.log(link);
+		if (regex.test(link) && message.embeds[0].provider.name === 'YouTube') {
+			queue.push(ytdl(link, {
 					filter: 'audioonly'
 				}));
-				if(link.member.voiceChannel.connection == null) {
-					playVideo(link);
+				if(message.member.voiceChannel.connection == null) {
+					playVideo(message);
 				}
 		} else {
 			console.log('Wrong url');
