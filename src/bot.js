@@ -167,7 +167,6 @@ function mention(roles, role) {
 		return null;
 	}
 }
-
 function checkRole(msg, role) {
 	var permLevel = 0;
 	var currentPermLevel = 0;
