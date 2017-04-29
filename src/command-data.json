@@ -1,9 +1,9 @@
 {
 	"commands": ["ping", "$gif", "$clearlog", "$join", "$hello", "$quit", "$help",
-		"$restart", "$info", "$tnt", "$kill", "$warn"],
+		"$restart", "$info", "$tnt", "$kill", "$warn", "$play"],
 	"perm": ["everyone", "roleMember", "roleModo", "roleMember",
 		"everyone", "everyone", "everyone", "roleModo", "everyone", "everyone",
-		"roleModo", "roleModo", "roleModo", "roleModo", "everyone", "everyone", "roleModo"],
+		"roleModo", "roleModo", "roleModo", "roleModo", "everyone", "everyone", "roleModo", "everyone"],
 
 	"localization": {
 		"commands": ["ping", "$gif", "$clearlog", "$join", "$hello", "$quit", "$help",
