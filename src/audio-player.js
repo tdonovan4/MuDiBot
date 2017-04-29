@@ -1,4 +1,23 @@
 const ytdl = require('ytdl-core');
+var queue = [];
+var voiceConnection;
+function playVideo(message) {
+	var channel = message.member.voiceChannel;
+	if (typeof channel !== "undefined") {
+		channel.join()
+		.then(connection => {
+			voiceConnection = true;
+			dispatcher = connection.playStream(queue[0]);
+			dispatcher.on('end', () => {
+				connection.disconnect
+				queue.splice(0, 1)
+				if(queue.length > 0) {
+					playVideo(message)
+				}
+			});
+		})
+	}
+}
 module.exports = {
 	currentVoice: null,
 	play: function (i, message) {
@@ -41,15 +60,18 @@ module.exports = {
 			message.reply('Boom! ' + emoji);
 		}
 	},
-	playStream: function (message, link) {
-		var channel = message.member.voiceChannel;
-		if (typeof channel !== "undefined") {
-			channel.join()
-			.then(connection => {
-				const stream = ytdl(link, {filter : 'audioonly'});
-				dispatcher = connection.playStream(stream);
-				dispatcher.on('end', () => connection.disconnect());
-			})
+	playYoutube: function (message, link) {
+		var regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-\/]))?/;
+		console.log(link.embeds[0].provider.name);
+		if (regex.test(link) && link.embeds[0].provider.name === 'YouTube') {
+			queue.push(ytdl(link.embeds[0].url, {
+					filter: 'audioonly'
+				}));
+				if(link.member.voiceChannel.connection == null) {
+					playVideo(link);
+				}
+		} else {
+			console.log('Wrong url');
 		}
 	},
 	stop: function (message) {
