@@ -14,6 +14,8 @@ function playVideo(message) {
 				queue.splice(0, 1)
 				if (queue.length > 0) {
 					playVideo(message)
+				} else {
+					connection.disconnect();
 				}
 			});
 		})
@@ -62,37 +64,39 @@ module.exports = {
 		}
 	},
 	playYoutube: function (message, link, key) {
-		if (message.member.voiceChannel.connection == null) {
-			var regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-\/]))?/;
-			console.log(link);
-			if (regex.test(link) && message.embeds[0].provider.name === 'YouTube') {
-				queue.push(ytdl(link, {
-						filter: 'audioonly'
-					}));
-				playVideo(message);	
-			} else {
-
-				var video = 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=[' + link + ']&maxResults=1&key=' + key;
-				https.get(video, (res) => {
-					var body = '';
-					res.on("data", function (chunk) {
-						body += chunk;
-					});
-
-					res.on('end', function () {
-						response = JSON.parse(body);
-						console.log(response.items[0].id.videoId);
-						queue.push(ytdl('https://www.youtube.com/watch?v=' + response.items[0].id.videoId, {
-								filter: 'audioonly'
-							}));
-						console.log(queue.length);
-						playVideo(message);
-					});
-				}).on('error', function (e) {
-					console.log("Got error: " + e.message);
-				});
+		var regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-\/]))?/;
+		console.log(link);
+		if (regex.test(link) && link.includes('www.youtube.com')) {
+			queue.push(ytdl(link, {
+					filter: 'audioonly'
+				}));
+			//TODO: Put in only one location
+			if (message.member.voiceChannel.connection == null) {
+				playVideo(message);
 			}
-			console.log('test');
+		} else {
+
+			var video = 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=[' + link + ']&maxResults=1&key=' + key;
+			https.get(video, (res) => {
+				var body = '';
+				res.on("data", function (chunk) {
+					body += chunk;
+				});
+
+				res.on('end', function () {
+					response = JSON.parse(body);
+					console.log(response.items[0].id.videoId);
+					queue.push(ytdl('https://www.youtube.com/watch?v=' + response.items[0].id.videoId, {
+							filter: 'audioonly'
+						}));
+					console.log(queue.length);
+					if (message.member.voiceChannel.connection == null) {
+						playVideo(message);
+					}
+				});
+			}).on('error', function (e) {
+				console.log("Got error: " + e.message);
+			});
 		}
 	},
 	stop: function (message) {
