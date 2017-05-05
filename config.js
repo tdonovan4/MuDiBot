@@ -3,9 +3,11 @@
 module.exports = {
 	//The ID of the bot
 	botID: '',
+	//Your YouTube Data API key
+	youtubeAPIKey: '',
 	//Role name for "botMember"
 	roleMember: '',
-	//Role name for "botModp"
+	//Role name for "botModo"
 	roleModo: '',
 	//Localization ('english' or 'french')
 	language: '',
