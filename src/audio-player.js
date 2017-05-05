@@ -69,7 +69,9 @@ module.exports = {
 				queue.push(ytdl(link, {
 						filter: 'audioonly'
 					}));
+				playVideo(message);	
 			} else {
+
 				var video = 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=[' + link + ']&maxResults=1&key=' + key;
 				https.get(video, (res) => {
 					var body = '';
@@ -78,15 +80,19 @@ module.exports = {
 					});
 
 					res.on('end', function () {
-						var response = JSON.parse(body);
+						response = JSON.parse(body);
 						console.log(response.items[0].id.videoId);
 						queue.push(ytdl('https://www.youtube.com/watch?v=' + response.items[0].id.videoId, {
 								filter: 'audioonly'
 							}));
+						console.log(queue.length);
+						playVideo(message);
 					});
+				}).on('error', function (e) {
+					console.log("Got error: " + e.message);
 				});
 			}
-			playVideo(message);
+			console.log('test');
 		}
 	},
 	stop: function (message) {
