@@ -1,4 +1,5 @@
 const ytdl = require('ytdl-core');
+const https = require('https');
 var queue = [];
 var voiceConnection;
 function playVideo(message) {
@@ -11,7 +12,7 @@ function playVideo(message) {
 			dispatcher.on('end', () => {
 				connection.disconnect
 				queue.splice(0, 1)
-				if(queue.length > 0) {
+				if (queue.length > 0) {
 					playVideo(message)
 				}
 			});
@@ -60,18 +61,32 @@ module.exports = {
 			message.reply('Boom! ' + emoji);
 		}
 	},
-	playYoutube: function (message, link) {
-		var regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-\/]))?/;
-		console.log(link);
-		if (regex.test(link) && message.embeds[0].provider.name === 'YouTube') {
-			queue.push(ytdl(link, {
-					filter: 'audioonly'
-				}));
-				if(message.member.voiceChannel.connection == null) {
-					playVideo(message);
-				}
-		} else {
-			console.log('Wrong url');
+	playYoutube: function (message, link, key) {
+		if (message.member.voiceChannel.connection == null) {
+			var regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-\/]))?/;
+			console.log(link);
+			if (regex.test(link) && message.embeds[0].provider.name === 'YouTube') {
+				queue.push(ytdl(link, {
+						filter: 'audioonly'
+					}));
+			} else {
+				var video = 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=[' + link + ']&maxResults=1&key=' + key;
+				https.get(video, (res) => {
+					var body = '';
+					res.on("data", function (chunk) {
+						body += chunk;
+					});
+
+					res.on('end', function () {
+						var response = JSON.parse(body);
+						console.log(response.items[0].id.videoId);
+						queue.push(ytdl('https://www.youtube.com/watch?v=' + response.items[0].id.videoId, {
+								filter: 'audioonly'
+							}));
+					});
+				});
+			}
+			playVideo(message);
 		}
 	},
 	stop: function (message) {

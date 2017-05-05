@@ -99,7 +99,7 @@ client.on('message', msg => {
 			warning.warn(msg);
 			console.log(data.commands[11]);
 		} else if (msg.content.includes(data.commands[12]) && checkRole(msg, data.perm[12])) {
-			player.playYoutube(msg, msg.content.split(" ").slice(1)[0]);
+			player.playYoutube(msg, msg.content.split(" ").slice(1)[0], config.youtubeAPIKey);
 			console.log(data.commands[12]);
 		}
 	}
