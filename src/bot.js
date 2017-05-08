@@ -85,14 +85,13 @@ var commands = {
 		execute: function () {
 			var spawn = require('child_process').spawn;
 
-			var child = spawn('node', ['bot.js'], {
+			var child = spawn('node', ['./src/bot.js'], {
 					detached: true,
 					shell: true,
 					stdio: 'ignore'
 				});
-
+			
 			child.unref();
-
 			console.log('Restarting');
 
 			process.exitCode = 0;
@@ -112,7 +111,6 @@ var commands = {
 				localization.info[4] + time() + '\n' +
 				localization.info[5] + config.roleMember + '\n' +
 				localization.info[6] + config.roleModo);
-
 		}
 	},
 	tnt: {
