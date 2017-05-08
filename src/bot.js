@@ -148,9 +148,9 @@ client.on('message', msg => {
 	if (msg.author.id != "290581674343792651") {
 		for (i = 0; i < keys.length; i++) {
 			//We add a +1 because keys don't include the $
-			if (msg.content.substring(0, keys[i].length + 1) == '$' + keys[i]) {
-				commands[keys[i]].execute(msg);
+			if (msg.content.substring(0, keys[i].length + 1) === '$' + keys[i]) {
 				console.log('$' + keys[i]);
+				commands[keys[i]].execute(msg);
 				break;
 			}
 		}
