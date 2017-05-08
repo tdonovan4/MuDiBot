@@ -15,7 +15,7 @@ module.exports = {
 		}
 
 		switch (args[0]) {
-		case null:
+		case undefined:
 			console.log('Not enough arguments');
 			break;
 		case 'clear':
