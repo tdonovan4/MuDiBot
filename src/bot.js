@@ -2,7 +2,7 @@
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const config = require('../config.js');
-const data = require('./command-data.json');
+const data = require('./localization.json');
 const warning = require('./warning.js');
 const player = require('./audio-player.js');
 var localization;
@@ -12,24 +12,31 @@ client.login(config.botID);
 client.on('ready', () => {
 	console.log(`Logged in as ${client.user.username}!`);
 	if (config.language === 'french') {
-		localization = data.localization.french
+		localization = data.french
 			console.log('french');
 	} else {
-		localization = data.localization.english
+		localization = data.english
 			console.log('english');
 	}
 	client.user.setGame(localization.status);
 });
 
-client.on('message', msg => {
-	if (msg.author.id != "290581674343792651") {
-		if (msg.content === data.commands[0] && checkRole(msg, data.perm[0])) {
-			msg.reply(localization.botReply[0]);
-			console.log(data.commands[0]);
-		} else if (msg.content === data.commands[1] && checkRole(msg, data.perm[1])) {
+var commands = {
+	ping: {
+		permLvl: "everyone",
+		execute: function (msg) {
+			msg.reply(localization.replies.ping);
+		}
+	},
+	gif: {
+		permLvl: "roleMember",
+		execute: function (msg) {
 			msg.reply('http://giphy.com/gifs/l4FGBpKfVMG4qraJG');
-			console.log(data.commands[1]);
-		} else if (msg.content.includes(data.commands[2]) && checkRole(msg, data.perm[2])) {
+		}
+	},
+	clearlog: {
+		permLvl: "roleModo",
+		execute: function (msg) {
 			let args = msg.content.split(" ").slice(1);
 			let num = args[0];
 
@@ -37,28 +44,45 @@ client.on('message', msg => {
 				num = '50';
 			}
 			clear(msg, num);
-			console.log(data.commands[2]);
-		} else if (msg.content === data.commands[3] && checkRole(msg, data.perm[3])) {
+		}
+	},
+	join: {
+		permLvl: "roleMember",
+		execute: function (msg) {
 			player.play(1, msg);
-			console.log(data.commands[3]);
-		} else if (msg.content === data.commands[4] && checkRole(msg, data.perm[4])) {
+		}
+	},
+	hello: {
+		permLvl: "everyone",
+		execute: function (msg) {
 			player.play(2, msg);
-			msg.reply(localization.botReply[1])
-			console.log(data.commands[4]);
-		} else if (msg.content === data.commands[5] && checkRole(msg, data.perm[5])) {
+			msg.reply(localization.replies.hello)
+		}
+	},
+	quit: {
+		permLvl: "everyone",
+		execute: function (msg) {
 			player.stop(msg);
-			console.log(data.commands[5]);
-		} else if (msg.content === data.commands[6] && checkRole(msg, data.perm[6])) {
+		}
+	},
+	help: {
+		permLvl: "everyone",
+		execute: function (msg) {
+			var help = localization.help;
 			var roles = msg.channel.guild.roles;
 			var helpString = '~Help~' + '\n'
-				for (i = 0; i < data.localization.commands.length; i++) {
-					helpString += data.localization.commands[i] + localization.helpArg[i] + ' : [' +
-					mention(roles, data.perm[i]) + '] ' + localization.helpMsg[i] + '\n'
+				for (i = 0; i < help.length; i++) {
+					for (n = 0; n < help[i].commands.length; n++) {
+						helpString += help[i].commands[n].name + help[i].commands[n].args + ' : [' +
+						mention(roles, commands[keys[i]].permLvl) + '] ' + help[i].commands[n].msg + '\n'
+					}
 				}
 				msg.channel.send(helpString);
-			console.log(data.commands[6]);
-		} else if (msg.content === data.commands[7] && checkRole(msg, data.perm[7])) {
-
+		}
+	},
+	restart: {
+		permLvl: "roleModo",
+		execute: function () {
 			var spawn = require('child_process').spawn;
 
 			var child = spawn('node', ['bot.js'], {
@@ -71,36 +95,66 @@ client.on('message', msg => {
 
 			console.log('Restarting');
 
-			console.log(data.commands[7]);
 			process.exitCode = 0;
 			process.exit();
-		} else if (msg.content === data.commands[8] && checkRole(msg, data.perm[8])) {
+		}
+	},
+	info: {
+		permLvl: "everyone",
+		execute: function (msg) {
 			var pjson = require('../package.json');
 
 			msg.channel.send('~Infos~ \n' +
 				localization.info[0] + pjson.name + '\n' +
 				localization.info[1] + pjson.version + '\n' +
-				localization.info[2] + localization.botReply[2] + '\n' +
+				localization.info[2] + localization.replies.info + '\n' +
 				localization.info[3] + pjson.author + '\n' +
 				localization.info[4] + time() + '\n' +
 				localization.info[5] + config.roleMember + '\n' +
 				localization.info[6] + config.roleModo);
 
-			console.log(data.commands[8]);
-		} else if (msg.content === data.commands[9] && checkRole(msg, data.perm[9])) {
-			msg.reply(localization.botReply[3]);
+		}
+	},
+	tnt: {
+		permLvl: "everyone",
+		execute: function (msg) {
+			msg.reply(localization.replies.tnt);
 			player.play(3, msg);
-			console.log(data.commands[9]);
-		} else if (msg.content === data.commands[10] && checkRole(msg, data.perm[10])) {
-			console.log(data.commands[10]);
+		}
+	},
+	kill: {
+		permLvl: "roleModo",
+		execute: function (msg) {
+			console.log('Restarting');
 			process.exitCode = 0;
 			process.exit();
-		} else if (msg.content.includes(data.commands[11]) && checkRole(msg, data.perm[11])) {
+		}
+	},
+	warn: {
+		permLvl: "roleModo",
+		execute: function (msg) {
 			warning.warn(msg);
-			console.log(data.commands[11]);
-		} else if (msg.content.includes(data.commands[12]) && checkRole(msg, data.perm[12])) {
+		}
+	},
+	play: {
+		permLvl: "everyone",
+		execute: function (msg) {
 			player.playYoutube(msg, msg.content.split(" ").slice(1), config.youtubeAPIKey);
-			console.log(data.commands[12]);
+		}
+	}
+}
+
+var keys = Object.keys(commands);
+
+client.on('message', msg => {
+	if (msg.author.id != "290581674343792651") {
+		for (i = 0; i < keys.length; i++) {
+			//We add a +1 because keys don't include the $
+			if (msg.content.substring(0, keys[i].length + 1) == '$' + keys[i]) {
+				commands[keys[i]].execute(msg);
+				console.log('$' + keys[i]);
+				break;
+			}
 		}
 	}
 });
@@ -136,8 +190,9 @@ function clear(msg, num) {
 }
 
 function clearLoops(messages) {
-	for (var n = 0; n < data.commands.length; n++) {
-		if (messages.content.substring(0, data.commands[n].length) == data.commands[n]) {
+	for (var n = 0; n < keys.length; n++) {
+		//We add a +1 because keys don't include the $
+		if (messages.content.substring(0, keys[n].length + 1) == '$' + keys[n]) {
 			messages.delete ()
 			return;
 		}
