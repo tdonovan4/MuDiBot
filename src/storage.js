@@ -1,3 +1,4 @@
+//Handle writing and reading on files
 const fs = require('fs');
 //TODO: Add argument for path
 module.exports = {

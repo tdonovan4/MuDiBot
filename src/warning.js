@@ -1,11 +1,14 @@
+//Handle warnings
 const storage = require('./storage.js');
 module.exports = {
 	warningList: null,
+	//TODO: Split in multiple functions
 	warn: function (msg) {
 		let args = msg.content.split(" ").slice(1);
 		let users = msg.mentions.users.array();
 		var warningList;
-
+		
+		//Check if the file exist
 		storage.exist();
 		if (storage.empty()) {
 			warningList = {}
@@ -13,7 +16,7 @@ module.exports = {
 		} else {
 			warningList = storage.read();
 		}
-
+		
 		switch (args[0]) {
 		case undefined:
 			console.log('Not enough arguments');
@@ -47,6 +50,8 @@ module.exports = {
 			}
 			msg.channel.send(string);
 			break;
+			
+			
 		case 'remove':
 			if (args[1].includes(users[0].id)) {
 				if (args[1]in warningList) {
@@ -62,6 +67,7 @@ module.exports = {
 			}
 			break;
 		default:
+			//Add one warn on user if no second arg
 			if (args[0].includes(users[0].id)) {
 				if (args[0]in warningList) {
 					warningList[args[0]] += 1;

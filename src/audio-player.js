@@ -1,7 +1,9 @@
+//Play requested audio when called
 const ytdl = require('ytdl-core');
 const https = require('https');
 var queue = [];
 var voiceConnection;
+//Play YouTube video (audio only)
 function playVideo(message) {
 	var channel = message.member.voiceChannel;
 	if (typeof channel !== "undefined") {
@@ -23,6 +25,7 @@ function playVideo(message) {
 }
 module.exports = {
 	currentVoice: null,
+	//Sound effects
 	play: function (i, message) {
 		var emoji = message.guild.emojis.find('name', 'tnt');
 		if (emoji === null) {
@@ -63,10 +66,12 @@ module.exports = {
 			message.reply('Boom! ' + emoji);
 		}
 	},
+	//Get YouTube video
 	playYoutube: function (message, link, key) {
 		var regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-\/]))?/;
 		console.log(link);
 		if (regex.test(link[0]) && link[0].includes('www.youtube.com')) {
+			//Direct link to video
 			queue.push(ytdl(link[0], {
 					filter: 'audioonly'
 				}));
@@ -75,7 +80,7 @@ module.exports = {
 				playVideo(message);
 			}
 		} else {
-
+			//Search the video with the YouTube API
 			var video = 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=[' + link + ']&maxResults=1&key=' + key;
 			https.get(video, (res) => {
 				var body = '';
@@ -99,6 +104,7 @@ module.exports = {
 			});
 		}
 	},
+	//Stop playing the audio and leave channel
 	stop: function (message) {
 		var channel = message.member.voiceChannel;
 		if (typeof channel !== "undefined" && channel.connection != null) {
