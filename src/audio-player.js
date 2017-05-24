@@ -26,7 +26,7 @@ function playVideo(message) {
 module.exports = {
 	currentVoice: null,
 	//Sound effects
-	play: function (i, message) {
+	play: function (sound, message) {
 		var emoji = message.guild.emojis.find('name', 'tnt');
 		if (emoji === null) {
 			emoji = '';
@@ -34,15 +34,7 @@ module.exports = {
 		var channel = message.member.voiceChannel;
 
 		if (typeof channel !== "undefined") {
-			if (i === 1) {
-				channel.join()
-				.then(connection => {
-					dispatcher = connection.playFile('./sound/sound.mp3');
-					dispatcher.on('end', () => connection.disconnect());
-				})
-				.catch (console.error);
-			}
-			if (i === 2) {
+			if (sound === 'hello') {
 				channel.join()
 				.then(connection => {
 					dispatcher = connection.playFile('./sound/hello.wav');
@@ -50,7 +42,7 @@ module.exports = {
 				})
 				.catch (console.error);
 			}
-			if (i === 3) {
+			if (sound === 'tnt') {
 				channel.join()
 				.then(connection => {
 					dispatcher = connection.playFile('./sound/explosion.wav');
@@ -62,7 +54,7 @@ module.exports = {
 				.catch (console.error);
 			}
 			currentVoice = channel;
-		} else if (i === 3) {
+		} else if (sound === 'tnt') {
 			message.reply('Boom! ' + emoji);
 		}
 	},

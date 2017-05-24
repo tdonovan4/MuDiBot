@@ -31,13 +31,6 @@
 				]
 			}, {
 				"commands": [{
-						"name": "$join",
-						"args": "",
-						"msg": "Makes the bot play a nice song"
-					}
-				]
-			}, {
-				"commands": [{
 						"name": "$hello",
 						"args": "",
 						"msg": "Hello!"
@@ -152,13 +145,6 @@
 						"name": "$clearlog",
 						"args": "< messages à regarder >",
 						"msg": "Supprime les commandes du script"
-					}
-				]
-			}, {
-				"commands": [{
-						"name": "$join",
-						"args": "",
-						"msg": "Joue une petite musique"
 					}
 				]
 			}, {
