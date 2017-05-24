@@ -60,19 +60,11 @@ var commands = {
 			clear(msg, num);
 		}
 	},
-	//TODO: delete this command
-	join: {
-		//Plays a song
-		permLvl: "roleMember",
-		execute: function (msg) {
-			player.play(1, msg);
-		}
-	},
 	hello: {
 		//Play a greeting sound and reply hi
 		permLvl: "everyone",
 		execute: function (msg) {
-			player.play(2, msg);
+			player.play('hello', msg);
 			msg.reply(localization.replies.hello);
 		}
 	},
@@ -143,7 +135,7 @@ var commands = {
 		permLvl: "everyone",
 		execute: function (msg) {
 			msg.reply(localization.replies.tnt);
-			player.play(3, msg);
+			player.play('tnt', msg);
 		}
 	},
 	kill: {
