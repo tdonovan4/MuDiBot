@@ -85,7 +85,6 @@
 						"msg": "Puts a warning on user"
 					}, {
 						"name": "$warn clear",
-						"name": "",
 						"args": " <user>",
 						"msg": "Clears all warnings on user"
 					}, {
