@@ -57,7 +57,7 @@ var commands = {
 			if (numToDel === null || isNaN(numToDel)) {
 				numToDel = '50';
 			}
-			clear(msg, num);
+			clear(msg, numToDel);
 		}
 	},
 	hello: {
@@ -204,11 +204,12 @@ function clear(msg, num) {
 	})
 	.then(messages => {
 		console.log(num)
+		var msg = messages.array();
 		//Check messages
 		for (var i = 0; i < messages.array().length; i++) {
 			//Find bot messages
-			if (messages.array()[i].author.id === client.user.id) {
-				messages.array()[i].delete ()
+			if (msg[i].author.id === client.user.id) {
+				msg[i].delete ()
 			} else {
 				/*
 				 *TODO: Optimize loops by using one list 
@@ -217,8 +218,8 @@ function clear(msg, num) {
 				//Find bot commands
 				for (var n = 0; n < keys.length; n++) {
 					//We add a +1 because keys don't include the $
-					if (messages.content.substring(0, keys[n].length + 1) == '$' + keys[n]) {
-						messages.delete ()
+					if (msg[i].content.substring(0, keys[n].length + 1) == '$' + keys[n]) {
+						msg[i].delete ()
 						break
 					}
 				}
@@ -227,14 +228,14 @@ function clear(msg, num) {
 				 *users to delete using the config file
 				 */
 				for (var n = 0; n < commandsToClear.length; n++) {
-					if (messages.content.includes(commandsToClear[n])) {
-						messages.delete ()
+					if (msg[i].content.includes(commandsToClear[n])) {
+						msg[i].delete ()
 						break;
 					}
 				}
 				for (var n = 0; n < usersToClear.length; n++) {
-					if (messages.author.id === usersToClear[n]) {
-						messages.delete ()
+					if (msg[i].author.id === usersToClear[n]) {
+						msg[i].delete ()
 						break;
 					}
 				}
