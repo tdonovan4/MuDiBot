@@ -192,12 +192,13 @@ function time() {
 	return days + 'd:' + hrs + 'h:' + mins + 'm:' + secs + 's'
 }
 
-//List of commands to clear (excluding all this bot commands)
-var commandsToClear = config.commandsToClear;
-var usersToClear = config.usersToClear;
-
 //Function that fetch, check and delete messages
 function clear(msg, num) {
+	var clearList = config.commandsToClear.concat(config.usersToClear);
+	for (i = 0; i < keys.length; i++) {
+		clearList.push('$' + keys[i]);
+	}
+
 	//Fetch
 	msg.channel.fetchMessages({
 		limit: parseInt(num)
@@ -207,36 +208,15 @@ function clear(msg, num) {
 		var msg = messages.array();
 		//Check messages
 		for (var i = 0; i < messages.array().length; i++) {
-			//Find bot messages
+			//Delete commands from bot
 			if (msg[i].author.id === client.user.id) {
 				msg[i].delete ()
 			} else {
-				/*
-				 *TODO: Optimize loops by using one list 
-				 *	   with all needed to be deleted
-				 */
-				//Find bot commands
-				for (var n = 0; n < keys.length; n++) {
-					//We add a +1 because keys don't include the $
-					if (msg[i].content.substring(0, keys[n].length + 1) == '$' + keys[n]) {
+				//Find and delete
+				for (var n = 0; n < clearList.length; n++) {
+					if (msg[i].content.substring(0, clearList[n].length) === clearList[n] || msg[i].author.id === clearList[n]) {
 						msg[i].delete ()
 						break
-					}
-				}
-				/*
-				 *The two next loops check for commands and 
-				 *users to delete using the config file
-				 */
-				for (var n = 0; n < commandsToClear.length; n++) {
-					if (msg[i].content.includes(commandsToClear[n])) {
-						msg[i].delete ()
-						break;
-					}
-				}
-				for (var n = 0; n < usersToClear.length; n++) {
-					if (msg[i].author.id === usersToClear[n]) {
-						msg[i].delete ()
-						break;
 					}
 				}
 			}
@@ -259,33 +239,33 @@ function mention(roles, role) {
 	}
 }
 /*
- *Check if the message author has permission 
+ *Check if the message author has permission
  *to do the command, return true or false
  */
 function checkRole(msg, role) {
 	var permLevel = 0;
 	var currentPermLevel = 0;
-	
-	//Debug only, check if user is tdonovan4
+
+	//Debug only, check if user is superuser
 	for (i = 0; i < config.superusers.length; i++) {
 		if (msg.author.id === config.superusers[i]) {
 			return true;
 		}
 	}
-	
+
 	//Check if user is an administrator
 	var permissions = msg.member.permissions;
 	if (permissions.hasPermission('ADMINISTRATOR') || permissions.hasPermission('MANAGE_CHANNELS')) {
 		return true;
 	}
-	
+
 	//Set the required level of permission
 	if (role === roleMember) {
 		permLevel = 1;
 	} else if (role === roleModo) {
 		permLevel = 2;
 	}
-	
+
 	//Set the user permission level
 	for (i = 0; i < msg.member.roles.array().length; i++) {
 		if (msg.member.roles.array()[i].name === config.roleModo) {
@@ -296,7 +276,7 @@ function checkRole(msg, role) {
 			currentPermLevel = 1;
 		}
 	}
-	
+
 	//Compare user and needed permission level
 	if (currentPermLevel < permLevel) {
 		console.log("Not enough permissions");
