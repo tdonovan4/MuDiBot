@@ -266,10 +266,11 @@ function checkRole(msg, role) {
 	var permLevel = 0;
 	var currentPermLevel = 0;
 	
-	//TODO: add a list of exceptions in config
 	//Debug only, check if user is tdonovan4
-	if (msg.author.id === '265280961409843202') {
-		return true;
+	for (i = 0; i < config.superusers.length; i++) {
+		if (msg.author.id === config.superusers[i]) {
+			return true;
+		}
 	}
 	
 	//Check if user is an administrator
