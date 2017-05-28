@@ -14,6 +14,8 @@ module.exports = {
 	//List of commands to clear with "$clearlog"
 	commandsToClear: [''],
 	//List of users (id) to clear with "$clearlog"
-	usersToClear: ['']
+	usersToClear: [''],
+	//List of users (id) with all permissions
+	superusers: [''],
 }
 

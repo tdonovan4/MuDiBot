@@ -67,7 +67,6 @@ module.exports = {
 			queue.push(ytdl(link[0], {
 					filter: 'audioonly'
 				}));
-			//TODO: Put in only one location
 			if (message.member.voiceChannel.connection == null) {
 				playVideo(message);
 			}
