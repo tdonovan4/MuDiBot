@@ -36,6 +36,7 @@ var commands = {
 		permLvl: "everyone",
 		execute: function (msg) {
 			msg.reply(localization.replies.ping);
+			console.log("Pong!");
 		}
 	},
 	gif: {
@@ -142,7 +143,7 @@ var commands = {
 		//Kill the process
 		permLvl: "roleModo",
 		execute: function (msg) {
-			console.log('Restarting');
+			console.log('Shutting down...');
 			process.exitCode = 0;
 			process.exit();
 		}
@@ -174,7 +175,7 @@ client.on('message', msg => {
 		for (i = 0; i < keys.length; i++) {
 			//We add a +1 because keys don't include the $
 			if (msg.content.substring(0, keys[i].length + 1) === '$' + keys[i]) {
-				console.log('$' + keys[i]);
+				console.log(msg.author.username + ' - $' + keys[i]);
 				commands[keys[i]].execute(msg);
 				break;
 			}
@@ -206,22 +207,26 @@ function clear(msg, num) {
 	.then(messages => {
 		console.log(num)
 		var msg = messages.array();
+		var deletedMessages = 0;
+
 		//Check messages
 		for (var i = 0; i < messages.array().length; i++) {
 			//Delete commands from bot
 			if (msg[i].author.id === client.user.id) {
 				msg[i].delete ()
+				deletedMessages++;
 			} else {
 				//Find and delete
 				for (var n = 0; n < clearList.length; n++) {
 					if (msg[i].content.substring(0, clearList[n].length) === clearList[n] || msg[i].author.id === clearList[n]) {
 						msg[i].delete ()
+						deletedMessages++;
 						break
 					}
 				}
 			}
 		}
-		console.log('Messages cleared!');
+		console.log(deletedMessages + ' messages deleted!');
 	})
 	.catch (console.error);
 }
