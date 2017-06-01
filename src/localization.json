@@ -8,112 +8,100 @@
 			"tnt": "ssSSSsss...",
 			"warn": "warnings"
 		},
-		"help": [{
-				"commands": [{
-						"name": "$ping",
-						"args": "",
-						"msg": "Pong!"
-					}
-				]
-			}, {
-				"commands": [{
-						"name": "$gif",
-						"args": "",
-						"msg": "Inserts a little GIF"
-					}
-				]
-			}, {
-				"commands": [{
-						"name": "$clearlog",
-						"args": "<messages to check>",
-						"msg": "Deletes all commands related to the bot"
-					}
-				]
-			}, {
-				"commands": [{
-						"name": "$hello",
-						"args": "",
-						"msg": "Hello!"
-					}
-				]
-			}, {
-				"commands": [{
-						"name": "$quit",
-						"args": "",
-						"msg": "Makes the bot quit the voice channel"
-					}
-				]
-			}, {
-				"commands": [{
-						"name": "$help",
-						"args": "",
-						"msg": "Displays this"
-					}
-				]
-			}, {
-				"commands": [{
-						"name": "$restart",
-						"args": "",
-						"msg": "Restarts the bot"
-					}
-				]
-			}, {
-				"commands": [{
-						"name": "$info",
-						"args": "",
-						"msg": "Displays information about the bot"
-					}
-				]
-			}, {
-				"commands": [{
-						"name": "$tnt",
-						"args": "",
-						"msg": "TNT <3"
-					}
-				]
-			}, {
-				"commands": [{
-						"name": "$kill",
-						"args": "",
-						"msg": "Kills the process"
-					}
-				]
-			}, {
-				"commands": [{
-						"name": "$warn",
-						"args": " <user>",
-						"msg": "Puts a warning on user"
-					}, {
-						"name": "$warn clear",
-						"args": " <user>",
-						"msg": "Clears all warnings on user"
-					}, {
-						"name": "$warn clear all",
-						"args": "",
-						"msg": "Clears all warnings"
-					}, {
-						"name": "$warn list",
-						"args": "",
-						"msg": "Lists all warnings"
-					}, {
-						"name": "$warn list",
-						"args": " <user>",
-						"msg": "Lists warnings on user"
-					}, {
-						"name": "$warn remove",
-						"args": " <user>",
-						"msg": "Removes one warning from user"
-					}
-				]
-			}, {
-				"commands": [{
-						"name": "$play",
-						"args": " <song url or tags>",
-						"msg": "Puts a song in queue and plays it"
-					}
-				]
-			}
-		],
+		"help": {
+			"ping": [{
+					"name": "$ping",
+					"args": "",
+					"msg": "Pong!"
+				}
+			],
+			"gif": [{
+					"name": "$gif",
+					"args": "",
+					"msg": "Inserts a little GIF"
+				}
+			],
+			"clearlog": [{
+					"name": "$clearlog",
+					"args": " <messages to check>",
+					"msg": "Deletes all commands related to the bot"
+				}
+			],
+			"hello": [{
+					"name": "$hello",
+					"args": "",
+					"msg": "Hello!"
+				}
+			],
+			"quit": [{
+					"name": "$quit",
+					"args": "",
+					"msg": "Makes the bot quit the voice channel"
+				}
+			],
+			"help": [{
+					"name": "$help",
+					"args": "",
+					"msg": "Displays this"
+				}
+			],
+			"restart": [{
+					"name": "$restart",
+					"args": "",
+					"msg": "Restarts the bot"
+				}
+			],
+			"info": [{
+					"name": "$info",
+					"args": "",
+					"msg": "Displays information about the bot"
+				}
+			],
+			"tnt": [{
+					"name": "$tnt",
+					"args": "",
+					"msg": "TNT <3"
+				}
+			],
+			"kill": [{
+					"name": "$kill",
+					"args": "",
+					"msg": "Kills the process"
+				}
+			],
+			"warn": [{
+					"name": "$warn",
+					"args": " <user>",
+					"msg": "Puts a warning on user"
+				}, {
+					"name": "$warn clear",
+					"args": " <user>",
+					"msg": "Clears all warnings on user"
+				}, {
+					"name": "$warn clear all",
+					"args": "",
+					"msg": "Clears all warnings"
+				}, {
+					"name": "$warn list",
+					"args": "",
+					"msg": "Lists all warnings"
+				}, {
+					"name": "$warn list",
+					"args": " <user>",
+					"msg": "Lists warnings on user"
+				}, {
+					"name": "$warn remove",
+					"args": " <user>",
+					"msg": "Removes one warning from user"
+				}
+			],
+			"play": [{
+					"name": "$play",
+					"args": " <song url or tags>",
+					"msg": "Puts a song in queue and plays it"
+				}
+			]
+		},
 		"info": ["Name:", "Version:", "Description:", "Author:", "Uptime:", "RoleMember", "RoleModo:"]
 	},
 	"french": {
@@ -125,112 +113,100 @@
 			"tnt": "Seulement un petit serviteur...",
 			"warn": "avertissements"
 		},
-		"help": [{
-				"commands": [{
-						"name": "$help",
-						"args": "",
-						"msg": "Pong!"
-					}
-				]
-			}, {
-				"commands": [{
-						"name": "$gif",
-						"args": "",
-						"msg": "Met un petit GIF"
-					}
-				]
-			}, {
-				"commands": [{
-						"name": "$clearlog",
-						"args": "< messages à regarder >",
-						"msg": "Supprime les commandes du script"
-					}
-				]
-			}, {
-				"commands": [{
-						"name": "$hello",
-						"args": "",
-						"msg": "Salut!"
-					}
-				]
-			}, {
-				"commands": [{
-						"name": "$quit",
-						"args": "",
-						"msg": "Fait quitter le script du salon vocal"
-					}
-				]
-			}, {
-				"commands": [{
-						"name": "$help",
-						"args": "",
-						"msg": "Affiche ceci"
-					}
-				]
-			}, {
-				"commands": [{
-						"name": "$restart",
-						"args": "",
-						"msg": "Redémarre le script"
-					}
-				]
-			}, {
-				"commands": [{
-						"name": "$info",
-						"args": "",
-						"msg": "Affiche des informations sur le script"
-					}
-				]
-			}, {
-				"commands": [{
-						"name": "$tnt",
-						"args": "",
-						"msg": "TNT < 3"
-					}
-				]
-			}, {
-				"commands": [{
-						"name": "$kill",
-						"args": "",
-						"msg": "Tue le script"
-					}
-				]
-			}, {
-				"commands": [{
-						"name": "warn",
-						"args": " <utilisateur>",
-						"msg": "Met un avertissement sur l 'utilisateur"
-					}, {
-						"name": "warn clear",
-						"args": " <utilisateur>",
-						"msg": "Enlève tous les avertissements d' un utilisateur"
-					}, {
-						"name": "warn clear all",
-						"args": "",
-						"msg": "Enlève tous les avertissements"
-					}, {
-						"name": "warn list",
-						"args": "",
-						"msg": "Liste tous les avertissements"
-					}, {
-						"name": "warn list",
-						"args": " <utilisateur>",
-						"msg": "Liste les avertissements de l 'utilisateur"
-					}, {
-						"name": "warn remove",
-						"args": " <utilisateur>",
-						"msg": "Enlève un avertissement de l' utilisateur"
-					}
-				]
-			}, {
-				"commands": [{
-						"name": "$play",
-						"args": " <song url or tags>",
-						"msg": "Enlève un avertissement de l 'utilisateur"
-					}
-				]
-			}
-		],
+		"help": {
+			"ping": [{
+					"name": "$ping",
+					"args": "",
+					"msg": "Pong!"
+				}
+			],
+			"gif": [{
+					"name": "$gif",
+					"args": "",
+					"msg": "Met un petit GIF"
+				}
+			],
+			"clearlog": [{
+					"name": "$clearlog",
+					"args": "< messages à regarder >",
+					"msg": "Supprime les commandes du script"
+				}
+			],
+			"hello": [{
+					"name": "$hello",
+					"args": "",
+					"msg": "Salut!"
+				}
+			],
+			"quit": [{
+					"name": "$quit",
+					"args": "",
+					"msg": "Fait quitter le script du salon vocal"
+				}
+			],
+			"help": [{
+					"name": "$help",
+					"args": "",
+					"msg": "Affiche ceci"
+				}
+			],
+			"restart": [{
+					"name": "$restart",
+					"args": "",
+					"msg": "Redémarre le script"
+				}
+			],
+			"info": [{
+					"name": "$info",
+					"args": "",
+					"msg": "Affiche des informations sur le script"
+				}
+			],
+			"tnt": [{
+					"name": "$tnt",
+					"args": "",
+					"msg": "TNT < 3"
+				}
+			],
+			"kill": [{
+					"name": "$kill",
+					"args": "",
+					"msg": "Tue le script"
+				}
+			],
+			"warn": [{
+					"name": "warn",
+					"args": " <utilisateur>",
+					"msg": "Met un avertissement sur l 'utilisateur"
+				}, {
+					"name": "warn clear",
+					"args": " <utilisateur>",
+					"msg": "Enlève tous les avertissements d' un utilisateur"
+				}, {
+					"name": "warn clear all",
+					"args": "",
+					"msg": "Enlève tous les avertissements"
+				}, {
+					"name": "warn list",
+					"args": "",
+					"msg": "Liste tous les avertissements"
+				}, {
+					"name": "warn list",
+					"args": " <utilisateur>",
+					"msg": "Liste les avertissements de l 'utilisateur"
+				}, {
+					"name": "warn remove",
+					"args": " <utilisateur>",
+					"msg": "Enlève un avertissement de l' utilisateur"
+				}
+			],
+			"play": [{
+					"name": "$play",
+					"args": " <song url or tags>",
+					"msg": "Enlève un avertissement de l 'utilisateur"
+				}
+			]
+		},
 		"info": ["Nom:", "Version:", "Description:", "Auteur:", "Temps de fonctionnement:", "RoleMembre:", "RoleModo:"]
 	}
 }
