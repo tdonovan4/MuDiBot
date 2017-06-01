@@ -82,13 +82,25 @@ var commands = {
 		execute: function (msg) {
 			var help = localization.help;
 			var roles = msg.channel.guild.roles;
+			var categories = {
+				General: ['ping', 'help', 'info'],
+				Fun: ['gif', 'hello', 'tnt'],
+				Music: ['play', 'quit'],
+				Administration: ['clearlog', 'restart', 'kill', 'warn']
+			};
 
-			//Use a string to add all commands one by one
+			//Create the message
 			var helpString = '~Help~' + '\n';
-			for (i = 0; i < help.length; i++) {
-				for (n = 0; n < help[i].commands.length; n++) {
-					helpString += help[i].commands[n].name + help[i].commands[n].args + ' : [' +
-					mention(roles, commands[keys[i]].permLvl) + '] ' + help[i].commands[n].msg + '\n'
+			for (var prop in categories) {
+				helpString += '\n-' + prop + '\n';
+				var category = categories[prop];
+				for (listCmd = 0; listCmd < Object.keys(category).length; listCmd++) {
+					if (help.hasOwnProperty(category[listCmd])) {
+						for (n = 0; n < help[category[listCmd]].length; n++) {
+							helpString += help[category[listCmd]][n].name + help[category[listCmd]][n].args + ' : [' +
+							mention(roles, commands[category[listCmd]].permLvl) + '] ' + help[category[listCmd]][n].msg + '\n'
+						}
+					}
 				}
 			}
 			msg.channel.send(helpString);
