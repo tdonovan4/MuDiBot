@@ -80,30 +80,34 @@ var commands = {
 		//Display a list of commands and their usage
 		permLvl: "everyone",
 		execute: function (msg) {
-			var help = localization.help;
-			var roles = msg.channel.guild.roles;
+			const help = localization.help;
+			let args = msg.content.split(" ").slice(1);
 			var categories = {
 				General: ['ping', 'help', 'info'],
 				Fun: ['gif', 'hello', 'tnt'],
 				Music: ['play', 'quit'],
 				Administration: ['clearlog', 'restart', 'kill', 'warn']
 			};
-
-			//Create the message
-			var helpString = '__**~Help~**__' + '\n';
-			for (var prop in categories) {
-				helpString += '\n**-' + prop + '**\n';
-				var category = categories[prop];
-				for (listCmd = 0; listCmd < Object.keys(category).length; listCmd++) {
-					if (help.hasOwnProperty(category[listCmd])) {
-						for (n = 0; n < help[category[listCmd]].length; n++) {
-							helpString += help[category[listCmd]][n].name + help[category[listCmd]][n].args + ' : [' +
-							mention(roles, commands[category[listCmd]].permLvl) + '] ' + help[category[listCmd]][n].msg + '\n'
-						}
-					}
+			
+			if(args[0] != null) {
+				/*
+				 *Check if args is a category and
+				 *put first letter of args in uppercase
+				 */
+				if(args[0][0].toUpperCase() + args[0].substring(1) in categories) {
+					args[0] = args[0][0].toUpperCase() + args[0].substring(1);
+					var category = categories[args[0]];
+					for (var member in categories) delete categories[member];
+					//Add only desired category
+					categories[args[0]] = category;
+				//Check if args is a command
+				} else if(args[0] in help) {
+					for (var member in categories) delete categories[member];
+					categories.helpSingleCmd = [args[0]];
 				}
 			}
-			msg.channel.send(helpString);
+			
+			helpList(msg, categories);
 		}
 	},
 	restart: {
@@ -203,6 +207,32 @@ function time() {
 	var mins = ~~((time % 3600) / 60);
 	var secs = ~~(time % 60);
 	return days + 'd:' + hrs + 'h:' + mins + 'm:' + secs + 's'
+}
+
+//Create the message
+function helpList(msg, categories) {
+	const help = localization.help;
+	var roles = msg.channel.guild.roles;
+	
+	var helpString = '__**~Help~**__' + '\n';
+	for (var prop in categories) {
+		//Check if only one command
+		helpString += '\n'
+		if(prop != 'helpSingleCmd') {
+			helpString += '**-' + prop + '**\n';
+		}
+		var category = categories[prop];
+		console.log(category[0]);
+		for (listCmd = 0; listCmd < Object.keys(category).length; listCmd++) {
+			if (help.hasOwnProperty(category[listCmd])) {
+				for (n = 0; n < help[category[listCmd]].length; n++) {
+					helpString += help[category[listCmd]][n].name + help[category[listCmd]][n].args + ' : [' +
+					mention(roles, commands[category[listCmd]].permLvl) + '] ' + help[category[listCmd]][n].msg + '\n'
+				}
+			}
+		}
+	}
+	msg.channel.send(helpString);
 }
 
 //Function that fetch, check and delete messages
