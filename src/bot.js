@@ -90,9 +90,9 @@ var commands = {
 			};
 
 			//Create the message
-			var helpString = '~Help~' + '\n';
+			var helpString = '__**~Help~**__' + '\n';
 			for (var prop in categories) {
-				helpString += '\n-' + prop + '\n';
+				helpString += '\n**-' + prop + '**\n';
 				var category = categories[prop];
 				for (listCmd = 0; listCmd < Object.keys(category).length; listCmd++) {
 					if (help.hasOwnProperty(category[listCmd])) {
@@ -133,7 +133,7 @@ var commands = {
 		execute: function (msg) {
 			var pjson = require('../package.json');
 
-			msg.channel.send('~Infos~ \n' +
+			msg.channel.send('__**~Infos~**__ \n' +
 				localization.info[0] + pjson.name + '\n' +
 				localization.info[1] + pjson.version + '\n' +
 				localization.info[2] + localization.replies.info + '\n' +
