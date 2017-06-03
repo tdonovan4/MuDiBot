@@ -1,18 +1,15 @@
 //Handle warnings
 const storage = require('./storage.js');
+const bot = require('./bot.js');
 
 module.exports = {
 	warningList: null,
 	//TODO: Split in multiple functions
 	warn: function (msg) {
+		console.log(bot);
 		let args = msg.content.split(" ").slice(1);
 		let users = msg.mentions.users.array();
 		var warningList;
-
-		function printMsg(text) {
-			console.log(text);
-			msg.channel.send(text);
-		}
 
 		//Check if the file exist
 		storage.exist();
@@ -26,27 +23,27 @@ module.exports = {
 
 		switch (args[0]) {
 		case undefined:
-			printMsg('Not enough arguments')
+			bot.printMsg(msg, 'Not enough arguments')
 			break;
 		case 'clear':
 			if (args[1] == null) {
-				printMsg('Not enough arguments');
+				bot.printMsg(msg, 'Not enough arguments');
 			} else if (args[1] === 'all') {
 				storage.delete ();
-				printMsg('Storage cleared');
+				bot.printMsg(msg, 'Storage cleared');
 			} else {
 				if (args[1].includes(users[0].id)) {
 					console.log(args[1]);
 					warningList[args[1]] = undefined;
 					storage.write(warningList);
-					printMsg('User cleared');
+					bot.printMsg(msg, 'User cleared');
 				}
 			}
 			break;
 		case 'list':
 			var string = '';
 			if (!Object.keys(warningList).length > 0) {
-				printMsg('Empty');
+				bot.printMsg(msg, 'Empty');
 			} else {
 				if (args[1] != null) {
 					if (args[1].includes(users[0].id)) {
@@ -61,7 +58,7 @@ module.exports = {
 						string += user + ': ' + warningList[user] + ' warnings';
 					}
 				}
-				printMsg(string);
+				bot.printMsg(msg, string);
 			}
 			break;
 
@@ -74,7 +71,7 @@ module.exports = {
 					if (warningList[args[1]] <= 0) {
 						warningList[args[1]] = undefined;
 						storage.write(warningList);
-						printMsg('User cleared');
+						bot.printMsg(msg, 'User cleared');
 					}
 				}
 			}
@@ -88,7 +85,7 @@ module.exports = {
 					warningList[args[0]] = 1;
 				}
 				storage.write(warningList);
-				printMsg(args[0] + ': ' + warningList[args[0]] + ' warnings');
+				bot.printMsg(msg, args[0] + ': ' + warningList[args[0]] + ' warnings');
 			}
 		}
 	}
