@@ -26,6 +26,11 @@ client.on('ready', () => {
 	client.user.setGame(localization.status);
 });
 
+module.exports.printMsg = function (msg, text) {
+	console.log(text);
+	msg.channel.send(text);
+}
+
 /*
  *Use an object containing command objects to get
  *the permission needed and execute the command
@@ -88,25 +93,27 @@ var commands = {
 				Music: ['play', 'quit'],
 				Administration: ['clearlog', 'restart', 'kill', 'warn']
 			};
-			
-			if(args[0] != null) {
+
+			if (args[0] != null) {
 				/*
 				 *Check if args is a category and
 				 *put first letter of args in uppercase
 				 */
-				if(args[0][0].toUpperCase() + args[0].substring(1) in categories) {
+				if (args[0][0].toUpperCase() + args[0].substring(1)in categories) {
 					args[0] = args[0][0].toUpperCase() + args[0].substring(1);
 					var category = categories[args[0]];
-					for (var member in categories) delete categories[member];
+					for (var member in categories)
+						delete categories[member];
 					//Add only desired category
 					categories[args[0]] = category;
-				//Check if args is a command
-				} else if(args[0] in help) {
-					for (var member in categories) delete categories[member];
+					//Check if args is a command
+				} else if (args[0]in help) {
+					for (var member in categories)
+						delete categories[member];
 					categories.helpSingleCmd = [args[0]];
 				}
 			}
-			
+
 			helpList(msg, categories);
 		}
 	},
@@ -213,12 +220,12 @@ function time() {
 function helpList(msg, categories) {
 	const help = localization.help;
 	var roles = msg.channel.guild.roles;
-	
+
 	var helpString = '__**~Help~**__' + '\n';
 	for (var prop in categories) {
 		//Check if only one command
 		helpString += '\n'
-		if(prop != 'helpSingleCmd') {
+		if (prop != 'helpSingleCmd') {
 			helpString += '**-' + prop + '**\n';
 		}
 		var category = categories[prop];

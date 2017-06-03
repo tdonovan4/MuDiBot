@@ -1,13 +1,9 @@
 //Play requested audio when called
 const ytdl = require('ytdl-core');
 const https = require('https');
+const bot = require('./bot.js');
 var queue = [];
 var voiceConnection;
-
-function printMsg(msg, text) {
-	console.log(text);
-	msg.channel.send(text);
-}
 
 //Play YouTube video (audio only)
 function playVideo(message) {
@@ -18,7 +14,7 @@ function playVideo(message) {
 			voiceConnection = true;
 			console.log(queue[0]);
 						ytdl.getInfo(queue[0]).then(info => {
-								printMsg(message, 'Playing: "' + info.title + '"');
+								bot.printMsg(message, 'Playing: "' + info.title + '"');
 							});
 				//Downloading
 				var stream = ytdl(queue[0], {
@@ -80,7 +76,7 @@ function playVideo(message) {
 			if (regex.test(link[0]) && link[0].includes('www.youtube.com')) {
 				//Direct link to video
 				queue.push(link[0]);
-				printMsg(message, 'Video added to the queue');
+				bot.printMsg(message, 'Video added to the queue');
 
 				if (message.member.voiceChannel.connection == null) {
 					playVideo(message);
@@ -99,7 +95,7 @@ function playVideo(message) {
 						var url = 'https://www.youtube.com/watch?v=' + response.items[0].id.videoId
 							queue.push(url);
 						ytdl.getInfo(url).then(info => {
-								printMsg(message, '"' + info.title + '" added to the queue');
+								bot.printMsg(message, '"' + info.title + '" added to the queue');
 							});
 							
 						if (message.member.voiceChannel.connection == null) {
@@ -116,7 +112,7 @@ function playVideo(message) {
 			var channel = message.member.voiceChannel;
 			if (typeof channel !== "undefined" && channel.connection != null) {
 				channel.connection.disconnect();
-				printMsg(message, 'Disconnected!');
+				bot.printMsg(message, 'Disconnected!');
 			}
 		}
 	}
