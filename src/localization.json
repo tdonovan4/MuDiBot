@@ -43,6 +43,14 @@
 					"name": "$help",
 					"args": "",
 					"msg": "Displays this"
+				}, {
+					"name": "$help",
+					"args": " <category>",
+					"msg": "Displays help for all commands in the category"
+				}, {
+					"name": "$help",
+					"args": " <command>",
+					"msg": "Displays help for the command"
 				}
 			],
 			"restart": [{
@@ -148,6 +156,14 @@
 					"name": "$help",
 					"args": "",
 					"msg": "Affiche ceci"
+				}, {
+					"name": "$help",
+					"args": " <catégorie>",
+					"msg": "Affiche l'aide pour les commandes dans la catégorie"
+				}, {
+					"name": "$help",
+					"args": " <commande>",
+					"msg": "Affiche l'aide pour la commande"
 				}
 			],
 			"restart": [{
