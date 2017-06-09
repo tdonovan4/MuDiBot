@@ -2,33 +2,33 @@
 const fs = require('fs');
 //TODO: Add argument for path
 module.exports = {
-	write: function (obj) {
+	write: function (file, obj) {
 		var json = JSON.stringify(obj);
 		
-		fs.writeFile('warning-list.json', json, 'utf8', (err) => {
+		fs.writeFile(file, json, 'utf8', (err) => {
 			if (err){ console.log(err); }
 		});
 	},
 	
-	read: function () {
-		return JSON.parse(fs.readFileSync('warning-list.json', 'utf8'));
+	read: function (file) {
+		return JSON.parse(fs.readFileSync(file, 'utf8'));
 	},
 	
-	empty: function () {
-		if(fs.readFileSync('warning-list.json', 'utf8') == '') {
+	empty: function (file) {
+		if(fs.readFileSync(file, 'utf8') == '') {
 			return true;
 			} else {
 			return false;
 		}
 	},
 	
-	exist: function () {
-		if (!fs.existsSync('warning-list.json')) {
-			fs.openSync('warning-list.json', 'w');
+	exist: function (file) {
+		if (!fs.existsSync(file)) {
+			fs.openSync(file, 'w');
 		}	
 	},
 	
-	delete: function () {
-		fs.unlinkSync('./warning-list.json');
+	delete: function (file) {
+		fs.unlinkSync(file);
 	}
 }	

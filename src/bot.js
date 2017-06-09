@@ -229,7 +229,6 @@ function helpList(msg, categories) {
 			helpString += '**-' + prop + '**\n';
 		}
 		var category = categories[prop];
-		console.log(category[0]);
 		for (listCmd = 0; listCmd < Object.keys(category).length; listCmd++) {
 			if (help.hasOwnProperty(category[listCmd])) {
 				for (n = 0; n < help[category[listCmd]].length; n++) {
