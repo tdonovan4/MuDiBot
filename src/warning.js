@@ -6,19 +6,20 @@ module.exports = {
 	warningList: null,
 	//TODO: Split in multiple functions
 	warn: function (msg) {
+		var file = './storage/warning.list-' + msg.guild.id + '.json';
 		console.log(bot);
 		let args = msg.content.split(" ").slice(1);
 		let users = msg.mentions.users.array();
 		var warningList;
 
 		//Check if the file exist
-		storage.exist();
-		if (storage.empty()) {
+		storage.exist(file);
+		if (storage.empty(file)) {
 			console.log('Warning file don\'t exist, creating one')
 			warningList = {}
-			storage.write(warningList);
+			storage.write(file, warningList);
 		} else {
-			warningList = storage.read();
+			warningList = storage.read(file);
 		}
 
 		switch (args[0]) {
@@ -29,13 +30,13 @@ module.exports = {
 			if (args[1] == null) {
 				bot.printMsg(msg, 'Not enough arguments');
 			} else if (args[1] === 'all') {
-				storage.delete ();
+				storage.delete(file);
 				bot.printMsg(msg, 'Storage cleared');
 			} else {
 				if (args[1].includes(users[0].id)) {
 					console.log(args[1]);
 					warningList[args[1]] = undefined;
-					storage.write(warningList);
+					storage.write(file, warningList);
 					bot.printMsg(msg, 'User cleared');
 				}
 			}
@@ -67,10 +68,10 @@ module.exports = {
 				if (args[1]in warningList) {
 					warningList[args[1]] -= 1;
 					msg.channel.send(args[1] + ': ' + warningList[args[1]] + ' warnings');
-					storage.write(warningList);
+					storage.write(file, warningList);
 					if (warningList[args[1]] <= 0) {
 						warningList[args[1]] = undefined;
-						storage.write(warningList);
+						storage.write(file, warningList);
 						bot.printMsg(msg, 'User cleared');
 					}
 				}
@@ -84,7 +85,7 @@ module.exports = {
 				} else {
 					warningList[args[0]] = 1;
 				}
-				storage.write(warningList);
+				storage.write(file, warningList);
 				bot.printMsg(msg, args[0] + ': ' + warningList[args[0]] + ' warnings');
 			}
 		}
