@@ -83,7 +83,7 @@ module.exports = {
 			}
 		} else {
 			//Search the video with the YouTube API
-			var video = 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=[' + link + ']&maxResults=1&key=' + key;
+			var video = 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=[' + link + ']&maxResults=1&type=video&key=' + key;
 			https.get(video, (res) => {
 				var body = '';
 				res.on("data", function (chunk) {
