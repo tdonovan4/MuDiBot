@@ -16,7 +16,6 @@ module.exports = {
 	warningList: null,
 	warn: function (msg) {
 		var file = './storage/warning.list-' + msg.guild.id + '.json';
-		console.log(bot);
 		let args = msg.content.split(" ").slice(1);
 		let users = msg.mentions.users.array();
 		var warningList;
@@ -105,12 +104,9 @@ module.exports = {
 				let i = args.length - 1
 				let obj = (i < 1) ? warnCmd:warnCmd[args[0]];
 				let keys = (i < 1) ? args[0]:args[0] + '.' + args[1];
-				console.log(exist(warnCmd, keys));
-				console.log(typeof args[i] === "function");
 
 				if (exist(warnCmd, keys) && typeof obj[args[i]] === "function") {
 					//If arg is in warnCmd
-					console.log(obj[args[i]]);
 					obj[args[i]]();
 				} else if (typeof users[0] != 'undefined' && args[i].includes(users[0].id)) {
 					//If arg is a user
