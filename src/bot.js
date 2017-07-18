@@ -346,6 +346,16 @@ function checkRole(msg, role) {
 	}
 }
 
+//When users join the server
+client.on('guildMemberAdd', member => {
+	member.guild.defaultChannel.send(`Welcome to the server, ${member}!`);
+});
+
+//When users leave the server
+client.on('guildMemberRemove', member => {
+	member.guild.defaultChannel.send(`${member} left the server :slight_frown:`);
+});
+
 //Make sure the process exits correctly and don't fails to close
 process.on('SIGINT', function () {
 	process.exit(2);
