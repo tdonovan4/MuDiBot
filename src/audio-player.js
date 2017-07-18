@@ -21,8 +21,8 @@ function playVideo(connection, message) {
 	});
 	//Downloading
 	var stream = ytdl(queue[0], {
-			filter: 'audioonly'
-		});
+		filter: 'audioonly'
+	});
 	dispatcher = connection.playStream(stream);
 
 	dispatcher.on('end', () => {
@@ -93,7 +93,7 @@ module.exports = {
 				res.on('end', function () {
 					response = JSON.parse(body);
 					var url = 'https://www.youtube.com/watch?v=' + response.items[0].id.videoId
-						queue.push(url);
+					queue.push(url);
 					ytdl.getInfo(url).then(info => {
 						bot.printMsg(message, '"' + info.title + '" added to the queue');
 					});
@@ -114,5 +114,14 @@ module.exports = {
 			channel.connection.disconnect();
 			bot.printMsg(message, 'Disconnected!');
 		}
+	},
+	//Skip song
+	skip: function (message) {
+		//Ugly solution, but it's the only one
+		try {
+			var dispatcherStream = message.member.voiceChannel.connection.player.dispatcher.stream;
+			dispatcherStream.destroy();
+			bot.printMsg(message, 'Song skipped!');
+		} catch(stream){}
 	}
 }
