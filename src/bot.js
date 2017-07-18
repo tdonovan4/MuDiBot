@@ -89,7 +89,7 @@ var commands = {
 			let args = msg.content.split(" ").slice(1);
 			var categories = {
 				General: ['ping', 'help', 'info'],
-				Fun: ['gif', 'hello', 'tnt', 'flipcoin'],
+				Fun: ['gif', 'hello', 'tnt', 'flipcoin', 'roll'],
 				Music: ['play', 'quit', 'skip', 'queue'],
 				Administration: ['clearlog', 'restart', 'kill', 'warn']
 			};
@@ -200,9 +200,22 @@ var commands = {
 		}
 	},
 	flipcoin: {
+		//Flip a coin
 		permLvl: "everyone",
 		execute: function (msg) {
 			msg.reply(Math.floor(Math.random() * 2) == 0 ? 'heads' : 'tails');
+		}
+	},
+	roll: {
+		//Flip a coin
+		permLvl: "everyone",
+		execute: function (msg) {
+			args = msg.content.split(/[ d+]|(?=-)/g).slice(1);
+			num = isNaN(args[2]) ? 0 : parseInt(args[2]);
+			for(i = 0; i < args[0]; i++) {
+				num += Math.floor(Math.random() * args[1])+1;
+			}
+			msg.reply(num);
 		}
 	}
 }

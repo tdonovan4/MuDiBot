@@ -126,6 +126,12 @@
 					"args": "",
 					"msg": "Flip a digital coin"
 				}
+			],
+			"roll": [{
+					"name": "$roll",
+					"args": " <# of dices>d<# of faces><modifier>",
+					"msg": "Flip digital dices"
+				}
 			]
 		},
 		"info": ["Name:", "Version:", "Description:", "Author:", "Uptime:", "RoleMember", "RoleModo:"]
@@ -256,6 +262,12 @@
 					"name": "$flipcoin",
 					"args": "",
 					"msg": "Pile ou face"
+				}
+			],
+			"roll": [{
+					"name": "$roll",
+					"args": " <Nombre de dés>d<Nombre de faces><modificateur>",
+					"msg": "Lance des dés"
 				}
 			]
 		},
