@@ -120,6 +120,12 @@
 					"args": "",
 					"msg": "Display songs in queue"
 				}
+			],
+			"flipcoin": [{
+					"name": "$flipcoin",
+					"args": "",
+					"msg": "Flip a digital coin"
+				}
 			]
 		},
 		"info": ["Name:", "Version:", "Description:", "Author:", "Uptime:", "RoleMember", "RoleModo:"]
@@ -244,6 +250,12 @@
 					"name": "$queue",
 					"args": "",
 					"msg": "Liste les chansons en attente"
+				}
+			],
+			"flipcoin": [{
+					"name": "$flipcoin",
+					"args": "",
+					"msg": "Pile ou face"
 				}
 			]
 		},
