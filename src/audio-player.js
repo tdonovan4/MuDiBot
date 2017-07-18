@@ -70,15 +70,19 @@ module.exports = {
 	},
 	//Get YouTube video
 	playYoutube: function (message, link, key) {
-		var regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-\/]))?/;
-		if (regex.test(link[0]) && link[0].includes('www.youtube.com')) {
+		var regex = /^(http(s)??\:\/\/)?(www\.)?((youtube\.com\/watch\?v=)|(youtu.be\/))([a-zA-Z0-9\-_])+/
+		if (regex.test(link[0])) {
 			//Direct link to video
-			queue.push(link[0]);
-			bot.printMsg(message, 'Video added to the queue');
+			ytdl.getInfo(link[0]).then(function(info) {
+				queue.push(link[0]);
+				bot.printMsg(message, '"' + info.title + '" added to the queue');
 
-			if (message.member.voiceChannel.connection == null) {
-				channel.join().then(connection => playVideo(connection, message));
-			}
+				if (message.member.voiceChannel.connection == null) {
+					joinChannel(message);
+				}
+			}, function() {
+				bot.printMsg(message, 'Invalid video url!');
+			});
 		} else {
 			//Search the video with the YouTube API
 			var video = 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=[' + link + ']&maxResults=1&type=video&key=' + key;
@@ -87,7 +91,6 @@ module.exports = {
 				res.on("data", function (chunk) {
 					body += chunk;
 				});
-
 				res.on('end', function () {
 					response = JSON.parse(body);
 					var url = 'https://www.youtube.com/watch?v=' + response.items[0].id.videoId
