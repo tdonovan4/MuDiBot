@@ -72,7 +72,6 @@ module.exports = {
 	//Get YouTube video
 	playYoutube: function (message, link, key) {
 		var regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-\/]))?/;
-		console.log(link);
 		if (regex.test(link[0]) && link[0].includes('www.youtube.com')) {
 			//Direct link to video
 			queue.push(link[0]);
