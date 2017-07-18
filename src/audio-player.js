@@ -112,6 +112,7 @@ module.exports = {
 		var channel = message.member.voiceChannel;
 		if (typeof channel !== "undefined" && channel.connection != null) {
 			channel.connection.disconnect();
+			queue = [];
 			bot.printMsg(message, 'Disconnected!');
 		}
 	},
