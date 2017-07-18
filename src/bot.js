@@ -90,7 +90,7 @@ var commands = {
 			var categories = {
 				General: ['ping', 'help', 'info'],
 				Fun: ['gif', 'hello', 'tnt'],
-				Music: ['play', 'quit', 'skip'],
+				Music: ['play', 'quit', 'skip', 'queue'],
 				Administration: ['clearlog', 'restart', 'kill', 'warn']
 			};
 
@@ -190,6 +190,13 @@ var commands = {
 		permLvl: "roleMember",
 		execute: function (msg) {
 			player.skip(msg);
+		}
+	},
+	queue: {
+		//Skip to next song in queue
+		permLvl: "everyone",
+		execute: function (msg) {
+			player.listQueue(msg);
 		}
 	}
 }
