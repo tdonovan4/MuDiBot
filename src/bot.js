@@ -90,7 +90,7 @@ var commands = {
 			var categories = {
 				General: ['ping', 'help', 'info'],
 				Fun: ['gif', 'hello', 'tnt'],
-				Music: ['play', 'quit'],
+				Music: ['play', 'quit', 'skip'],
 				Administration: ['clearlog', 'restart', 'kill', 'warn']
 			};
 
