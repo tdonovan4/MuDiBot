@@ -2,7 +2,7 @@
 //Please fill the fields
 module.exports = {
 	//The ID of the bot
-	botID: '',
+	botToken: '',
 	//Your YouTube Data API key
 	youtubeAPIKey: '',
 	//Role name for "botMember"
