@@ -1,7 +1,7 @@
 //Configuration file
 //Please fill the fields
 module.exports = {
-	//The ID of the bot
+	//The token of the bot
 	botToken: '',
 	//Your YouTube Data API key
 	youtubeAPIKey: '',

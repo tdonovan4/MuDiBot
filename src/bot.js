@@ -7,8 +7,8 @@ const warning = require('./warning.js');
 const player = require('./audio-player.js');
 var localization;
 
-//Log to the discord user  with the ID
-client.login(config.botID);
+//Log to the discord user  with the token
+client.login(config.botToken);
 
 //Start the bot
 client.on('ready', () => {
