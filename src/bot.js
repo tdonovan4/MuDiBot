@@ -184,6 +184,13 @@ var commands = {
 		execute: function (msg) {
 			player.playYoutube(msg, msg.content.split(" ").slice(1), config.youtubeAPIKey);
 		}
+	},
+	skip: {
+		//Skip to next song in queue
+		permLvl: "roleMember",
+		execute: function (msg) {
+			player.skip(msg);
+		}
 	}
 }
 

@@ -108,6 +108,12 @@
 					"args": " <song url or tags>",
 					"msg": "Puts a song in queue and plays it"
 				}
+			],
+			"skip": [{
+					"name": "$skip",
+					"args": "",
+					"msg": "Skip the current song"
+				}
 			]
 		},
 		"info": ["Name:", "Version:", "Description:", "Author:", "Uptime:", "RoleMember", "RoleModo:"]
@@ -220,6 +226,12 @@
 					"name": "$play",
 					"args": " <song url or tags>",
 					"msg": "Enlève un avertissement de l 'utilisateur"
+				}
+			],
+			"skip": [{
+					"name": "$skip",
+					"args": "",
+					"msg": "Saute la chanson jouant"
 				}
 			]
 		},
