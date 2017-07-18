@@ -114,6 +114,12 @@
 					"args": "",
 					"msg": "Skip the current song"
 				}
+			],
+			"queue": [{
+					"name": "$queue",
+					"args": "",
+					"msg": "Display songs in queue"
+				}
 			]
 		},
 		"info": ["Name:", "Version:", "Description:", "Author:", "Uptime:", "RoleMember", "RoleModo:"]
@@ -231,7 +237,13 @@
 			"skip": [{
 					"name": "$skip",
 					"args": "",
-					"msg": "Saute la chanson jouant"
+					"msg": "Saute la chanson qui joue"
+				}
+			],
+			"queue": [{
+					"name": "$queue",
+					"args": "",
+					"msg": "Liste les chansons en attente"
 				}
 			]
 		},

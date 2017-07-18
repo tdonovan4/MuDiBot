@@ -15,7 +15,6 @@ function joinChannel(message) {
 //Play YouTube video (audio only)
 function playVideo(connection, message) {
 	voiceConnection = true;
-	console.log(queue[0]);
 	ytdl.getInfo(queue[0]).then(info => {
 		bot.printMsg(message, 'Playing: "' + info.title + '"');
 	});
@@ -123,5 +122,23 @@ module.exports = {
 			dispatcherStream.destroy();
 			bot.printMsg(message, 'Song skipped!');
 		} catch(stream){}
+	},
+	listQueue: function(message) {
+		var promises = [];
+		var titles = '**List of videos in queue:**';
+		//Get video titles
+		for(i = 0; i < queue.length; i++) {
+			promises[i] = ytdl.getInfo(queue[i]).then(info => {
+				return info.title;
+			});
+		}
+		//Make list
+		Promise.all(promises).then(values => {
+			for(n = 0; n < values.length; n++) {
+				titles += '\n "' + values[n] + '"';
+			}
+			//Write titles
+			bot.printMsg(message, titles);
+		});
 	}
 }
