@@ -205,7 +205,7 @@ client.on('message', msg => {
 		for (i = 0; i < keys.length; i++) {
 			//We add a +1 because keys don't include the $
 			if (msg.content.substring(0, keys[i].length + 1) === '$' + keys[i]) {
-				console.log(msg.author.username + ' - $' + keys[i]);
+				console.log(msg.author.username + ' - ' + msg.content);
 				commands[keys[i]].execute(msg);
 				break;
 			}
@@ -260,7 +260,7 @@ function clear(msg, num) {
 		limit: parseInt(num)
 	})
 	.then(messages => {
-		console.log(num)
+		console.log("Max messages to delete: " + num);
 		var msg = messages.array();
 		var deletedMessages = 0;
 

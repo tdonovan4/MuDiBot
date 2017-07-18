@@ -39,7 +39,6 @@ module.exports = {
 						bot.printMsg(msg, 'Storage cleared');
 					},
 					user: function () {
-						console.log(args[1]);
 						warningList[args[1]] = undefined;
 						storage.write(file, warningList);
 						bot.printMsg(msg, 'User cleared');
