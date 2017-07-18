@@ -89,7 +89,7 @@ var commands = {
 			let args = msg.content.split(" ").slice(1);
 			var categories = {
 				General: ['ping', 'help', 'info'],
-				Fun: ['gif', 'hello', 'tnt'],
+				Fun: ['gif', 'hello', 'tnt', 'flipcoin'],
 				Music: ['play', 'quit', 'skip', 'queue'],
 				Administration: ['clearlog', 'restart', 'kill', 'warn']
 			};
@@ -197,6 +197,12 @@ var commands = {
 		permLvl: "everyone",
 		execute: function (msg) {
 			player.listQueue(msg);
+		}
+	},
+	flipcoin: {
+		permLvl: "everyone",
+		execute: function (msg) {
+			msg.reply(Math.floor(Math.random() * 2) == 0 ? 'heads' : 'tails');
 		}
 	}
 }
