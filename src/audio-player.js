@@ -12,6 +12,19 @@ function joinChannel(message) {
 	}
 }
 
+function addToQueue(message, url) {
+	queue.push(url);
+	ytdl.getInfo(url).then(info => {
+		bot.printMsg(message, '"' + info.title + '" added to the queue');
+	}, function() {
+		bot.printMsg(message, 'Invalid video url!');
+	});
+
+	if (message.member.voiceChannel.connection == null) {
+		joinChannel(message);
+	}
+}
+
 //Play YouTube video (audio only)
 function playVideo(connection, message) {
 	voiceConnection = true;
@@ -73,75 +86,59 @@ module.exports = {
 		var regex = /^(http(s)??\:\/\/)?(www\.)?((youtube\.com\/watch\?v=)|(youtu.be\/))([a-zA-Z0-9\-_])+/
 		if (regex.test(link[0])) {
 			//Direct link to video
-			ytdl.getInfo(link[0]).then(function(info) {
-				queue.push(link[0]);
-				bot.printMsg(message, '"' + info.title + '" added to the queue');
-
-				if (message.member.voiceChannel.connection == null) {
-					joinChannel(message);
-				}
-			}, function() {
-				bot.printMsg(message, 'Invalid video url!');
+			addToQueue(message, link[0])
+	} else {
+		//Search the video with the YouTube API
+		var video = 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=[' + link + ']&maxResults=1&type=video&key=' + key;
+		https.get(video, (res) => {
+			var body = '';
+			res.on("data", function (chunk) {
+				body += chunk;
 			});
-		} else {
-			//Search the video with the YouTube API
-			var video = 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=[' + link + ']&maxResults=1&type=video&key=' + key;
-			https.get(video, (res) => {
-				var body = '';
-				res.on("data", function (chunk) {
-					body += chunk;
-				});
-				res.on('end', function () {
-					response = JSON.parse(body);
-					var url = 'https://www.youtube.com/watch?v=' + response.items[0].id.videoId
-					queue.push(url);
-					ytdl.getInfo(url).then(info => {
-						bot.printMsg(message, '"' + info.title + '" added to the queue');
-					});
-
-					if (message.member.voiceChannel.connection == null) {
-						joinChannel(message);
-					}
-				});
-			}).on('error', function (e) {
-				console.log("Got error: " + e.message);
+			res.on('end', function () {
+				response = JSON.parse(body);
+				var url = 'https://www.youtube.com/watch?v=' + response.items[0].id.videoId
+				addToQueue(message, url);
 			});
-		}
-	},
-	//Stop playing the audio and leave channel
-	stop: function (message) {
-		var channel = message.member.voiceChannel;
-		if (typeof channel !== "undefined" && channel.connection != null) {
-			channel.connection.disconnect();
-			queue = [];
-			bot.printMsg(message, 'Disconnected!');
-		}
-	},
-	//Skip song
-	skip: function (message) {
-		//Ugly solution, but it's the only one
-		try {
-			var dispatcherStream = message.member.voiceChannel.connection.player.dispatcher.stream;
-			dispatcherStream.destroy();
-			bot.printMsg(message, 'Song skipped!');
-		} catch(stream){}
-	},
-	listQueue: function(message) {
-		var promises = [];
-		var titles = '**List of videos in queue:**';
-		//Get video titles
-		for(i = 0; i < queue.length; i++) {
-			promises[i] = ytdl.getInfo(queue[i]).then(info => {
-				return info.title;
-			});
-		}
-		//Make list
-		Promise.all(promises).then(values => {
-			for(n = 0; n < values.length; n++) {
-				titles += '\n "' + values[n] + '"';
-			}
-			//Write titles
-			bot.printMsg(message, titles);
+		}).on('error', function (e) {
+			console.log("Got error: " + e.message);
 		});
 	}
+},
+//Stop playing the audio and leave channel
+stop: function (message) {
+	var channel = message.member.voiceChannel;
+	if (typeof channel !== "undefined" && channel.connection != null) {
+		channel.connection.disconnect();
+		queue = [];
+		bot.printMsg(message, 'Disconnected!');
+	}
+},
+//Skip song
+skip: function (message) {
+	//Ugly solution, but it's the only one
+	try {
+		var dispatcherStream = message.member.voiceChannel.connection.player.dispatcher.stream;
+		dispatcherStream.destroy();
+		bot.printMsg(message, 'Song skipped!');
+	} catch(stream){}
+},
+listQueue: function(message) {
+	var promises = [];
+	var titles = '**List of videos in queue:**';
+	//Get video titles
+	for(i = 0; i < queue.length; i++) {
+		promises[i] = ytdl.getInfo(queue[i]).then(info => {
+			return info.title;
+		});
+	}
+	//Make list
+	Promise.all(promises).then(values => {
+		for(n = 0; n < values.length; n++) {
+			titles += '\n "' + values[n] + '"';
+		}
+		//Write titles
+		bot.printMsg(message, titles);
+	});
+}
 }
