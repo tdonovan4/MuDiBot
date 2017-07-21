@@ -182,7 +182,7 @@ var commands = {
 		//Play a song on YouTube
 		permLvl: "everyone",
 		execute: function (msg) {
-			player.playYoutube(msg, msg.content.split(" ").slice(1), config.youtubeAPIKey);
+			player.playYoutube(msg, msg.content.split(" ").slice(1));
 		}
 	},
 	skip: {
