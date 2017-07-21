@@ -145,13 +145,17 @@ var commands = {
 			var pjson = require('../package.json');
 
 			msg.channel.send('__**~Infos~**__ \n' +
-				localization.info[0] + pjson.name + '\n' +
-				localization.info[1] + pjson.version + '\n' +
-				localization.info[2] + localization.replies.info + '\n' +
-				localization.info[3] + pjson.author + '\n' +
-				localization.info[4] + time() + '\n' +
-				localization.info[5] + config.roleMember + '\n' +
-				localization.info[6] + config.roleModo);
+				localization.info[0] + '\n' +
+				localization.info[1] + pjson.name + '\n' +
+				localization.info[2] + pjson.version + '\n' +
+				localization.info[3] + localization.replies.info + '\n' +
+				localization.info[4] + pjson.author + '\n' +
+				localization.info[5] + client.user.id + '\n' +
+				localization.info[6] + time() + '\n' +
+				localization.info[7] + '\n' +
+				localization.info[8] + config.language + '\n' +
+				localization.info[9] + config.roleMember + '\n' +
+				localization.info[10] + config.roleModo);
 		}
 	},
 	tnt: {

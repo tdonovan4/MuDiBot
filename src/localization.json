@@ -134,7 +134,7 @@
 				}
 			]
 		},
-		"info": ["Name:", "Version:", "Description:", "Author:", "Uptime:", "RoleMember", "RoleModo:"]
+		"info": ["**General**", "Name:", "Version:", "Description:", "Author:", "Client ID:", "Uptime:", "**Config**", "Language:", "RoleMember:", "RoleModo:"]
 	},
 	"french": {
 		"status": "Être un formidable serviteur",
@@ -271,6 +271,6 @@
 				}
 			]
 		},
-		"info": ["Nom:", "Version:", "Description:", "Auteur:", "Temps de fonctionnement:", "RoleMembre:", "RoleModo:"]
+		"info": ["**Général**", "Nom:", "Version:", "Description:", "Auteur:", "ID du client:","Temps de fonctionnement:", "**Config**", "Language:", "RoleMembre:", "RoleModo:"]
 	}
 }
