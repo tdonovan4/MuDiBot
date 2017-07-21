@@ -129,8 +129,8 @@
 			],
 			"roll": [{
 					"name": "$roll",
-					"args": " <# of dices>d<# of faces><modifier>",
-					"msg": "Flip digital dices"
+					"args": " <# of dice>d<# of faces><modifier>",
+					"msg": "Flip digital dice"
 				}
 			]
 		},
