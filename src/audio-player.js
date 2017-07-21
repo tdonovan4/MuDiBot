@@ -31,7 +31,7 @@ function get(url) {
 function addToQueue(message, url) {
 	if(url.indexOf('list=') !== -1) {
 		//Url is a playlist
-		var regExpPlaylist = new RegExp("[&?]list=([a-z0-9_]+)","i");
+		var regExpPlaylist = new RegExp("list=([a-zA-Z0-9\-\_]+)&?","i");
 		var id = regExpPlaylist.exec(url);
 		var api = 'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=' + id[1] + '&maxResults=50&key=' + config.youtubeAPIKey;
 
@@ -55,13 +55,11 @@ function addToQueue(message, url) {
 
 	function getVideosPlaylist(i, response) {
 		var video = 'https://www.youtube.com/watch?v=' + response.items[i].snippet.resourceId.videoId
-		console.log(video);
 		checkIfAvailable(video).then(values => {
 			if(i < response.items.length-1) {
 				i++
 				getVideosPlaylist(i, response)
 			} else if (message.member.voiceChannel.connection == null) {
-				console.log(queue);
 				joinChannel(message);
 			}
 		});
@@ -73,7 +71,6 @@ function addToQueue(message, url) {
 			var id = url.match(regex);
 			var api = 'https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=' + id + '&key=' + config.youtubeAPIKey;
 			get(api).then(function(response) {
-				console.log(response.items[0]);
 				if (response.pageInfo.totalResults === 0 || response.items[0] == undefined || response.items[0].contentDetails.regionRestriction != undefined) {
 					resolve(false);
 				} else {
