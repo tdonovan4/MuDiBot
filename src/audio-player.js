@@ -72,7 +72,10 @@ function addToQueue(message, url) {
 			var id = url.match(regex);
 			var api = 'https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=' + id + '&key=' + config.youtubeAPIKey;
 			get(api).then(function(response) {
-				if (response.pageInfo.totalResults === 0 || response.items[0] == undefined || response.items[0].contentDetails.regionRestriction != undefined) {
+				if (response.pageInfo.totalResults === 0 || response.items[0] == undefined ||
+					response.items[0].contentDetails.regionRestriction != undefined &&
+					response.items[0].contentDetails.regionRestriction.blocked.includes('US')) {
+
 					resolve(false);
 				} else {
 					queue.push(url);
