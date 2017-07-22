@@ -42,12 +42,13 @@ function addToQueue(message, url) {
 	} else {
 		//Url is a video
 		ytdl.getInfo(url).then(info => {
-			var isAvailable = checkIfAvailable(url);
-			let text = (isAvailable) ? '"' + info.title + '" added to the queue' : '"' + info.title + '" is unavailable'
-			bot.printMsg(message, text);
-			if (message.member.voiceChannel.connection == null) {
-				joinChannel(message);
-			}
+			checkIfAvailable(url).then(isAvailable => {
+				let text = (isAvailable) ? '"' + info.title + '" added to the queue' : '"' + info.title + '" is unavailable'
+				bot.printMsg(message, text);
+				if (message.member.voiceChannel.connection == null && queue.length != 0) {
+					joinChannel(message);
+				}
+			});
 		}, function() {
 			bot.printMsg(message, 'Invalid video url!');
 		});
@@ -59,7 +60,7 @@ function addToQueue(message, url) {
 			if(i < response.items.length-1) {
 				i++
 				getVideosPlaylist(i, response)
-			} else if (message.member.voiceChannel.connection == null) {
+			} else if (message.member.voiceChannel.connection == null && queue.length != 0) {
 				joinChannel(message);
 			}
 		});
