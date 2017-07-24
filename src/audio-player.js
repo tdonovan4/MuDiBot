@@ -37,63 +37,59 @@ function addToQueue(message, url) {
 
 		get(api).then(function(response) {
 			bot.printMsg(message, 'Playlist added to the queue');
-			getVideosPlaylist(0, response);
+			getVideosPlaylist(0, response, message);
 		});
 	} else {
 		//Url is a video
-		ytdl.getInfo(url).then(info => {
-			checkIfAvailable(url).then(isAvailable => {
-				let text = (isAvailable) ? '"' + info.title + '" added to the queue' : '"' + info.title + '" is unavailable'
-				bot.printMsg(message, text);
-				if (message.member.voiceChannel.connection == null && queue.length != 0) {
-					joinChannel(message);
-				}
-			});
-		}, function() {
-			bot.printMsg(message, 'Invalid video url!');
-		});
-	}
-
-	function getVideosPlaylist(i, response) {
-		var video = 'https://www.youtube.com/watch?v=' + response.items[i].snippet.resourceId.videoId
-		checkIfAvailable(video).then(values => {
-			if(i < response.items.length-1) {
-				i++
-				getVideosPlaylist(i, response)
-			} else if (message.member.voiceChannel.connection == null && queue.length != 0) {
+		checkIfAvailable(url).then(status => {
+			let text = (status) ? '"' + queue[queue.length-1][1] + '" added to the queue' : '"' + queue[queue.length-1][1] + '" is unavailable'
+			bot.printMsg(message, text);
+			if (message.member.voiceChannel.connection == null && queue.length != 0) {
 				joinChannel(message);
 			}
 		});
 	}
-
-	function checkIfAvailable(url) {
-		return new Promise((resolve) => {
-			var regex = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
-			var id = url.match(regex);
-			var api = 'https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=' + id + '&key=' + config.youtubeAPIKey;
-			get(api).then(function(response) {
-				if (response.pageInfo.totalResults === 0 || response.items[0] == undefined ||
-					response.items[0].contentDetails.regionRestriction != undefined &&
-					response.items[0].contentDetails.regionRestriction.blocked.includes('US')) {
-
-					resolve(false);
-				} else {
-					queue.push(url);
-					resolve(true);
-				}
-			});
+}
+function getVideosPlaylist(i, response, message) {
+	if(i < response.items.length) {
+		var video = 'https://www.youtube.com/watch?v=' + response.items[i].snippet.resourceId.videoId
+		checkIfAvailable(video).then(values => {
+			i++
+			getVideosPlaylist(i, response, message);
 		});
+	} else if (message.member.voiceChannel.connection == null && queue.length != 0) {
+		joinChannel(message);
 	}
+}
+
+function checkIfAvailable(url) {
+	return new Promise((resolve) => {
+		var regex = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
+		var id = url.match(regex);
+		var api = 'https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=' + id + '&key=' + config.youtubeAPIKey;
+		get(api).then(function(response) {
+			if (false) {
+				resolve(false);
+			} else {
+				ytdl.getInfo(url).then(info => {
+					queue.push([url, info.title]);
+					resolve(true);
+				}, function() {
+					resolve(false);
+				});
+			}
+		});
+	});
 }
 
 //Play YouTube video (audio only)
 function playVideo(connection, message) {
 	voiceConnection = true;
-	ytdl.getInfo(queue[0]).then(info => {
+	ytdl.getInfo(queue[0][0]).then(info => {
 		bot.printMsg(message, 'Playing: "' + info.title + '"');
 	});
 	//Downloading
-	var stream = ytdl(queue[0], {
+	var stream = ytdl(queue[0][0], {
 		filter: 'audioonly'
 	});
 	dispatcher = connection.playStream(stream);
@@ -180,7 +176,7 @@ module.exports = {
 		var titles = '**List of videos in queue:**';
 		//Get video titles
 		for(i = 0; i < queue.length; i++) {
-			promises[i] = ytdl.getInfo(queue[i]).then(info => {
+			promises[i] = ytdl.getInfo(queue[i][0]).then(info => {
 				return info.title;
 			});
 		}
