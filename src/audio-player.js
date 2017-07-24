@@ -85,9 +85,7 @@ function checkIfAvailable(url) {
 //Play YouTube video (audio only)
 function playVideo(connection, message) {
 	voiceConnection = true;
-	ytdl.getInfo(queue[0][0]).then(info => {
-		bot.printMsg(message, 'Playing: "' + info.title + '"');
-	});
+	bot.printMsg(message, 'Playing: "' + queue[0][0] + '"');
 	//Downloading
 	var stream = ytdl(queue[0][0], {
 		filter: 'audioonly'
@@ -176,17 +174,9 @@ module.exports = {
 		var titles = '**List of videos in queue:**';
 		//Get video titles
 		for(i = 0; i < queue.length; i++) {
-			promises[i] = ytdl.getInfo(queue[i][0]).then(info => {
-				return info.title;
-			});
+			titles += '\n "' + queue[i][1] + '"';
 		}
-		//Make list
-		Promise.all(promises).then(values => {
-			for(n = 0; n < values.length; n++) {
-				titles += '\n "' + values[n] + '"';
-			}
-			//Write titles
-			bot.printMsg(message, titles);
-		});
+		//Write titles
+		bot.printMsg(message, titles);
 	}
 }
