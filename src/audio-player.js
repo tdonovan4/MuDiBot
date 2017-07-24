@@ -36,7 +36,7 @@ function addToQueue(message, url) {
 		var api = 'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=' + id[1] + '&maxResults=50&key=' + config.youtubeAPIKey;
 
 		get(api).then(function(response) {
-			getVideosPlaylist(0, response, message);
+			getPlaylistVideos(0, response, message);
 		});
 	} else {
 		//Url is a video
@@ -52,7 +52,7 @@ function addToQueue(message, url) {
 		});
 	}
 }
-function getVideosPlaylist(i, response, message) {
+function getPlaylistVideos(i, response, message) {
 	var promises = [];
 	for(i = 0; i < response.items.length; i++) {
 		var video = 'https://www.youtube.com/watch?v=' + response.items[i].snippet.resourceId.videoId
