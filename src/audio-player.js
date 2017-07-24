@@ -36,13 +36,15 @@ function addToQueue(message, url) {
 		var api = 'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=' + id[1] + '&maxResults=50&key=' + config.youtubeAPIKey;
 
 		get(api).then(function(response) {
-			bot.printMsg(message, 'Playlist added to the queue');
 			getVideosPlaylist(0, response, message);
 		});
 	} else {
 		//Url is a video
-		checkIfAvailable(url).then(status => {
-			let text = (status) ? '"' + queue[queue.length-1][1] + '" added to the queue' : '"' + queue[queue.length-1][1] + '" is unavailable'
+		checkIfAvailable(url).then(values => {
+			let text = (values != null) ? '"' + values[1] + '" added to the queue' : 'This video is unavailable'
+			if(values != null) {
+				queue.push(values);
+			}
 			bot.printMsg(message, text);
 			if (message.member.voiceChannel.connection == null && queue.length != 0) {
 				joinChannel(message);
@@ -51,15 +53,24 @@ function addToQueue(message, url) {
 	}
 }
 function getVideosPlaylist(i, response, message) {
-	if(i < response.items.length) {
+	var promises = [];
+	for(i = 0; i < response.items.length; i++) {
 		var video = 'https://www.youtube.com/watch?v=' + response.items[i].snippet.resourceId.videoId
-		checkIfAvailable(video).then(values => {
-			i++
-			getVideosPlaylist(i, response, message);
+		promises[i] = checkIfAvailable(video).then(values => {
+			return values;
 		});
-	} else if (message.member.voiceChannel.connection == null && queue.length != 0) {
-		joinChannel(message);
 	}
+	Promise.all(promises).then(values => {
+		for(n = 0; n < values.length; n++) {
+			if(values[n] != null) {
+				queue.push(values[n]);
+			}
+		}
+		bot.printMsg(message, 'Playlist added to the queue');
+		if (message.member.voiceChannel.connection == null && queue.length != 0) {
+			joinChannel(message);
+		}
+	});
 }
 
 function checkIfAvailable(url) {
@@ -72,10 +83,9 @@ function checkIfAvailable(url) {
 				resolve(false);
 			} else {
 				ytdl.getInfo(url).then(info => {
-					queue.push([url, info.title]);
-					resolve(true);
+					resolve([url, info.title]);
 				}, function() {
-					resolve(false);
+					resolve(null);
 				});
 			}
 		});
@@ -85,7 +95,7 @@ function checkIfAvailable(url) {
 //Play YouTube video (audio only)
 function playVideo(connection, message) {
 	voiceConnection = true;
-	bot.printMsg(message, 'Playing: "' + queue[0][0] + '"');
+	bot.printMsg(message, 'Playing: "' + queue[0][1] + '"');
 	//Downloading
 	var stream = ytdl(queue[0][0], {
 		filter: 'audioonly'
@@ -170,13 +180,12 @@ module.exports = {
 		} catch(stream){}
 	},
 	listQueue: function(message) {
-		var promises = [];
 		var titles = '**List of videos in queue:**';
 		//Get video titles
 		for(i = 0; i < queue.length; i++) {
 			titles += '\n "' + queue[i][1] + '"';
 		}
 		//Write titles
-		bot.printMsg(message, titles);
+		message.channel.send(titles);
 	}
 }
