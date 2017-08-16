@@ -14,16 +14,16 @@ client.login(config.botToken);
 client.on('ready', () => {
 	console.log(`Logged in as ${client.user.username}!`);
 
-	if (config.language === 'french') {
-		localization = data.french
-			console.log('french');
-	} else {
-		//Use english by default in case the chosen language is not found
-		localization = data.english
-			console.log('english');
-	}
+if (config.language === 'french') {
+	localization = data.french
+	console.log('french');
+} else {
+	//Use english by default in case the chosen language is not found
+	localization = data.english
+	console.log('english');
+}
 
-	client.user.setGame(localization.status);
+client.user.setGame(localization.status);
 });
 
 module.exports.printMsg = function (msg, text) {
@@ -32,9 +32,9 @@ module.exports.printMsg = function (msg, text) {
 }
 
 /*
- *Use an object containing command objects to get
- *the permission needed and execute the command
- */
+*Use an object containing command objects to get
+*the permission needed and execute the command
+*/
 var commands = {
 	ping: {
 		//Reply "Pong!"
@@ -74,7 +74,7 @@ var commands = {
 			msg.reply(localization.replies.hello);
 		}
 	},
-	quit: {
+	stop: {
 		//Stop the voice connection and leave voice channel
 		permLvl: "everyone",
 		execute: function (msg) {
@@ -90,26 +90,26 @@ var commands = {
 			var categories = {
 				General: ['ping', 'help', 'info'],
 				Fun: ['gif', 'hello', 'tnt', 'flipcoin', 'roll'],
-				Music: ['play', 'quit', 'skip', 'queue'],
+				Music: ['play', 'stop', 'skip', 'queue'],
 				Administration: ['clearlog', 'restart', 'kill', 'warn']
 			};
 
 			if (args[0] != null) {
 				/*
-				 *Check if args is a category and
-				 *put first letter of args in uppercase
-				 */
+				*Check if args is a category and
+				*put first letter of args in uppercase
+				*/
 				if (args[0][0].toUpperCase() + args[0].substring(1)in categories) {
 					args[0] = args[0][0].toUpperCase() + args[0].substring(1);
 					var category = categories[args[0]];
 					for (var member in categories)
-						delete categories[member];
+					delete categories[member];
 					//Add only desired category
 					categories[args[0]] = category;
 					//Check if args is a command
 				} else if (args[0]in help) {
 					for (var member in categories)
-						delete categories[member];
+					delete categories[member];
 					categories.helpSingleCmd = [args[0]];
 				}
 			}
@@ -125,10 +125,10 @@ var commands = {
 			var spawn = require('child_process').spawn;
 
 			var child = spawn('node', ['./src/bot.js'], {
-					detached: true,
-					shell: true,
-					stdio: 'ignore'
-				});
+				detached: true,
+				shell: true,
+				stdio: 'ignore'
+			});
 			child.unref();
 
 			console.log('Restarting');
@@ -145,17 +145,17 @@ var commands = {
 			var pjson = require('../package.json');
 
 			msg.channel.send('__**~Infos~**__ \n' +
-				localization.info[0] + '\n' +
-				localization.info[1] + pjson.name + '\n' +
-				localization.info[2] + pjson.version + '\n' +
-				localization.info[3] + localization.replies.info + '\n' +
-				localization.info[4] + pjson.author + '\n' +
-				localization.info[5] + client.user.id + '\n' +
-				localization.info[6] + time() + '\n' +
-				localization.info[7] + '\n' +
-				localization.info[8] + config.language + '\n' +
-				localization.info[9] + config.roleMember + '\n' +
-				localization.info[10] + config.roleModo);
+			localization.info[0] + '\n' +
+			localization.info[1] + pjson.name + '\n' +
+			localization.info[2] + pjson.version + '\n' +
+			localization.info[3] + localization.replies.info + '\n' +
+			localization.info[4] + pjson.author + '\n' +
+			localization.info[5] + client.user.id + '\n' +
+			localization.info[6] + time() + '\n' +
+			localization.info[7] + '\n' +
+			localization.info[8] + config.language + '\n' +
+			localization.info[9] + config.roleMember + '\n' +
+			localization.info[10] + config.roleModo);
 		}
 	},
 	tnt: {
@@ -227,9 +227,9 @@ var commands = {
 var keys = Object.keys(commands);
 
 /*
- *Function fired when a message is posted
- *to check if the message is calling a command
- */
+*Function fired when a message is posted
+*to check if the message is calling a command
+*/
 client.on('message', msg => {
 	if (msg.author.id != "290581674343792651") {
 		for (i = 0; i < keys.length; i++) {
@@ -329,9 +329,9 @@ function mention(roles, role) {
 	}
 }
 /*
- *Check if the message author has permission
- *to do the command, return true or false
- */
+*Check if the message author has permission
+*to do the command, return true or false
+*/
 function checkRole(msg, role) {
 	var permLevel = 0;
 	var currentPermLevel = 0;

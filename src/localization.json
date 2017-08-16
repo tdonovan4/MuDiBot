@@ -33,10 +33,10 @@
 					"msg": "Hello!"
 				}
 			],
-			"quit": [{
-					"name": "$quit",
+			"stop": [{
+					"name": "$stop",
 					"args": "",
-					"msg": "Makes the bot quit the voice channel"
+					"msg": "Makes the bot leave the voice channel"
 				}
 			],
 			"help": [{
@@ -170,8 +170,8 @@
 					"msg": "Salut!"
 				}
 			],
-			"quit": [{
-					"name": "$quit",
+			"stop": [{
+					"name": "$stop",
 					"args": "",
 					"msg": "Fait quitter le script du salon vocal"
 				}
