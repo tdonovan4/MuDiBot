@@ -22,8 +22,9 @@ if (config.language === 'french') {
 	localization = data.english
 	console.log('english');
 }
-
-client.user.setGame(localization.status);
+	
+	//setGame() doesn't work anymore, will be fixed in new discord.js version
+	client.user.setPresence({ game: { name: localization.status, type: 0 } });
 });
 
 module.exports.printMsg = function (msg, text) {
