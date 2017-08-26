@@ -5,6 +5,7 @@ const config = require('../config.js');
 const data = require('./localization.json');
 const warning = require('./warning.js');
 const player = require('./audio-player.js');
+const storage = require('./storage.js');
 var localization;
 
 //Log to the discord user  with the token
@@ -22,9 +23,9 @@ if (config.language === 'french') {
 	localization = data.english
 	console.log('english');
 }
-	
+
 	//setGame() doesn't work anymore, will be fixed in new discord.js version
-	client.user.setPresence({ game: { name: localization.status, type: 0 } });
+	client.user.setPresence({ game: { name: config.status, type: 0 } });
 });
 
 module.exports.printMsg = function (msg, text) {
@@ -89,7 +90,7 @@ var commands = {
 			const help = localization.help;
 			let args = msg.content.split(" ").slice(1);
 			var categories = {
-				General: ['ping', 'help', 'info'],
+				General: ['ping', 'help', 'info', 'status'],
 				Fun: ['gif', 'hello', 'tnt', 'flipcoin', 'roll'],
 				Music: ['play', 'stop', 'skip', 'queue'],
 				Administration: ['clearlog', 'restart', 'kill', 'warn']
@@ -221,6 +222,14 @@ var commands = {
 				num += Math.floor(Math.random() * args[1])+1;
 			}
 			msg.reply(num);
+		}
+	},
+	status: {
+		permLvl: "everyone",
+		execute: function (msg) {
+			var newStatus = msg.content.split("$status ").slice(1);
+			client.user.setPresence({ game: { name: newStatus[0], type: 0 } });
+			storage.modifyText('./config.js', 'status: \'' + config.status, 'status: \'' + newStatus[0]);
 		}
 	}
 }

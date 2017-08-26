@@ -1,6 +1,5 @@
 {
 	"english": {
-		"status": "Being a badass bot",
 		"replies": {
 			"ping": "Pong!",
 			"hello": "Hi!",
@@ -137,7 +136,6 @@
 		"info": ["**General**", "Name:", "Version:", "Description:", "Author:", "Client ID:", "Uptime:", "**Config**", "Language:", "RoleMember:", "RoleModo:"]
 	},
 	"french": {
-		"status": "Être un formidable serviteur",
 		"replies": {
 			"ping": "Pong!",
 			"hello": "Salut!",

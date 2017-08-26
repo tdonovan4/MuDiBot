@@ -9,6 +9,8 @@ module.exports = {
 	roleMember: '',
 	//Role name for "botModo"
 	roleModo: '',
+	//The 'game' the bot is playing (more like a status)
+	status: 'Type $help',
 	//Localization ('english' or 'french')
 	language: '',
 	//List of commands to clear with "$clearlog"
