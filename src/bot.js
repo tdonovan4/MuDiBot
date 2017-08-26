@@ -225,7 +225,7 @@ var commands = {
 		}
 	},
 	status: {
-		permLvl: "everyone",
+		permLvl: "roleModo",
 		execute: function (msg) {
 			var newStatus = msg.content.split("$status ").slice(1);
 			client.user.setPresence({ game: { name: newStatus[0], type: 0 } });
