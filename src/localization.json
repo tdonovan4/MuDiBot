@@ -131,6 +131,12 @@
 					"args": " <# of dice>d<# of faces><modifier>",
 					"msg": "Flip digital dice"
 				}
+			],
+			"status": [{
+					"name": "$status",
+					"args": " <new status>",
+					"msg": "Change bot status"
+				}
 			]
 		},
 		"info": ["**General**", "Name:", "Version:", "Description:", "Author:", "Client ID:", "Uptime:", "**Config**", "Language:", "RoleMember:", "RoleModo:"]
@@ -266,6 +272,12 @@
 					"name": "$roll",
 					"args": " <Nombre de dés>d<Nombre de faces><modificateur>",
 					"msg": "Lance des dés"
+				}
+			],
+			"status": [{
+					"name": "$status",
+					"args": " <nouveau status>",
+					"msg": "Change le status"
 				}
 			]
 		},
