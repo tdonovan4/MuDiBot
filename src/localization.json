@@ -276,7 +276,7 @@
 			],
 			"status": [{
 					"name": "$status",
-					"args": " <nouveau status>",
+					"args": " <nouveau statut>",
 					"msg": "Change le status"
 				}
 			]
