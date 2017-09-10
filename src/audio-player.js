@@ -83,7 +83,8 @@ function checkIfAvailable(url) {
 				resolve(false);
 			} else {
 				ytdl.getInfo(url).then(info => {
-					resolve([url, info.title]);
+					var duration = response.items[0].contentDetails.duration.match(/\d\d*\w/g).join(' ');
+					resolve([url, info.title, duration.toLowerCase()]);
 				}, function() {
 					resolve(null);
 				});
@@ -95,7 +96,7 @@ function checkIfAvailable(url) {
 //Play YouTube video (audio only)
 function playVideo(connection, message) {
 	voiceConnection = true;
-	bot.printMsg(message, 'Playing: "' + queue[0][1] + '"');
+	bot.printMsg(message, 'Playing: "' + queue[0][1] + '" (' + queue[0][2] + ')');
 	//Downloading
 	var stream = ytdl(queue[0][0], {
 		filter: 'audioonly'
