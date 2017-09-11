@@ -95,7 +95,7 @@ function checkIfAvailable(url) {
 
 //Play YouTube video (audio only)
 function playVideo(connection, message) {
-	voiceConnection = true;
+	voiceConnection = connection;
 	bot.printMsg(message, 'Playing: "' + queue[0][1] + '" (' + queue[0][2] + ')');
 	//Downloading
 	var stream = ytdl(queue[0][0], {
@@ -164,9 +164,8 @@ module.exports = {
 	},
 	//Stop playing the audio and leave channel
 	stop: function (message) {
-		var channel = message.member.voiceChannel;
-		if (typeof channel !== "undefined" && channel.connection != null) {
-			channel.connection.disconnect();
+		if (voiceConnection != null) {
+			voiceConnection.disconnect();
 			queue = [];
 			bot.printMsg(message, 'Disconnected!');
 		}
