@@ -15,7 +15,7 @@ const bot = require('./bot.js');
 module.exports = {
 	warningList: null,
 	warn: function (msg) {
-		var file = './storage/warning.list-' + msg.guild.id + '.json';
+		var file = './storage/' + msg.guild.id + '.json';
 		let args = msg.content.split(" ").slice(1);
 		let users = msg.mentions.users.array();
 		var warningList;
