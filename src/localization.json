@@ -137,6 +137,12 @@
 					"args": " <new status>",
 					"msg": "Change bot status"
 				}
+			],
+			"avatar": [{
+					"name": "$avatar",
+					"args": " <user>",
+					"msg": "Get an user avatar"
+				}
 			]
 		},
 		"info": ["**General**", "Name:", "Version:", "Description:", "Author:", "Client ID:", "Uptime:", "**Config**", "Language:", "RoleMember:", "RoleModo:"]
@@ -278,6 +284,12 @@
 					"name": "$status",
 					"args": " <nouveau statut>",
 					"msg": "Change le status"
+				}
+			],
+			"avatar": [{
+					"name": "$avatar",
+					"args": " <user>",
+					"msg": "Get an user avatar"
 				}
 			]
 		},
