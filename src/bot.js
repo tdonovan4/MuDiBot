@@ -29,6 +29,10 @@ if (config.language === 'french') {
 });
 
 module.exports.printMsg = function (msg, text) {
+	printMsg(msg, text);
+}
+
+function printMsg(msg, text) {
 	console.log(text);
 	msg.channel.send(text);
 }
@@ -90,7 +94,7 @@ var commands = {
 			const help = localization.help;
 			let args = msg.content.split(" ").slice(1);
 			var categories = {
-				General: ['ping', 'help', 'info', 'status'],
+				General: ['ping', 'help', 'info', 'status', 'avatar'],
 				Fun: ['gif', 'hello', 'tnt', 'flipcoin', 'roll'],
 				Music: ['play', 'stop', 'skip', 'queue'],
 				Administration: ['clearlog', 'restart', 'kill', 'warn']
@@ -209,8 +213,7 @@ var commands = {
 		//Flip a coin
 		permLvl: "everyone",
 		execute: function (msg) {
-			msg.reply(Math.floor(Math.random() * 2) == 0 ? 'heads' : 'tails');
-		}
+			msg.reply(Math.floor(Math.random() * 2) == 0 ? 'heads' : 'tails');		}
 	},
 	roll: {
 		//Flip a coin
@@ -230,6 +233,17 @@ var commands = {
 			var newStatus = msg.content.split("$status ").slice(1);
 			client.user.setPresence({ game: { name: newStatus[0], type: 0 } });
 			storage.modifyText('./config.js', 'status: \'' + config.status, 'status: \'' + newStatus[0]);
+		}
+	},
+	avatar: {
+		permLvl: "everyone",
+		execute: function (msg) {
+			var user = msg.mentions.users.first()
+			if(user != undefined && user != null) {
+				printMsg(msg, user.avatarURL);
+			} else {
+				printMsg(msg, "Invalid user");
+			}
 		}
 	}
 }
