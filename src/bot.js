@@ -256,10 +256,10 @@ var keys = Object.keys(commands);
 */
 client.on('message', msg => {
 	if (msg.author.id != "290581674343792651") {
-		let cmd = msg.content.split('$').slice(1);
-		if(cmd in commands) {
+		let cmd = msg.content.split(/^\$| /g).slice(1);
+		if(cmd[0] in commands) {
 			console.log(msg.author.username + ' - ' + msg.content);
-			commands[cmd].execute(msg);
+			commands[cmd[0]].execute(msg);
 		}
 	}
 });
