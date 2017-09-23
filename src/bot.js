@@ -256,7 +256,7 @@ var keys = Object.keys(commands);
 */
 client.on('message', msg => {
 	if (msg.author != client.user) {
-		let cmd = msg.content.split(/^\$| /g).slice(1);
+		let cmd = msg.content.split(/\$(.*?) /).slice(1);
 		if(cmd[0] in commands) {
 			console.log(msg.author.username + ' - ' + msg.content);
 			commands[cmd[0]].execute(msg);
