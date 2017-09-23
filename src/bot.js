@@ -255,7 +255,7 @@ var keys = Object.keys(commands);
 *to check if the message is calling a command
 */
 client.on('message', msg => {
-	if (msg.author.id != "290581674343792651") {
+	if (msg.author != client.user) {
 		let cmd = msg.content.split(/^\$| /g).slice(1);
 		if(cmd[0] in commands) {
 			console.log(msg.author.username + ' - ' + msg.content);
