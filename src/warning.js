@@ -18,83 +18,96 @@ module.exports = {
 		var file = './storage/' + msg.guild.id + '.json';
 		let args = msg.content.split(" ").slice(1);
 		let users = msg.mentions.users.array();
-		var warningList;
 
 		//Check if there is arguments
 		if(args.length > 0) {
 			//Check if the file exist
-			storage.exist(file);
-			if (storage.empty(file)) {
-				console.log('Warning file don\'t exist, creating one')
-				warningList = {}
-				storage.write(file, warningList);
-			} else {
-				warningList = storage.read(file);
-			}
+			storage.checkStorageFile(file, msg);
+
+			var storageFile = storage.read(file);
+			var warningList;
 
 			var warnCmd = {
 				clear: {
 					all: function () {
-						storage.delete (file);
+						for (i = 0; i < Object.keys(storageFile.users).length; i++) {
+							var user = Object.keys(storageFile.users)[i];
+							storageFile.users[user].warnings = 0;
+						}
+						storage.write(file, storageFile);
 						bot.printMsg(msg, 'Storage cleared');
 					},
 					user: function () {
-						warningList[args[1]] = undefined;
-						storage.write(file, warningList);
+						storageFile.users[users[0].id].warnings = 0;
+						storage.write(file, storageFile);
 						bot.printMsg(msg, 'User cleared');
 					}
 				},
 				list: {
 					undefined: function () {
 						var string = '';
-						if (!Object.keys(warningList).length > 0) {
+						if (!Object.keys(storageFile.users).length > 0) {
 							bot.printMsg(msg, 'Empty');
 						}
 
-						for (i = 0; i < Object.keys(warningList).length; i++) {
-							if (i !== 0) {
-								string += '\n';
+						for (i = 0; i < Object.keys(storageFile.users).length; i++) {
+							var user = Object.keys(storageFile.users)[i]
+							warningList = storageFile.users[user].warnings;
+
+							if(warningList !== 0) {
+								if (i !== 0) {
+									string += '\n';
+								}
+
+								string += '<@' + user + '>' + ': ' + warningList + ' warnings';
 							}
-							var user = Object.keys(warningList)[i]
-							string += user + ': ' + warningList[user] + ' warnings';
+						}
+						if(string === '') {
+							string = "There is no warnings";
 						}
 						bot.printMsg(msg, string);
 					},
 					user: function () {
 						var string = '';
+						warningList = storageFile.users[users[0].id].warnings = 0;
+
 						if (!Object.keys(warningList).length > 0) {
 							bot.printMsg(msg, 'Empty');
 						}
 
 						if (args[1].includes(users[0].id)) {
-							string += args[1] + ': ' + warningList[args[1]] + ' warnings';
+							string += args[1] + ': ' + warningList + ' warnings';
 						}
 						bot.printMsg(msg, string);
 					}
 				},
 				remove: {
 					user: function () {
-						if (args[1] in warningList) {
-							warningList[args[1]] -= 1;
-							msg.channel.send(args[1] + ': ' + warningList[args[1]] + ' warnings');
-							storage.write(file, warningList);
-							if (warningList[args[1]] <= 0) {
-								warningList[args[1]] = undefined;
-								storage.write(file, warningList);
-								bot.printMsg(msg, 'User cleared');
-							}
+						storage.checkUser(file, msg, users[0]);
+						//update storageFile
+						var storageFile = storage.read(file);
+						if(storageFile.users[users[0].id].warnings > 0) {
+							storageFile.users[users[0].id].warnings--;
+							warningList = storageFile.users[users[0].id].warnings;
+
+							storage.write(file, storageFile);
+							bot.printMsg(msg, args[1] + ': ' + warningList + ' warnings');
+						} else {
+							bot.printMsg(msg, "User already have 0 warnings")
 						}
 					}
 				},
 				user: function () {
+					storage.checkUser(file, msg, users[0]);
+					//update storageFile
+					var storageFile = storage.read(file);
 					//Add one warn on user if no second arg
-					if (args[0]in warningList) {
-						warningList[args[0]] += 1;
-					} else {
-						warningList[args[0]] = 1;
-					}
-					storage.write(file, warningList);
-					bot.printMsg(msg, args[0] + ': ' + warningList[args[0]] + ' warnings');
+					storageFile.users[users[0].id].warnings++;
+					warningList = storageFile.users[users[0].id].warnings;
+
+					storage.write(file, storageFile);
+
+					bot.printMsg(msg, args[0] + ': ' + warningList + ' warnings');
 				}
 			}
 			checkKeys();
@@ -103,6 +116,7 @@ module.exports = {
 				let i = args.length - 1
 				let obj = (i < 1) ? warnCmd:warnCmd[args[0]];
 				let keys = (i < 1) ? args[0]:args[0] + '.' + args[1];
+
 
 				if (exist(warnCmd, keys) && typeof obj[args[i]] === "function") {
 					//If arg is in warnCmd
