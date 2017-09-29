@@ -1,0 +1,10 @@
+{
+	"fileExample": {
+		"server": "",
+		"users": {}
+	},
+	"userExample": {
+		"name": "",
+		"warnings": 0
+	}
+}
