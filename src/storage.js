@@ -16,14 +16,14 @@ module.exports = {
 
 	modifyText: function (file, text, value) {
 		fs.readFile(file, 'utf8', function (err,data) {
-		  if (err) {
-		    return console.log(err);
-		  }
-		  var result = data.replace(text, value);
+			if (err) {
+				return console.log(err);
+			}
+			var result = data.replace(text, value);
 
-		  fs.writeFile(file, result, 'utf8', function (err) {
-		     if (err) return console.log(err);
-		  });
+			fs.writeFile(file, result, 'utf8', function (err) {
+				if (err) return console.log(err);
+			});
 		});
 	},
 
@@ -38,7 +38,7 @@ module.exports = {
 
 			for(i = 0; i < exampleKeys.length; i++) {
 				if(!(exampleKeys[i] in storageFile)) {
-						storageFile[exampleKeys[i]] = example[exampleKeys[i]];
+					storageFile[exampleKeys[i]] = example[exampleKeys[i]];
 				}
 			}
 			storageFile.server = msg.guild.name;

@@ -15,14 +15,14 @@ client.login(config.botToken);
 client.on('ready', () => {
 	console.log(`Logged in as ${client.user.username}!`);
 
-if (config.language === 'french') {
-	localization = data.french
-	console.log('french');
-} else {
-	//Use english by default in case the chosen language is not found
-	localization = data.english
-	console.log('english');
-}
+	if (config.language === 'french') {
+		localization = data.french
+		console.log('french');
+	} else {
+		//Use english by default in case the chosen language is not found
+		localization = data.english
+		console.log('english');
+	}
 
 	//setGame() doesn't work anymore, will be fixed in new discord.js version
 	client.user.setPresence({ game: { name: config.status, type: 0 } });
@@ -214,200 +214,200 @@ var commands = {
 		permLvl: "everyone",
 		execute: function (msg) {
 			msg.reply(Math.floor(Math.random() * 2) == 0 ? 'heads' : 'tails');		}
-	},
-	roll: {
-		//Flip a coin
-		permLvl: "everyone",
-		execute: function (msg) {
-			args = msg.content.split(/[ d+]|(?=-)/g).slice(1);
-			num = isNaN(args[2]) ? 0 : parseInt(args[2]);
-			for(i = 0; i < args[0]; i++) {
-				num += Math.floor(Math.random() * args[1])+1;
+		},
+		roll: {
+			//Flip a coin
+			permLvl: "everyone",
+			execute: function (msg) {
+				args = msg.content.split(/[ d+]|(?=-)/g).slice(1);
+				num = isNaN(args[2]) ? 0 : parseInt(args[2]);
+				for(i = 0; i < args[0]; i++) {
+					num += Math.floor(Math.random() * args[1])+1;
+				}
+				msg.reply(num);
 			}
-			msg.reply(num);
-		}
-	},
-	status: {
-		permLvl: "roleModo",
-		execute: function (msg) {
-			var newStatus = msg.content.split("$status ").slice(1);
-			client.user.setPresence({ game: { name: newStatus[0], type: 0 } });
-			storage.modifyText('./config.js', 'status: \'' + config.status, 'status: \'' + newStatus[0]);
-		}
-	},
-	avatar: {
-		permLvl: "everyone",
-		execute: function (msg) {
-			var user = msg.mentions.users.first()
-			if(user != undefined && user != null) {
-				printMsg(msg, user.avatarURL);
-			} else {
-				printMsg(msg, "Invalid user");
+		},
+		status: {
+			permLvl: "roleModo",
+			execute: function (msg) {
+				var newStatus = msg.content.split("$status ").slice(1);
+				client.user.setPresence({ game: { name: newStatus[0], type: 0 } });
+				storage.modifyText('./config.js', 'status: \'' + config.status, 'status: \'' + newStatus[0]);
 			}
-		}
-	}
-}
-
-var keys = Object.keys(commands);
-
-/*
-*Function fired when a message is posted
-*to check if the message is calling a command
-*/
-client.on('message', msg => {
-	if (msg.author != client.user) {
-		let cmd = msg.content.split(/\$(.*?)($| )/).slice(1);
-		if(cmd[0] in commands) {
-			console.log(msg.author.username + ' - ' + msg.content);
-			commands[cmd[0]].execute(msg);
-		}
-	}
-});
-
-//Format time
-function time() {
-	var time = process.uptime();
-	var days = ~~(time / 86400)
-	var hrs = ~~((time % 86400) / 3600);
-	var mins = ~~((time % 3600) / 60);
-	var secs = ~~(time % 60);
-	return days + 'd:' + hrs + 'h:' + mins + 'm:' + secs + 's'
-}
-
-//Create the message
-function helpList(msg, categories) {
-	const help = localization.help;
-	var roles = msg.channel.guild.roles;
-
-	var helpString = '__**~Help~**__' + '\n';
-	for (var prop in categories) {
-		//Check if only one command
-		helpString += '\n'
-		if (prop != 'helpSingleCmd') {
-			helpString += '**-' + prop + '**\n';
-		}
-		var category = categories[prop];
-		for (listCmd = 0; listCmd < Object.keys(category).length; listCmd++) {
-			if (help.hasOwnProperty(category[listCmd])) {
-				for (n = 0; n < help[category[listCmd]].length; n++) {
-					helpString += help[category[listCmd]][n].name + help[category[listCmd]][n].args + ' : [' +
-					mention(roles, commands[category[listCmd]].permLvl) + '] ' + help[category[listCmd]][n].msg + '\n'
+		},
+		avatar: {
+			permLvl: "everyone",
+			execute: function (msg) {
+				var user = msg.mentions.users.first()
+				if(user != undefined && user != null) {
+					printMsg(msg, user.avatarURL);
+				} else {
+					printMsg(msg, "Invalid user");
 				}
 			}
 		}
 	}
-	msg.channel.send(helpString);
-}
 
-//Function that fetch, check and delete messages
-function clear(msg, num) {
-	var clearList = config.commandsToClear.concat(config.usersToClear);
-	for (i = 0; i < keys.length; i++) {
-		clearList.push('$' + keys[i]);
+	var keys = Object.keys(commands);
+
+	/*
+	*Function fired when a message is posted
+	*to check if the message is calling a command
+	*/
+	client.on('message', msg => {
+		if (msg.author != client.user) {
+			let cmd = msg.content.split(/\$(.*?)($| )/).slice(1);
+			if(cmd[0] in commands) {
+				console.log(msg.author.username + ' - ' + msg.content);
+				commands[cmd[0]].execute(msg);
+			}
+		}
+	});
+
+	//Format time
+	function time() {
+		var time = process.uptime();
+		var days = ~~(time / 86400)
+		var hrs = ~~((time % 86400) / 3600);
+		var mins = ~~((time % 3600) / 60);
+		var secs = ~~(time % 60);
+		return days + 'd:' + hrs + 'h:' + mins + 'm:' + secs + 's'
 	}
 
-	//Fetch
-	msg.channel.fetchMessages({
-		limit: parseInt(num)
-	})
-	.then(messages => {
-		console.log("Max messages to delete: " + num);
-		var msg = messages.array();
-		var deletedMessages = 0;
+	//Create the message
+	function helpList(msg, categories) {
+		const help = localization.help;
+		var roles = msg.channel.guild.roles;
 
-		//Check messages
-		for (var i = 0; i < messages.array().length; i++) {
-			//Delete commands from bot
-			if (msg[i].author.id === client.user.id) {
-				msg[i].delete ()
-				deletedMessages++;
-			} else {
-				//Find and delete
-				for (var n = 0; n < clearList.length; n++) {
-					if (msg[i].content.substring(0, clearList[n].length) === clearList[n] || msg[i].author.id === clearList[n]) {
-						msg[i].delete ()
-						deletedMessages++;
-						break
+		var helpString = '__**~Help~**__' + '\n';
+		for (var prop in categories) {
+			//Check if only one command
+			helpString += '\n'
+			if (prop != 'helpSingleCmd') {
+				helpString += '**-' + prop + '**\n';
+			}
+			var category = categories[prop];
+			for (listCmd = 0; listCmd < Object.keys(category).length; listCmd++) {
+				if (help.hasOwnProperty(category[listCmd])) {
+					for (n = 0; n < help[category[listCmd]].length; n++) {
+						helpString += help[category[listCmd]][n].name + help[category[listCmd]][n].args + ' : [' +
+						mention(roles, commands[category[listCmd]].permLvl) + '] ' + help[category[listCmd]][n].msg + '\n'
 					}
 				}
 			}
 		}
-		console.log(deletedMessages + ' messages deleted!');
-	})
-	.catch (console.error);
-}
-
-//Convert roles into mention objects
-function mention(roles, role) {
-	if (role === 'everyone') {
-		return '@everyone';
-	} else if (role === "roleMember") {
-		return roles.find("name", config.roleMember);
-	} else if (role === "roleModo") {
-		return roles.find("name", config.roleModo);
-	} else {
-		return null;
+		msg.channel.send(helpString);
 	}
-}
-/*
-*Check if the message author has permission
-*to do the command, return true or false
-*/
-function checkRole(msg, role) {
-	var permLevel = 0;
-	var currentPermLevel = 0;
 
-	//Debug only, check if user is superuser
-	for (i = 0; i < config.superusers.length; i++) {
-		if (msg.author.id === config.superusers[i]) {
+	//Function that fetch, check and delete messages
+	function clear(msg, num) {
+		var clearList = config.commandsToClear.concat(config.usersToClear);
+		for (i = 0; i < keys.length; i++) {
+			clearList.push('$' + keys[i]);
+		}
+
+		//Fetch
+		msg.channel.fetchMessages({
+			limit: parseInt(num)
+		})
+		.then(messages => {
+			console.log("Max messages to delete: " + num);
+			var msg = messages.array();
+			var deletedMessages = 0;
+
+			//Check messages
+			for (var i = 0; i < messages.array().length; i++) {
+				//Delete commands from bot
+				if (msg[i].author.id === client.user.id) {
+					msg[i].delete ()
+					deletedMessages++;
+				} else {
+					//Find and delete
+					for (var n = 0; n < clearList.length; n++) {
+						if (msg[i].content.substring(0, clearList[n].length) === clearList[n] || msg[i].author.id === clearList[n]) {
+							msg[i].delete ()
+							deletedMessages++;
+							break
+						}
+					}
+				}
+			}
+			console.log(deletedMessages + ' messages deleted!');
+		})
+		.catch (console.error);
+	}
+
+	//Convert roles into mention objects
+	function mention(roles, role) {
+		if (role === 'everyone') {
+			return '@everyone';
+		} else if (role === "roleMember") {
+			return roles.find("name", config.roleMember);
+		} else if (role === "roleModo") {
+			return roles.find("name", config.roleModo);
+		} else {
+			return null;
+		}
+	}
+	/*
+	*Check if the message author has permission
+	*to do the command, return true or false
+	*/
+	function checkRole(msg, role) {
+		var permLevel = 0;
+		var currentPermLevel = 0;
+
+		//Debug only, check if user is superuser
+		for (i = 0; i < config.superusers.length; i++) {
+			if (msg.author.id === config.superusers[i]) {
+				return true;
+			}
+		}
+
+		//Check if user is an administrator
+		var permissions = msg.member.permissions;
+		if (permissions.hasPermission('ADMINISTRATOR') || permissions.hasPermission('MANAGE_CHANNELS')) {
+			return true;
+		}
+
+		//Set the required level of permission
+		if (role === roleMember) {
+			permLevel = 1;
+		} else if (role === roleModo) {
+			permLevel = 2;
+		}
+
+		//Set the user permission level
+		for (i = 0; i < msg.member.roles.array().length; i++) {
+			if (msg.member.roles.array()[i].name === config.roleModo) {
+				currentPermLevel = 2;
+				break;
+			}
+			if (msg.member.roles.array()[i].name === config.roleMember) {
+				currentPermLevel = 1;
+			}
+		}
+
+		//Compare user and needed permission level
+		if (currentPermLevel < permLevel) {
+			console.log("Not enough permissions");
+			return false;
+		} else {
 			return true;
 		}
 	}
 
-	//Check if user is an administrator
-	var permissions = msg.member.permissions;
-	if (permissions.hasPermission('ADMINISTRATOR') || permissions.hasPermission('MANAGE_CHANNELS')) {
-		return true;
-	}
+	//When users join the server
+	client.on('guildMemberAdd', member => {
+		member.guild.defaultChannel.send(`Welcome to the server, ${member}!`);
+	});
 
-	//Set the required level of permission
-	if (role === roleMember) {
-		permLevel = 1;
-	} else if (role === roleModo) {
-		permLevel = 2;
-	}
+	//When users leave the server
+	client.on('guildMemberRemove', member => {
+		member.guild.defaultChannel.send(`${member} left the server :slight_frown:`);
+	});
 
-	//Set the user permission level
-	for (i = 0; i < msg.member.roles.array().length; i++) {
-		if (msg.member.roles.array()[i].name === config.roleModo) {
-			currentPermLevel = 2;
-			break;
-		}
-		if (msg.member.roles.array()[i].name === config.roleMember) {
-			currentPermLevel = 1;
-		}
-	}
-
-	//Compare user and needed permission level
-	if (currentPermLevel < permLevel) {
-		console.log("Not enough permissions");
-		return false;
-	} else {
-		return true;
-	}
-}
-
-//When users join the server
-client.on('guildMemberAdd', member => {
-	member.guild.defaultChannel.send(`Welcome to the server, ${member}!`);
-});
-
-//When users leave the server
-client.on('guildMemberRemove', member => {
-	member.guild.defaultChannel.send(`${member} left the server :slight_frown:`);
-});
-
-//Make sure the process exits correctly and don't fails to close
-process.on('SIGINT', function () {
-	process.exit(2);
-});
+	//Make sure the process exits correctly and don't fails to close
+	process.on('SIGINT', function () {
+		process.exit(2);
+	});
