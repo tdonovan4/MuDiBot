@@ -14,19 +14,6 @@ module.exports = {
 		return JSON.parse(fs.readFileSync(file, 'utf8'));
 	},
 
-	modifyText: function (file, text, value) {
-		fs.readFile(file, 'utf8', function (err,data) {
-			if (err) {
-				return console.log(err);
-			}
-			var result = data.replace(text, value);
-
-			fs.writeFile(file, result, 'utf8', function (err) {
-				if (err) return console.log(err);
-			});
-		});
-	},
-
 	checkStorageFile: function (file, msg) {
 		var example = this.read('./storage/storage-file-example.json').fileExample;
 		//Check if the file as been created
