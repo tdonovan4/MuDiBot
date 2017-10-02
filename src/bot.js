@@ -5,7 +5,8 @@ const config = require('../config.js');
 const data = require('./localization.json');
 const warning = require('./warning.js');
 const player = require('./audio-player.js');
-const storage = require('./storage.js');
+const levels = require('./levels.js');
+const fs = require('fs');
 var localization;
 
 //Log to the discord user  with the token
@@ -232,7 +233,7 @@ var commands = {
 			execute: function (msg) {
 				var newStatus = msg.content.split("$status ").slice(1);
 				client.user.setPresence({ game: { name: newStatus[0], type: 0 } });
-				storage.modifyText('./config.js', 'status: \'' + config.status, 'status: \'' + newStatus[0]);
+				modifyText('./config.js', 'status: \'' + config.status, 'status: \'' + newStatus[0]);
 			}
 		},
 		avatar: {
@@ -274,7 +275,20 @@ var commands = {
 		return days + 'd:' + hrs + 'h:' + mins + 'm:' + secs + 's'
 	}
 
-	//Create the message
+	function modifyText(file, text, value) {
+		fs.readFile(file, 'utf8', function (err,data) {
+			if (err) {
+				return console.log(err);
+			}
+			var result = data.replace(text, value);
+
+			fs.writeFile(file, result, 'utf8', function (err) {
+				if (err) return console.log(err);
+			});
+		});
+	}
+
+	//Create the help message
 	function helpList(msg, categories) {
 		const help = localization.help;
 		var roles = msg.channel.guild.roles;
