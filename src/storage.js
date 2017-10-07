@@ -1,63 +1,87 @@
-//Handle writing and reading on files
-const fs = require('fs');
-//TODO: Add argument for path
-module.exports = {
-	write: function (file, obj) {
-		var json = JSON.stringify(obj, null, '\t');
+//Handle SQL
+const sql = require('sqlite');
+sql.open('./storage/data.db');
+const checkTable = 'CREATE TABLE IF NOT EXISTS users (serverID TEXT, userId TEXT, xp INTEGER, warnings INTEGER)';
 
-		fs.writeFileSync(file, json, 'utf8', (err) => {
-			if (err){ console.log(err); }
+function insertUser(msg) {
+	return new Promise((resolve, reject) => {
+		var userId = msg.mentions.users.first().id;
+		sql.run('INSERT INTO users (serverID, userId, xp, warnings) VALUES (?, ?, ?, ?)',
+		[msg.guild.id, userId, 0, 0])
+		.catch(error => {
+			console.log(error);
+		});
+
+		//Try to get user after he was created
+		sql.get(`SELECT * FROM users WHERE serverID = ${msg.guild.id} AND userId = ${userId}`)
+		.then(row => {
+			resolve(row);
+		}).catch(error => {
+			console.log(error); //Really nasty errors...
+		});
+	});
+}
+
+module.exports = {
+	modifyUsers: function(msg, row, value) {
+		sql.run(checkTable)
+		.then(() => {
+			sql.run(`UPDATE users SET ${row} = ${value} WHERE serverID = ${msg.guild.id}`).catch(error => {
+				console.log(error);
+			});
+		}).catch(error => {
+			console.log(error);
 		});
 	},
-
-	read: function (file) {
-		return JSON.parse(fs.readFileSync(file, 'utf8'));
+	modifyUser: function(msg, userId, row, value) {
+		sql.run(checkTable)
+		.then(() => {
+			sql.run(`UPDATE users SET ${row} = ${value} WHERE serverID = ${msg.guild.id} AND userId = ${userId}`)
+			.catch(error => {
+				console.log(error);
+			});
+		}).catch(error => {
+			console.log(error);
+		});
 	},
+	getUsers: function(msg) {
+		return new Promise((resolve, reject) => {
+			sql.all(`SELECT * FROM users WHERE serverID = ${msg.guild.id}`)
+			.then(row => {
+				resolve(row);
+			}).catch(error => {
+				console.log(error); //Nasty errors...
 
-	checkStorageFile: function (file, msg) {
-		var example = this.read('./storage/storage-file-example.json').fileExample;
-		//Check if the file as been created
-		if (fs.existsSync(file)) {
-			var storageFile = this.read(file);
-			//Example file
-			//TODO: Make this a function
-			let exampleKeys = Object.keys(example);
-
-			for(i = 0; i < exampleKeys.length; i++) {
-				if(!(exampleKeys[i] in storageFile)) {
-					storageFile[exampleKeys[i]] = example[exampleKeys[i]];
+				//Check if table exist
+				sql.run(checkTable)
+				.then(() => {
+					resolve(row);
+				}).catch(error => {
+					console.log(error);
+				});
+			});
+		});
+	},
+	getUser: function(msg) {
+		return new Promise((resolve, reject) => {
+			var userId = msg.mentions.users.first().id;
+			sql.get(`SELECT * FROM users WHERE serverID = ${msg.guild.id} AND userId = ${userId}`)
+			.then(row => {
+				if (!row) {
+					//User is not defined
+					row = insertUser(msg);
 				}
-			}
-			storageFile.server = msg.guild.name;
-			this.write(file, storageFile);
-		} else {
-			example.server = msg.guild.name;
-			this.write(file, example);
-		}
-	},
-
-	checkUser: function (file, msg, user) {
-		let example = this.read('./storage/storage-file-example.json').userExample;
-		let storageFile = this.read(file);
-		//Check if the file as been created
-		if(user.id in storageFile.users) {
-			//Example file
-			let exampleKeys = Object.keys(example);
-			for(i = 0; i < exampleKeys.length; i++) {
-				if(!(exampleKeys[i] in storageFile.users[user.id])) {
-					storageFile.users[user.id][exampleKeys[i]] = example[exampleKeys[i]];
-				}
-			}
-			storageFile.users[user.id].name = user.username;
-			this.write(file, storageFile);
-		} else {
-			storageFile.users[user.id] = example;
-			storageFile.users[user.id].name = user.username;
-			this.write(file, storageFile);
-		}
-	},
-
-	delete: function (file) {
-		fs.unlinkSync(file);
+				resolve(row);
+			}).catch(() => {
+				//Check if table exist
+				sql.run(checkTable)
+				.then(() => {
+					row = insertUser(msg)
+					resolve(row);
+				}).catch(() => {
+					console.log(error);
+				});
+			});
+		});
 	}
 }
