@@ -256,6 +256,9 @@ var commands = {
 	*to check if the message is calling a command
 	*/
 	client.on('message', msg => {
+		//Ignore bot
+		if (msg.author.bot) return;
+		levels.newMessage(msg);
 		if (msg.author != client.user) {
 			let cmd = msg.content.split(/\$(.*?)($| )/).slice(1);
 			if(cmd[0] in commands) {
