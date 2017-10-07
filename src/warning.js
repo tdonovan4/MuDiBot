@@ -28,7 +28,7 @@ module.exports = {
 					},
 					user: function () {
 						var userId = msg.mentions.users.first().id;
-						storage.modifyUser(msg, 'warnings', 0)
+						storage.modifyUser(msg, userId, 'warnings', 0)
 						bot.printMsg(msg, 'User cleared');
 					}
 				},
@@ -67,7 +67,7 @@ module.exports = {
 
 						if(warnings >= 0 && warnings != undefined) {
 							var userId = msg.mentions.users.first().id;
-							storage.modifyUser(msg, 'warnings', warnings);
+							storage.modifyUser(msg, userId, 'warnings', warnings);
 							bot.printMsg(msg, args[1] + ': ' + warnings + ' warnings');
 						} else {
 							bot.printMsg(msg, "User already have 0 warnings")
@@ -80,7 +80,7 @@ module.exports = {
 						warnings = warnings.warnings + 1;
 
 						var userId = msg.mentions.users.first().id;
-						storage.modifyUser(msg, 'warnings', warnings);
+						storage.modifyUser(msg, userId, 'warnings', warnings);
 						bot.printMsg(msg, args[0] + ': ' + warnings + ' warnings');
 					}
 				}

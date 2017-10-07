@@ -33,10 +33,9 @@ module.exports = {
 			console.log(error);
 		});
 	},
-	modifyUser: function(msg, row, value) {
+	modifyUser: function(msg, userId, row, value) {
 		sql.run(checkTable)
 		.then(() => {
-			var userId = msg.mentions.users.first().id;
 			sql.run(`UPDATE users SET ${row} = ${value} WHERE serverID = ${msg.guild.id} AND userId = ${userId}`)
 			.catch(error => {
 				console.log(error);
