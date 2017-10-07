@@ -62,9 +62,8 @@ module.exports = {
 			});
 		});
 	},
-	getUser: function(msg) {
+	getUser: function(msg, userId) {
 		return new Promise((resolve, reject) => {
-			var userId = msg.mentions.users.first().id;
 			sql.get(`SELECT * FROM users WHERE serverID = ${msg.guild.id} AND userId = ${userId}`)
 			.then(row => {
 				if (!row) {

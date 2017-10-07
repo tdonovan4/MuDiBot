@@ -55,14 +55,14 @@ module.exports = {
 						}
 					},
 					user: async function () {
-						var user = await storage.getUser(msg)
+						var user = await storage.getUser(msg, msg.mentions.users.first().id);
 						bot.printMsg(msg, `${args[1]}: ${user.warnings} warnings`);
 					}
 				},
 
 				remove: {
 					user: async function () {
-						var warnings = await storage.getUser(msg);
+						var warnings = await storage.getUser(msg, msg.mentions.users.first().id);
 						warnings = warnings.warnings - 1;
 
 						if(warnings >= 0 && warnings != undefined) {
@@ -75,7 +75,7 @@ module.exports = {
 					}
 				},
 				user: async function () {
-					var warnings = await storage.getUser(msg);
+					var warnings = await storage.getUser(msg, msg.mentions.users.first().id);
 					if(warnings != undefined) {
 						warnings = warnings.warnings + 1;
 
