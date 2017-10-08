@@ -5,6 +5,8 @@ module.exports = {
 	botToken: '',
 	//Your YouTube Data API key
 	youtubeAPIKey: '',
+	//The prefix for a command (for example $help)
+	prefix: '$',
 	//Role name for "botMember"
 	roleMember: '',
 	//Role name for "botModo"
@@ -20,4 +22,3 @@ module.exports = {
 	//List of users (id) with all permissions
 	superusers: [''],
 }
-
