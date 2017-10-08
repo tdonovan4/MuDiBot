@@ -1,20 +1,18 @@
 const storage = require('./storage.js');
 const bot = require('./bot.js');
 
-function getXpForLevel(level) {
-  return 10*(level)+75;
-}
-
-function getProgression(remainingXp) {
-  level = 0;
-  while(remainingXp > getXpForLevel(level)) {
-    remainingXp -= getXpForLevel(level);
-    level++;
-  }
-  return [level, remainingXp];
-}
-
 module.exports = {
+  getXpForLevel: function (level) {
+    return 10*(level)+75;
+  },
+  getProgression: function (remainingXp) {
+    level = 0;
+    while(remainingXp > this.getXpForLevel(level)) {
+      remainingXp -= this.getXpForLevel(level);
+      level++;
+    }
+    return [level, remainingXp];
+  },
   newMessage: async function (msg) {
     var xp = await storage.getUser(msg, msg.author.id);
     xp = xp.xp;
@@ -25,8 +23,8 @@ module.exports = {
       xpGained = Math.min(20, (Math.floor(Math.random() * 3) + 1) + extraXp);
       storage.modifyUser(msg, msg.author.id, 'xp', xp + xpGained);
 
-      let progression = getProgression(xp);
-      let xpForNextLevel = getXpForLevel(progression[0]) - progression[1];
+      let progression = this.getProgression(xp);
+      let xpForNextLevel = this.getXpForLevel(progression[0]) - progression[1];
 
       //Check if user has level up
       if(xpGained > xpForNextLevel) {

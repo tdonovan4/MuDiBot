@@ -95,7 +95,8 @@ var commands = {
 			const help = localization.help;
 			let args = msg.content.split(" ").slice(1);
 			var categories = {
-				General: ['ping', 'help', 'info', 'status', 'avatar'],
+				General: ['ping', 'help', 'info', 'status'],
+				User: ['avatar', 'profile'],
 				Fun: ['gif', 'hello', 'tnt', 'flipcoin', 'roll'],
 				Music: ['play', 'stop', 'skip', 'queue'],
 				Administration: ['clearlog', 'restart', 'kill', 'warn']
@@ -245,6 +246,31 @@ var commands = {
 				} else {
 					printMsg(msg, "Invalid user");
 				}
+			}
+		},
+		profile: {
+			permLvl: "everyone",
+			execute: async function (msg) {
+				const storage = require('./storage.js');
+				let user = msg.mentions.users.first();
+				if(user == undefined) {
+					//There is no mentions
+					user = msg.author;
+				}
+
+				let userData = await storage.getUser(msg, user.id);
+				let progression = levels.getProgression(userData.xp);
+				let level = progression[0];
+				let xpToNextLevel = `${progression[1]}/${levels.getXpForLevel(level)}`;
+
+				var embed = new Discord.RichEmbed();
+				embed.title=`${user.username}'s profile`;
+				embed.setThumbnail(url=user.avatarURL)
+				embed.addField(name="Level: ", value=`${level} (${xpToNextLevel})`, inline=true)
+				embed.addField(name="Warnings", value=userData.warnings, inline=true)
+				embed.addField(name="Total XP", value=userData.xp, inline=true)
+				embed.setFooter(text=`Client id: ${user.id}`)
+				msg.channel.send({embed});
 			}
 		}
 	}
