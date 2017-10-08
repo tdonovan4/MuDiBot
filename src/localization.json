@@ -143,6 +143,12 @@
 					"args": " <user>",
 					"msg": "Get an user avatar"
 				}
+			],
+			"profile": [{
+					"name": "$profile",
+					"args": " <user>",
+					"msg": "Get an user profile"
+				}
 			]
 		},
 		"info": ["**General**", "Name:", "Version:", "Description:", "Author:", "Client ID:", "Uptime:", "**Config**", "Language:", "RoleMember:", "RoleModo:"]
@@ -289,7 +295,13 @@
 			"avatar": [{
 					"name": "$avatar",
 					"args": " <user>",
-					"msg": "Get an user avatar"
+					"msg": "Donne l'avatar d'un utilisateur"
+				}
+			],
+			"profile": [{
+					"name": "$profile",
+					"args": " <user>",
+					"msg": "Donne le profile d'un joueur"
 				}
 			]
 		},
