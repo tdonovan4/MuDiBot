@@ -9,143 +9,143 @@
 		},
 		"help": {
 			"ping": [{
-					"name": "$ping",
+					"name": "ping",
 					"args": "",
 					"msg": "Pong!"
 				}
 			],
 			"gif": [{
-					"name": "$gif",
+					"name": "gif",
 					"args": "",
 					"msg": "Inserts a little GIF"
 				}
 			],
 			"clearlog": [{
-					"name": "$clearlog",
+					"name": "clearlog",
 					"args": " <messages to check>",
 					"msg": "Deletes all commands related to the bot"
 				}
 			],
 			"hello": [{
-					"name": "$hello",
+					"name": "hello",
 					"args": "",
 					"msg": "Hello!"
 				}
 			],
 			"stop": [{
-					"name": "$stop",
+					"name": "stop",
 					"args": "",
 					"msg": "Makes the bot leave the voice channel"
 				}
 			],
 			"help": [{
-					"name": "$help",
+					"name": "help",
 					"args": "",
 					"msg": "Displays this"
 				}, {
-					"name": "$help",
+					"name": "help",
 					"args": " <category>",
 					"msg": "Displays help for all commands in the category"
 				}, {
-					"name": "$help",
+					"name": "help",
 					"args": " <command>",
 					"msg": "Displays help for the command"
 				}
 			],
 			"restart": [{
-					"name": "$restart",
+					"name": "restart",
 					"args": "",
 					"msg": "Restarts the bot"
 				}
 			],
 			"info": [{
-					"name": "$info",
+					"name": "info",
 					"args": "",
 					"msg": "Displays information about the bot"
 				}
 			],
 			"tnt": [{
-					"name": "$tnt",
+					"name": "tnt",
 					"args": "",
 					"msg": "TNT <3"
 				}
 			],
 			"kill": [{
-					"name": "$kill",
+					"name": "kill",
 					"args": "",
 					"msg": "Kills the process"
 				}
 			],
 			"warn": [{
-					"name": "$warn",
+					"name": "warn",
 					"args": " <user>",
 					"msg": "Puts a warning on user"
 				}, {
-					"name": "$warn clear",
+					"name": "warn clear",
 					"args": " <user>",
 					"msg": "Clears all warnings on user"
 				}, {
-					"name": "$warn clear all",
+					"name": "warn clear all",
 					"args": "",
 					"msg": "Clears all warnings"
 				}, {
-					"name": "$warn list",
+					"name": "warn list",
 					"args": "",
 					"msg": "Lists all warnings"
 				}, {
-					"name": "$warn list",
+					"name": "warn list",
 					"args": " <user>",
 					"msg": "Lists warnings on user"
 				}, {
-					"name": "$warn remove",
+					"name": "warn remove",
 					"args": " <user>",
 					"msg": "Removes one warning from user"
 				}
 			],
 			"play": [{
-					"name": "$play",
+					"name": "play",
 					"args": " <song url or tags>",
 					"msg": "Puts a song in queue and plays it"
 				}
 			],
 			"skip": [{
-					"name": "$skip",
+					"name": "skip",
 					"args": "",
 					"msg": "Skip the current song"
 				}
 			],
 			"queue": [{
-					"name": "$queue",
+					"name": "queue",
 					"args": "",
 					"msg": "Display songs in queue"
 				}
 			],
 			"flipcoin": [{
-					"name": "$flipcoin",
+					"name": "flipcoin",
 					"args": "",
 					"msg": "Flip a digital coin"
 				}
 			],
 			"roll": [{
-					"name": "$roll",
+					"name": "roll",
 					"args": " <# of dice>d<# of faces><modifier>",
 					"msg": "Flip digital dice"
 				}
 			],
 			"status": [{
-					"name": "$status",
+					"name": "status",
 					"args": " <new status>",
 					"msg": "Change bot status"
 				}
 			],
 			"avatar": [{
-					"name": "$avatar",
+					"name": "avatar",
 					"args": " <user>",
 					"msg": "Get an user avatar"
 				}
 			],
 			"profile": [{
-					"name": "$profile",
+					"name": "profile",
 					"args": " <user>",
 					"msg": "Get an user profile"
 				}
@@ -163,69 +163,69 @@
 		},
 		"help": {
 			"ping": [{
-					"name": "$ping",
+					"name": "ping",
 					"args": "",
 					"msg": "Pong!"
 				}
 			],
 			"gif": [{
-					"name": "$gif",
+					"name": "gif",
 					"args": "",
 					"msg": "Met un petit GIF"
 				}
 			],
 			"clearlog": [{
-					"name": "$clearlog",
+					"name": "clearlog",
 					"args": "< messages à regarder >",
 					"msg": "Supprime les commandes du script"
 				}
 			],
 			"hello": [{
-					"name": "$hello",
+					"name": "hello",
 					"args": "",
 					"msg": "Salut!"
 				}
 			],
 			"stop": [{
-					"name": "$stop",
+					"name": "stop",
 					"args": "",
 					"msg": "Fait quitter le script du salon vocal"
 				}
 			],
 			"help": [{
-					"name": "$help",
+					"name": "help",
 					"args": "",
 					"msg": "Affiche ceci"
 				}, {
-					"name": "$help",
+					"name": "help",
 					"args": " <catégorie>",
 					"msg": "Affiche l'aide pour les commandes dans la catégorie"
 				}, {
-					"name": "$help",
+					"name": "help",
 					"args": " <commande>",
 					"msg": "Affiche l'aide pour la commande"
 				}
 			],
 			"restart": [{
-					"name": "$restart",
+					"name": "restart",
 					"args": "",
 					"msg": "Redémarre le script"
 				}
 			],
 			"info": [{
-					"name": "$info",
+					"name": "info",
 					"args": "",
 					"msg": "Affiche des informations sur le script"
 				}
 			],
 			"tnt": [{
-					"name": "$tnt",
+					"name": "tnt",
 					"args": "",
 					"msg": "TNT < 3"
 				}
 			],
 			"kill": [{
-					"name": "$kill",
+					"name": "kill",
 					"args": "",
 					"msg": "Tue le script"
 				}
@@ -257,49 +257,49 @@
 				}
 			],
 			"play": [{
-					"name": "$play",
+					"name": "play",
 					"args": " <song url or tags>",
 					"msg": "Enlève un avertissement de l 'utilisateur"
 				}
 			],
 			"skip": [{
-					"name": "$skip",
+					"name": "skip",
 					"args": "",
 					"msg": "Saute la chanson qui joue"
 				}
 			],
 			"queue": [{
-					"name": "$queue",
+					"name": "queue",
 					"args": "",
 					"msg": "Liste les chansons en attente"
 				}
 			],
 			"flipcoin": [{
-					"name": "$flipcoin",
+					"name": "flipcoin",
 					"args": "",
 					"msg": "Pile ou face"
 				}
 			],
 			"roll": [{
-					"name": "$roll",
+					"name": "roll",
 					"args": " <Nombre de dés>d<Nombre de faces><modificateur>",
 					"msg": "Lance des dés"
 				}
 			],
 			"status": [{
-					"name": "$status",
+					"name": "status",
 					"args": " <nouveau statut>",
 					"msg": "Change le status"
 				}
 			],
 			"avatar": [{
-					"name": "$avatar",
+					"name": "avatar",
 					"args": " <user>",
 					"msg": "Donne l'avatar d'un utilisateur"
 				}
 			],
 			"profile": [{
-					"name": "$profile",
+					"name": "profile",
 					"args": " <user>",
 					"msg": "Donne le profile d'un joueur"
 				}

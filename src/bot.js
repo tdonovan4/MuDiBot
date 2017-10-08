@@ -286,7 +286,11 @@ var commands = {
 		if (msg.author.bot) return;
 		levels.newMessage(msg);
 		if (msg.author != client.user) {
-			let cmd = msg.content.split(/\$(.*?)($| )/).slice(1);
+			let cmd = msg.content.split(config.prefix).slice(1);
+			if(cmd[0] != undefined) {
+				cmd = cmd[0].split(' ');
+			}
+
 			if(cmd[0] in commands) {
 				console.log(msg.author.username + ' - ' + msg.content);
 				commands[cmd[0]].execute(msg);
@@ -333,7 +337,7 @@ var commands = {
 			for (listCmd = 0; listCmd < Object.keys(category).length; listCmd++) {
 				if (help.hasOwnProperty(category[listCmd])) {
 					for (n = 0; n < help[category[listCmd]].length; n++) {
-						helpString += help[category[listCmd]][n].name + help[category[listCmd]][n].args + ' : [' +
+						helpString += config.prefix + help[category[listCmd]][n].name + help[category[listCmd]][n].args + ' : [' +
 						mention(roles, commands[category[listCmd]].permLvl) + '] ' + help[category[listCmd]][n].msg + '\n'
 					}
 				}
