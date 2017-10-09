@@ -29,7 +29,7 @@ module.exports = {
       //Check if user has level up
       if(xpGained > xpForNextLevel) {
         //Level up!
-        bot.printMsg(msg, `You just leveled up to level ${progression[0]+1}!`);
+        bot.printMsg(msg, `${msg.author} just leveled up to level ${progression[0]+1}!`);
       }
     }
   }
