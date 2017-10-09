@@ -95,7 +95,7 @@ var commands = {
 			const help = localization.help;
 			let args = msg.content.split(" ").slice(1);
 			var categories = {
-				General: ['ping', 'help', 'info', 'status'],
+				General: ['ping', 'help', 'info', 'status', 'say'],
 				User: ['avatar', 'profile'],
 				Fun: ['gif', 'hello', 'tnt', 'flipcoin', 'roll'],
 				Music: ['play', 'stop', 'skip', 'queue'],
@@ -271,6 +271,36 @@ var commands = {
 				embed.addField(name="Total XP", value=userData.xp, inline=true)
 				embed.setFooter(text=`Client id: ${user.id}`)
 				msg.channel.send({embed});
+			}
+		},
+		say: {
+			permLvl: "roleModo",
+			execute: function (msg) {
+				let messageToSay = msg.content.split(' ').slice(1);
+				let channel;
+
+				//Try to find which channel to send message
+				if(messageToSay[0] == 'here') {
+					channel = msg.channel;
+				} else {
+					let id = messageToSay[0].match(/<#(.*?)>/)[1];
+					channel = client.channels.get(id);
+				}
+
+				messageToSay = messageToSay.slice(1).join(' ');
+
+				//Check arguments
+				if(channel == undefined) {
+					channel = msg.channel;
+					messageToSay = 'Missing argument: channel';
+				}
+
+				if(messageToSay == undefined) {
+					messageToSay = 'Missing argument: message';
+				}
+
+				//Send message
+				channel.send(messageToSay);
 			}
 		}
 	}
