@@ -149,6 +149,12 @@
 					"args": " <user>",
 					"msg": "Get an user profile"
 				}
+			],
+			"say": [{
+					"name": "say",
+					"args": " <channel> <message>",
+					"msg": "Send a message into the channel"
+				}
 			]
 		},
 		"info": ["**General**", "Name:", "Version:", "Description:", "Author:", "Client ID:", "Uptime:", "**Config**", "Language:", "RoleMember:", "RoleModo:"]
@@ -302,6 +308,12 @@
 					"name": "profile",
 					"args": " <user>",
 					"msg": "Donne le profile d'un joueur"
+				}
+			],
+			"say": [{
+					"name": "say",
+					"args": " <salon> <message>",
+					"msg": "Envoie un message dans le salon"
 				}
 			]
 		},
