@@ -3,9 +3,8 @@ const sql = require('sqlite');
 sql.open('./storage/data.db');
 const checkTable = 'CREATE TABLE IF NOT EXISTS users (serverID TEXT, userId TEXT, xp INTEGER, warnings INTEGER)';
 
-function insertUser(msg) {
+function insertUser(msg, userId) {
 	return new Promise((resolve, reject) => {
-		var userId = msg.mentions.users.first().id;
 		sql.run('INSERT INTO users (serverID, userId, xp, warnings) VALUES (?, ?, ?, ?)',
 		[msg.guild.id, userId, 0, 0])
 		.catch(error => {
@@ -68,14 +67,14 @@ module.exports = {
 			.then(row => {
 				if (!row) {
 					//User is not defined
-					row = insertUser(msg);
+					row = insertUser(msg, userId);
 				}
 				resolve(row);
 			}).catch(() => {
 				//Check if table exist
 				sql.run(checkTable)
 				.then(() => {
-					row = insertUser(msg).then(() => {
+					row = insertUser(msg, userId).then(() => {
 						resolve(row);
 					});
 				}).catch(() => {
