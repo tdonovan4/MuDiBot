@@ -283,8 +283,10 @@ var commands = {
 				if(messageToSay[0] == 'here') {
 					channel = msg.channel;
 				} else {
-					let id = messageToSay[0].match(/<#(.*?)>/)[1];
-					channel = client.channels.get(id);
+					let id = messageToSay[0].match(/<#(.*?)>/);
+					if(id != undefined) {
+						channel = client.channels.get(id[1]);
+					}
 				}
 
 				messageToSay = messageToSay.slice(1).join(' ');
@@ -295,7 +297,8 @@ var commands = {
 					messageToSay = 'Missing argument: channel';
 				}
 
-				if(messageToSay == undefined) {
+				console.log(messageToSay);
+				if(messageToSay == undefined || messageToSay == '') {
 					messageToSay = 'Missing argument: message';
 				}
 
