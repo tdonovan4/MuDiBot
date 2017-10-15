@@ -1,5 +1,5 @@
 {
-  "name": "little-discord-bot",
+  "name": "MuDiBot",
   "version": "0.5.0",
   "description": "Just a little bot...",
   "main": "bot.js",
@@ -10,10 +10,11 @@
   "license": "MIT",
   "dependencies": {
     "discord.js": "^11.1.0",
-    "erlpack": "github:hammerandchisel/erlpack#master",
-    "node-opus": "^0.2.6",
-    "opusscript": "0.0.1",
+    "erlpack": "github:hammerandchisel/erlpack",
+    "node-opus": "^0.2.7",
+    "sodium": "^2.0.1",
     "sqlite": "^2.8.0",
+    "uws": "^0.14.5",
     "winston": "^2.3.1",
     "ytdl-core": "^0.13.3"
   },
