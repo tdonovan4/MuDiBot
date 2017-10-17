@@ -383,7 +383,7 @@ var commands = {
 	function clear(msg, num) {
 		var clearList = config.commandsToClear.concat(config.usersToClear);
 		for (i = 0; i < keys.length; i++) {
-			clearList.push('$' + keys[i]);
+			clearList.push(config.prefix + keys[i]);
 		}
 
 		//Fetch
