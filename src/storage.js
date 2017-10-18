@@ -1,18 +1,18 @@
 //Handle SQL
 const sql = require('sqlite');
 sql.open('./storage/data.db');
-const checkTable = 'CREATE TABLE IF NOT EXISTS users (serverID TEXT, userId TEXT, xp INTEGER, warnings INTEGER)';
+const checkTable = 'CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER)';
 
 function insertUser(msg, userId) {
 	return new Promise((resolve, reject) => {
-		sql.run('INSERT INTO users (serverID, userId, xp, warnings) VALUES (?, ?, ?, ?)',
+		sql.run('INSERT INTO users (serverId, userId, xp, warnings) VALUES (?, ?, ?, ?)',
 		[msg.guild.id, userId, 0, 0])
 		.catch(error => {
 			console.log(error);
 		});
 
 		//Try to get user after he was created
-		sql.get(`SELECT * FROM users WHERE serverID = ${msg.guild.id} AND userId = ${userId}`)
+		sql.get(`SELECT * FROM users WHERE serverId = ${msg.guild.id} AND userId = ${userId}`)
 		.then(row => {
 			resolve(row);
 		}).catch(error => {
@@ -25,7 +25,7 @@ module.exports = {
 	modifyUsers: function(msg, row, value) {
 		sql.run(checkTable)
 		.then(() => {
-			sql.run(`UPDATE users SET ${row} = ${value} WHERE serverID = ${msg.guild.id}`).catch(error => {
+			sql.run(`UPDATE users SET ${row} = ${value} WHERE serverId = ${msg.guild.id}`).catch(error => {
 				console.log(error);
 			});
 		}).catch(error => {
@@ -35,7 +35,7 @@ module.exports = {
 	modifyUser: function(msg, userId, row, value) {
 		sql.run(checkTable)
 		.then(() => {
-			sql.run(`UPDATE users SET ${row} = ${value} WHERE serverID = ${msg.guild.id} AND userId = ${userId}`)
+			sql.run(`UPDATE users SET ${row} = ${value} WHERE serverId = ${msg.guild.id} AND userId = ${userId}`)
 			.catch(error => {
 				console.log(error);
 			});
@@ -45,7 +45,7 @@ module.exports = {
 	},
 	getUsers: function(msg) {
 		return new Promise((resolve, reject) => {
-			sql.all(`SELECT * FROM users WHERE serverID = ${msg.guild.id}`)
+			sql.all(`SELECT * FROM users WHERE serverId = ${msg.guild.id}`)
 			.then(row => {
 				resolve(row);
 			}).catch(error => {
@@ -63,7 +63,7 @@ module.exports = {
 	},
 	getUser: function(msg, userId) {
 		return new Promise((resolve, reject) => {
-			sql.get(`SELECT * FROM users WHERE serverID = ${msg.guild.id} AND userId = ${userId}`)
+			sql.get(`SELECT * FROM users WHERE serverId = ${msg.guild.id} AND userId = ${userId}`)
 			.then(row => {
 				if (!row) {
 					//User is not defined
