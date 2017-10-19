@@ -9,7 +9,7 @@
   "author": "tdonovan4",
   "license": "MIT",
   "dependencies": {
-    "discord.js": "^11.1.0",
+    "discord.js": "^11.2.1",
     "erlpack": "github:hammerandchisel/erlpack",
     "node-opus": "^0.2.7",
     "sodium": "^2.0.1",
