@@ -1,12 +1,13 @@
 //Main class
 const Discord = require("discord.js");
 const client = new Discord.Client();
-const config = require('../config.js');
 const data = require('./localization.json');
 const warning = require('./warning.js');
 const player = require('./audio-player.js');
 const levels = require('./levels.js');
+const defaultChannel = require('./default-channel.js');
 const fs = require('fs');
+var config = require('../config.js');
 var localization;
 
 //Log to the discord user  with the token
@@ -24,9 +25,7 @@ client.on('ready', () => {
 		localization = data.english
 		console.log('english');
 	}
-
-	//setGame() doesn't work anymore, will be fixed in new discord.js version
-	client.user.setPresence({ game: { name: config.status, type: 0 } });
+	client.user.setGame(config.status);
 });
 
 module.exports.printMsg = function (msg, text) {
@@ -99,7 +98,7 @@ var commands = {
 				User: ['avatar', 'profile'],
 				Fun: ['gif', 'hello', 'tnt', 'flipcoin', 'roll'],
 				Music: ['play', 'stop', 'skip', 'queue'],
-				Administration: ['clearlog', 'restart', 'kill', 'warn']
+				Administration: ['clearlog', 'restart', 'kill', 'warn', 'setchannel']
 			};
 
 			if (args[0] != null) {
@@ -232,9 +231,11 @@ var commands = {
 		status: {
 			permLvl: "roleModo",
 			execute: function (msg) {
-				var newStatus = msg.content.split("$status ").slice(1);
-				client.user.setPresence({ game: { name: newStatus[0], type: 0 } });
+				var newStatus = msg.content.split(`${config.prefix}status `).slice(1);
+				client.user.setGame(newStatus[0]);
+
 				modifyText('./config.js', 'status: \'' + config.status, 'status: \'' + newStatus[0]);
+				config.status = newStatus[0];
 			}
 		},
 		avatar: {
@@ -305,6 +306,15 @@ var commands = {
 				//Send message
 				channel.send(messageToSay);
 			}
+		},
+		setchannel: {
+			permLvl: "roleModo",
+			execute: function (msg) {
+				var botChannel = msg.channel;
+				//Modify default channel in database
+				defaultChannel.setChannel(msg, botChannel);
+				botChannel.send('New default channel set!')
+			}
 		}
 	}
 
@@ -312,7 +322,8 @@ var commands = {
 
 	/*
 	*Function fired when a message is posted
-	*to check if the message is calling a command
+	*to check if the message is calli
+	ng a command
 	*/
 	client.on('message', msg => {
 		//Ignore bot
@@ -477,14 +488,19 @@ var commands = {
 		}
 	}
 
+	async function sendDefaultChannel(member, text) {
+		let channel = await defaultChannel.getChannel(client, member);
+		channel.send(text);
+	}
+
 	//When users join the server
 	client.on('guildMemberAdd', member => {
-		member.guild.defaultChannel.send(`Welcome to the server, ${member}!`);
+		sendDefaultChannel(member, `Welcome to the server, ${member}!`);
 	});
 
 	//When users leave the server
 	client.on('guildMemberRemove', member => {
-		member.guild.defaultChannel.send(`${member} left the server :slight_frown:`);
+		sendDefaultChannel(member, `${member} left the server :slight_frown:`);
 	});
 
 	//Make sure the process exits correctly and don't fails to close

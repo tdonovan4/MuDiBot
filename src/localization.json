@@ -155,6 +155,12 @@
 					"args": " <channel> <message>",
 					"msg": "Send a message into the channel"
 				}
+			],
+			"setchannel": [{
+					"name": "setchannel",
+					"args": "",
+					"msg": "Change the channel for announcements from the bot"
+				}
 			]
 		},
 		"info": ["**General**", "Name:", "Version:", "Description:", "Author:", "Client ID:", "Uptime:", "**Config**", "Language:", "RoleMember:", "RoleModo:"]
@@ -314,6 +320,12 @@
 					"name": "say",
 					"args": " <salon> <message>",
 					"msg": "Envoie un message dans le salon"
+				}
+			],
+			"setchannel": [{
+					"name": "setchannel",
+					"args": "",
+					"msg": "Change le salon pour les annonces du bot"
 				}
 			]
 		},
