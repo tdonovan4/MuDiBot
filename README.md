@@ -17,7 +17,7 @@ This homemade bot aims to be a highly customizable and versatile bot that can be
 - [License](#license)
 
 ## Background
-MuDiBot was created when there was not a lot of good Discord bots available. It started as a little bot to discover the Discord API and Node.js and began to grow with time. Creating this bot taught me a lot of things and still does today.
+MuDiBot was created when there was not a lot of good Discord bots available. It started as a little bot to discover the Discord API and Node.js and began to grow with time. Special thanks to [mozico555](https://github.com/mozico555) for suggestions and ideas.
 
 ## Install
 **This bot require Node.js 8.0.0 or newer. You can get it here: https://nodejs.org/en/**
