@@ -36,7 +36,7 @@ module.exports = {
       });
     });
 
-    if(client.channels.get(channel) != undefined) {
+    if (client.channels.get(channel) != undefined) {
       return client.channels.get(channel);
     }
 
@@ -46,7 +46,7 @@ module.exports = {
     });
 
     var channel = channels.find('name', 'general');
-    if(channel == undefined) {
+    if (channel == undefined) {
       //General don't exist
       channel = channels.find('position', 0);
     }
