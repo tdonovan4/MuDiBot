@@ -329,8 +329,11 @@ var commands = {
 		//Ignore bot
 		if (msg.author.bot) return;
 		levels.newMessage(msg);
-		if (msg.author != client.user) {
+		//Check if the author is not the bot and if message begins with prefix
+		if (msg.author != client.user &&
+msg.content.substring(0, config.prefix.length) == config.prefix) {
 			let cmd = msg.content.split(config.prefix).slice(1);
+
 			if(cmd[0] != undefined) {
 				cmd = cmd[0].split(' ');
 			}
