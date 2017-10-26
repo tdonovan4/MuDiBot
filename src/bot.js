@@ -42,112 +42,41 @@ function printMsg(msg, text) {
  *the permission needed and execute the command
  */
 var commands = {
+  help: {
+    //Display a list of commands and their usage
+    permLvl: "everyone",
+    category: "General",
+    execute: function(msg) {
+      const help = require('./help.js');
+      let args = msg.content.split(" ").slice(1);
+
+      if (args[0] != undefined) {
+        //Check if args is a valid command
+        if (args[0] in commands) {
+          //Valid command
+          help.printCmd(msg, localization, commands[args[0]]);
+        } else {
+          printMsg(msg, 'This is not a valid command');
+        }
+      } else {
+        //Print all commands
+        help.printCmds(msg, Object.entries(commands));
+      }
+    }
+  },
   ping: {
     //Reply "Pong!"
     permLvl: "everyone",
+    category: "General",
     execute: function(msg) {
       msg.reply(localization.replies.ping);
       console.log("Pong!");
     }
   },
-  gif: {
-    //A GIF of a robot, just a funny little feature
-    permLvl: "roleMember",
-    execute: function(msg) {
-      msg.reply('http://giphy.com/gifs/l4FGBpKfVMG4qraJG');
-    }
-  },
-  clearlog: {
-    //Clear listed commands
-    permLvl: "roleModo",
-    execute: function(msg) {
-      //Split the message to get only the argument
-      let args = msg.content.split(" ").slice(1);
-      let numToDel = args[0];
-
-      //In case the argument isn't a valid number
-      if (numToDel === null || isNaN(numToDel)) {
-        numToDel = '50';
-      }
-      clear(msg, numToDel);
-    }
-  },
-  hello: {
-    //Play a greeting sound and reply hi
-    permLvl: "everyone",
-    execute: function(msg) {
-      player.play('hello', msg);
-      msg.reply(localization.replies.hello);
-    }
-  },
-  stop: {
-    //Stop the voice connection and leave voice channel
-    permLvl: "everyone",
-    execute: function(msg) {
-      player.stop(msg);
-    }
-  },
-  help: {
-    //Display a list of commands and their usage
-    permLvl: "everyone",
-    execute: function(msg) {
-      const help = localization.help;
-      let args = msg.content.split(" ").slice(1);
-      var categories = {
-        General: ['ping', 'help', 'info', 'status', 'say'],
-        User: ['avatar', 'profile'],
-        Fun: ['gif', 'hello', 'tnt', 'flipcoin', 'roll'],
-        Music: ['play', 'stop', 'skip', 'queue'],
-        Administration: ['clearlog', 'restart', 'kill', 'warn', 'setchannel']
-      };
-
-      if (args[0] != null) {
-        /*
-         *Check if args is a category and
-         *put first letter of args in uppercase
-         */
-        if (args[0][0].toUpperCase() + args[0].substring(1) in categories) {
-          args[0] = args[0][0].toUpperCase() + args[0].substring(1);
-          var category = categories[args[0]];
-          for (var member in categories)
-            delete categories[member];
-          //Add only desired category
-          categories[args[0]] = category;
-          //Check if args is a command
-        } else if (args[0] in help) {
-          for (var member in categories)
-            delete categories[member];
-          categories.helpSingleCmd = [args[0]];
-        }
-      }
-
-      helpList(msg, categories);
-    }
-  },
-  restart: {
-    //Restart the client
-    permLvl: "roleModo",
-    execute: function() {
-      //Spawn new process
-      var spawn = require('child_process').spawn;
-
-      var child = spawn('node', ['./src/bot.js'], {
-        detached: true,
-        shell: true,
-        stdio: 'ignore'
-      });
-      child.unref();
-
-      console.log('Restarting');
-
-      //Exit this process
-      process.exitCode = 0;
-      process.exit();
-    }
-  },
   info: {
     //Display info about the client
     permLvl: "everyone",
+    category: "General",
     execute: function(msg) {
       var pjson = require('../package.json');
 
@@ -165,72 +94,9 @@ var commands = {
         localization.info[10] + config.roleModo);
     }
   },
-  tnt: {
-    //Play a big boom!
-    permLvl: "everyone",
-    execute: function(msg) {
-      msg.reply(localization.replies.tnt);
-      player.play('tnt', msg);
-    }
-  },
-  kill: {
-    //Kill the process
-    permLvl: "roleModo",
-    execute: function(msg) {
-      console.log('Shutting down...');
-      process.exitCode = 0;
-      process.exit();
-    }
-  },
-  warn: {
-    //Handle warnings
-    permLvl: "roleModo",
-    execute: function(msg) {
-      warning.warn(msg);
-    }
-  },
-  play: {
-    //Play a song on YouTube
-    permLvl: "everyone",
-    execute: function(msg) {
-      player.playYoutube(msg, msg.content.split(" ").slice(1));
-    }
-  },
-  skip: {
-    //Skip to next song in queue
-    permLvl: "roleMember",
-    execute: function(msg) {
-      player.skip(msg);
-    }
-  },
-  queue: {
-    //Skip to next song in queue
-    permLvl: "everyone",
-    execute: function(msg) {
-      player.listQueue(msg);
-    }
-  },
-  flipcoin: {
-    //Flip a coin
-    permLvl: "everyone",
-    execute: function(msg) {
-      msg.reply(Math.floor(Math.random() * 2) == 0 ? 'heads' : 'tails');
-    }
-  },
-  roll: {
-    //Flip a coin
-    permLvl: "everyone",
-    execute: function(msg) {
-      args = msg.content.split(/[ d+]|(?=-)/g).slice(1);
-      num = isNaN(args[2]) ? 0 : parseInt(args[2]);
-      for (i = 0; i < args[0]; i++) {
-        num += Math.floor(Math.random() * args[1]) + 1;
-      }
-      msg.reply(num);
-    }
-  },
   status: {
     permLvl: "roleModo",
+    category: "General",
     execute: function(msg) {
       var newStatus = msg.content.split(`${config.prefix}status `).slice(1);
       client.user.setGame(newStatus[0]);
@@ -239,46 +105,9 @@ var commands = {
       config.status = newStatus[0];
     }
   },
-  avatar: {
-    permLvl: "everyone",
-    execute: function(msg) {
-      var user = msg.mentions.users.first()
-      if (user != undefined && user != null) {
-        printMsg(msg, user.avatarURL);
-      } else {
-        printMsg(msg, "Invalid user");
-      }
-    }
-  },
-  profile: {
-    permLvl: "everyone",
-    execute: async function(msg) {
-      const storage = require('./storage.js');
-      let user = msg.mentions.users.first();
-      if (user == undefined) {
-        //There is no mentions
-        user = msg.author;
-      }
-
-      let userData = await storage.getUser(msg, user.id);
-      let progression = levels.getProgression(userData.xp);
-      let level = progression[0];
-      let xpToNextLevel = `${progression[1]}/${levels.getXpForLevel(level)}`;
-
-      var embed = new Discord.RichEmbed();
-      embed.title = `${user.username}'s profile`;
-      embed.setThumbnail(url = user.avatarURL)
-      embed.addField(name = "Level: ", value = `${level} (${xpToNextLevel})`, inline = true)
-      embed.addField(name = "Warnings", value = userData.warnings, inline = true)
-      embed.addField(name = "Total XP", value = userData.xp, inline = true)
-      embed.setFooter(text = `Client id: ${user.id}`)
-      msg.channel.send({
-        embed
-      });
-    }
-  },
   say: {
     permLvl: "roleModo",
+    category: "General",
     execute: function(msg) {
       let messageToSay = msg.content.split(' ').slice(1);
       let channel;
@@ -310,8 +139,184 @@ var commands = {
       channel.send(messageToSay);
     }
   },
+  avatar: {
+    permLvl: "everyone",
+    category: "User",
+    execute: function(msg) {
+      var user = msg.mentions.users.first()
+      if (user != undefined && user != null) {
+        printMsg(msg, user.avatarURL);
+      } else {
+        printMsg(msg, "Invalid user");
+      }
+    }
+  },
+  profile: {
+    permLvl: "everyone",
+    category: "User",
+    execute: async function(msg) {
+      const storage = require('./storage.js');
+      let user = msg.mentions.users.first();
+      if (user == undefined) {
+        //There is no mentions
+        user = msg.author;
+      }
+
+      let userData = await storage.getUser(msg, user.id);
+      let progression = levels.getProgression(userData.xp);
+      let level = progression[0];
+      let xpToNextLevel = `${progression[1]}/${levels.getXpForLevel(level)}`;
+
+      var embed = new Discord.RichEmbed();
+      embed.title = `${user.username}'s profile`;
+      embed.setThumbnail(url = user.avatarURL)
+      embed.addField(name = "Level: ", value = `${level} (${xpToNextLevel})`, inline = true)
+      embed.addField(name = "Warnings", value = userData.warnings, inline = true)
+      embed.addField(name = "Total XP", value = userData.xp, inline = true)
+      embed.setFooter(text = `Client id: ${user.id}`)
+      msg.channel.send({
+        embed
+      });
+    }
+  },
+  gif: {
+    //A GIF of a robot, just a funny little feature
+    permLvl: "roleMember",
+    category: "Fun",
+    execute: function(msg) {
+      msg.reply('http://giphy.com/gifs/l4FGBpKfVMG4qraJG');
+    }
+  },
+  hello: {
+    //Play a greeting sound and reply hi
+    permLvl: "everyone",
+    category: "Fun",
+    execute: function(msg) {
+      player.play('hello', msg);
+      msg.reply(localization.replies.hello);
+    }
+  },
+  tnt: {
+    //Play a big boom!
+    permLvl: "everyone",
+    category: "Fun",
+    execute: function(msg) {
+      msg.reply(localization.replies.tnt);
+      player.play('tnt', msg);
+    }
+  },
+  flipcoin: {
+    //Flip a coin
+    permLvl: "everyone",
+    category: "Fun",
+    execute: function(msg) {
+      msg.reply(Math.floor(Math.random() * 2) == 0 ? 'heads' : 'tails');
+    }
+  },
+  roll: {
+    //Flip a coin
+    permLvl: "everyone",
+    category: "Fun",
+    execute: function(msg) {
+      args = msg.content.split(/[ d+]|(?=-)/g).slice(1);
+      num = isNaN(args[2]) ? 0 : parseInt(args[2]);
+      for (i = 0; i < args[0]; i++) {
+        num += Math.floor(Math.random() * args[1]) + 1;
+      }
+      msg.reply(num);
+    }
+  },
+  play: {
+    //Play a song on YouTube
+    permLvl: "everyone",
+    category: "Music",
+    execute: function(msg) {
+      player.playYoutube(msg, msg.content.split(" ").slice(1));
+    }
+  },
+  stop: {
+    //Stop the voice connection and leave voice channel
+    permLvl: "everyone",
+    category: "Music",
+    execute: function(msg) {
+      player.stop(msg);
+    }
+  },
+  skip: {
+    //Skip to next song in queue
+    permLvl: "roleMember",
+    category: "Music",
+    execute: function(msg) {
+      player.skip(msg);
+    }
+  },
+  queue: {
+    //Skip to next song in queue
+    permLvl: "everyone",
+    category: "Music",
+    execute: function(msg) {
+      player.listQueue(msg);
+    }
+  },
+  clearlog: {
+    //Clear listed commands
+    permLvl: "roleModo",
+    category: "Moderation",
+    execute: function(msg) {
+      //Split the message to get only the argument
+      let args = msg.content.split(" ").slice(1);
+      let numToDel = args[0];
+
+      //In case the argument isn't a valid number
+      if (numToDel === null || isNaN(numToDel)) {
+        numToDel = '50';
+      }
+      clear(msg, numToDel);
+    }
+  },
+  warn: {
+    //Handle warnings
+    permLvl: "roleModo",
+    category: "Moderation",
+    execute: function(msg) {
+      warning.warn(msg);
+    }
+  },
+  kill: {
+    //Kill the process
+    permLvl: "roleModo",
+    category: "Moderation",
+    execute: function(msg) {
+      console.log('Shutting down...');
+      process.exitCode = 0;
+      process.exit();
+    }
+  },
+  restart: {
+    //Restart the client
+    permLvl: "roleModo",
+    category: "Moderation",
+    execute: function() {
+      //Spawn new process
+      var spawn = require('child_process').spawn;
+
+      var child = spawn('node', ['./src/bot.js'], {
+        detached: true,
+        shell: true,
+        stdio: 'ignore'
+      });
+      child.unref();
+
+      console.log('Restarting');
+
+      //Exit this process
+      process.exitCode = 0;
+      process.exit();
+    }
+  },
   setchannel: {
     permLvl: "roleModo",
+    category: "Moderation",
     execute: function(msg) {
       var botChannel = msg.channel;
       //Modify default channel in database
@@ -369,31 +374,6 @@ function modifyText(file, text, value) {
       if (err) return console.log(err);
     });
   });
-}
-
-//Create the help message
-function helpList(msg, categories) {
-  const help = localization.help;
-  var roles = msg.channel.guild.roles;
-
-  var helpString = '__**~Help~**__' + '\n';
-  for (var prop in categories) {
-    //Check if only one command
-    helpString += '\n'
-    if (prop != 'helpSingleCmd') {
-      helpString += '**-' + prop + '**\n';
-    }
-    var category = categories[prop];
-    for (listCmd = 0; listCmd < Object.keys(category).length; listCmd++) {
-      if (help.hasOwnProperty(category[listCmd])) {
-        for (n = 0; n < help[category[listCmd]].length; n++) {
-          helpString += config.prefix + help[category[listCmd]][n].name + help[category[listCmd]][n].args + ' : [' +
-            mention(roles, commands[category[listCmd]].permLvl) + '] ' + help[category[listCmd]][n].msg + '\n'
-        }
-      }
-    }
-  }
-  msg.channel.send(helpString);
 }
 
 //Function that fetch, check and delete messages
