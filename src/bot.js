@@ -79,19 +79,26 @@ var commands = {
     category: "General",
     execute: function(msg) {
       var pjson = require('../package.json');
+      var info = localization.info;
 
-      msg.channel.send('__**~Infos~**__ \n' +
-        localization.info[0] + '\n' +
-        localization.info[1] + pjson.name + '\n' +
-        localization.info[2] + pjson.version + '\n' +
-        localization.info[3] + localization.replies.info + '\n' +
-        localization.info[4] + pjson.author + '\n' +
-        localization.info[5] + client.user.id + '\n' +
-        localization.info[6] + time() + '\n' +
-        localization.info[7] + '\n' +
-        localization.info[8] + config.language + '\n' +
-        localization.info[9] + config.roleMember + '\n' +
-        localization.info[10] + config.roleModo);
+      var embed = new Discord.RichEmbed();
+      embed.title = `__**${info.title}**__`;
+      embed.color = 0x0080c0;
+      embed.addField(name = `**${info.general.title}**`, value = `
+        **${info.general.name}:** ${pjson.name}
+        **${info.general.desc}:** ${pjson.description}
+        **${info.general.author}:** ${pjson.author}
+        **${info.general.version}:** ${pjson.version}
+        **${info.general.uptime}:** ${time()}`.replace(/^( *)/gm,''), inline = false)
+      embed.addField(name = `**${info.config.title}**`, value = `
+        **${info.config.language}:** ${config.language}
+        **${info.config.roleMember}:** ${config.roleMember}
+        **${info.config.roleModo}:** ${config.roleModo}`.replace(/^( *)/gm,''), inline = false)
+      embed.setFooter(text = `${info.footer.clientId}: ${client.user.id}`)
+
+      msg.channel.send({
+        embed
+      });
     }
   },
   status: {

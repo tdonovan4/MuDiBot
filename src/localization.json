@@ -3,7 +3,6 @@
     "replies": {
       "ping": "Pong!",
       "hello": "Hi!",
-      "info": "Just a little bot...",
       "tnt": "ssSSSsss...",
       "warn": "warnings"
     },
@@ -142,14 +141,32 @@
         "msg": "Change the channel for announcements from the bot"
       }]
     },
-    "info": ["**General**", "Name:", "Version:", "Description:", "Author:", "Client ID:", "Uptime:", "**Config**", "Language:", "RoleMember:", "RoleModo:"]
+    "info": {
+      "title": "~Infos~",
+      "general": {
+        "title": "General",
+        "name": "Name:",
+        "version": "Version",
+        "desc": "Description",
+        "author": "Author",
+        "uptime": "Uptime"
+      },
+      "config": {
+        "title": "Config:",
+        "language": "Language",
+        "roleMember": "RoleMember",
+        "roleModo": "RoleModo"
+      },
+      "footer": {
+        "clientId": "Client ID"
+      }
+    }
   },
   "french": {
     "replies": {
       "ping": "Pong!",
       "hello": "Salut!",
-      "info": "ssSSSsss...",
-      "tnt": "Seulement un petit serviteur...",
+      "tnt": "ssSSSsss..",
       "warn": "avertissements"
     },
     "help": {
@@ -287,6 +304,25 @@
         "msg": "Change le salon pour les annonces du bot"
       }]
     },
-    "info": ["**Général**", "Nom:", "Version:", "Description:", "Auteur:", "ID du client:", "Temps de fonctionnement:", "**Config**", "Language:", "RoleMembre:", "RoleModo:"]
+    "info": {
+      "title": "~Infos~",
+      "general": {
+        "title": "Général",
+        "name": "Nom",
+        "version": "Version",
+        "desc": "Description",
+        "author": "Auteur",
+        "uptime": "Temps de fonctionnement"
+      },
+      "config": {
+        "title": "Config",
+        "language": "Langage",
+        "roleMember": "RoleMember",
+        "roleModo": "RoleModo"
+      },
+      "footer": {
+        "clientId": "ID du client:"
+      }
+    }
   }
 }
