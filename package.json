@@ -1,7 +1,7 @@
 {
   "name": "MuDiBot",
   "version": "0.5.0",
-  "description": "Just a little bot...",
+  "description": "A multipurpose Discord bot (MuDiBot) made using discord.js",
   "main": "bot.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
