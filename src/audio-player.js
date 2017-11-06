@@ -3,6 +3,8 @@ const ytdl = require('ytdl-core');
 const https = require('https');
 const bot = require('./bot.js');
 const config = require('../config.js');
+const mustache = require('mustache');
+var lang = require('./localization.js').getLocalization();
 var queue = [];
 var voiceConnection;
 
@@ -24,7 +26,7 @@ function get(url) {
         resolve(JSON.parse(body));
       });
     }).on('error', function(e) {
-      console.log("Error: " + e.message);
+      console.log(e.message);
     });
   });
 }
@@ -42,7 +44,9 @@ function addToQueue(message, url) {
   } else {
     //Url is a video
     checkIfAvailable(url).then(values => {
-      let text = (values != null) ? '"' + values[1] + '" added to the queue' : 'This video is unavailable'
+      let text = (values != null) ? mustache.render(lang.play.added.video, {
+        values
+      }) : lang.play.unavailable;
       if (values != null) {
         queue.push(values);
       }
@@ -68,7 +72,7 @@ function getPlaylistVideos(i, response, message) {
         queue.push(values[n]);
       }
     }
-    bot.printMsg(message, 'Playlist added to the queue');
+    bot.printMsg(message, lang.play.added.playlist);
     if (message.member.voiceChannel.connection == null && queue.length != 0) {
       joinChannel(message);
     }
@@ -98,7 +102,7 @@ function checkIfAvailable(url) {
 //Play YouTube video (audio only)
 function playVideo(connection, message) {
   voiceConnection = connection;
-  bot.printMsg(message, 'Playing: "' + queue[0][1] + '" (' + queue[0][2] + ')');
+  bot.printMsg(message, mustache.render(lang.play.playing, {queue}));
   //Downloading
   var stream = ytdl(queue[0][0], {
     filter: 'audioonly'
@@ -146,7 +150,7 @@ module.exports = {
       }
       currentVoice = channel;
     } else if (sound === 'tnt') {
-      message.reply('Boom! ' + emoji);
+      message.reply(lang.tnt.boom + emoji);
     }
   },
   //Get YouTube video
@@ -169,7 +173,7 @@ module.exports = {
     if (voiceConnection != null) {
       voiceConnection.disconnect();
       queue = [];
-      bot.printMsg(message, 'Disconnected!');
+      bot.printMsg(message, lang.play.disconnected);
     }
   },
   //Skip song
@@ -178,16 +182,16 @@ module.exports = {
     try {
       var dispatcherStream = message.member.voiceChannel.connection.player.dispatcher.stream;
       dispatcherStream.destroy();
-      bot.printMsg(message, 'Song skipped!');
+      bot.printMsg(message, lang.play.skipped);
     } catch (stream) {}
   },
   listQueue: function(message) {
-    var titles = '**List of videos in queue:**';
+    var list = lang.play.queue;
     //Get video titles
     for (i = 0; i < queue.length; i++) {
-      titles += '\n "' + queue[i][1] + '"';
+      list += '\n "' + queue[i][1] + '"';
     }
     //Write titles
-    message.channel.send(titles);
+    message.channel.send(list);
   }
 }

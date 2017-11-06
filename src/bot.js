@@ -1,30 +1,26 @@
 //Main class
 const Discord = require("discord.js");
 const client = new Discord.Client();
-const data = require('./localization.json');
 const warning = require('./warning.js');
 const player = require('./audio-player.js');
 const levels = require('./levels.js');
 const defaultChannel = require('./default-channel.js');
 const fs = require('fs');
+const mustache = require('mustache');
 var config = require('../config.js');
-var localization;
+//For localization
+var lang;
 
 //Log to the discord user  with the token
 client.login(config.botToken);
 
 //Start the bot
 client.on('ready', () => {
-  console.log(`Logged in as ${client.user.username}!`);
-
-  if (config.language === 'french') {
-    localization = data.french
-    console.log('french');
-  } else {
-    //Use english by default in case the chosen language is not found
-    localization = data.english
-    console.log('english');
-  }
+  //Set language
+  lang = require('./localization.js').getLocalization();
+  console.log(mustache.render(lang.general.logged, client));
+  console.log(lang.general.language);
+  //Set status
   client.user.setGame(config.status);
 });
 
@@ -54,9 +50,9 @@ var commands = {
         //Check if args is a valid command
         if (args[0] in commands) {
           //Valid command
-          help.printCmd(msg, localization, commands[args[0]]);
+          help.printCmd(msg, lang, commands[args[0]]);
         } else {
-          printMsg(msg, 'This is not a valid command');
+          printMsg(msg, lang.error.invalidArg.cmd);
         }
       } else {
         //Print all commands
@@ -69,8 +65,8 @@ var commands = {
     permLvl: "everyone",
     category: "General",
     execute: function(msg) {
-      msg.reply(localization.replies.ping);
-      console.log("Pong!");
+      msg.reply(lang.ping.pong);
+      console.log(lang.ping.pong);
     }
   },
   info: {
@@ -79,7 +75,7 @@ var commands = {
     category: "General",
     execute: function(msg) {
       var pjson = require('../package.json');
-      var info = localization.info;
+      var info = lang.info;
 
       var embed = new Discord.RichEmbed();
       embed.title = `__**${info.title}**__`;
@@ -89,11 +85,11 @@ var commands = {
         **${info.general.desc}:** ${pjson.description}
         **${info.general.author}:** ${pjson.author}
         **${info.general.version}:** ${pjson.version}
-        **${info.general.uptime}:** ${time()}`.replace(/^( *)/gm,''), inline = false)
+        **${info.general.uptime}:** ${time()}`.replace(/^( *)/gm, ''), inline = false)
       embed.addField(name = `**${info.config.title}**`, value = `
         **${info.config.language}:** ${config.language}
         **${info.config.roleMember}:** ${config.roleMember}
-        **${info.config.roleModo}:** ${config.roleModo}`.replace(/^( *)/gm,''), inline = false)
+        **${info.config.roleModo}:** ${config.roleModo}`.replace(/^( *)/gm, ''), inline = false)
       embed.setFooter(text = `${info.footer.clientId}: ${client.user.id}`)
 
       msg.channel.send({
@@ -134,12 +130,11 @@ var commands = {
       //Check arguments
       if (channel == undefined) {
         channel = msg.channel;
-        messageToSay = 'Missing argument: channel';
+        messageToSay = lang.error.missingArg.channel;
       }
 
-      console.log(messageToSay);
       if (messageToSay == undefined || messageToSay == '') {
-        messageToSay = 'Missing argument: message';
+        messageToSay = lang.error.missingArg.message;
       }
 
       //Send message
@@ -154,7 +149,7 @@ var commands = {
       if (user != undefined && user != null) {
         printMsg(msg, user.avatarURL);
       } else {
-        printMsg(msg, "Invalid user");
+        printMsg(msg, lang.error.invalidArg.user);
       }
     }
   },
@@ -175,12 +170,12 @@ var commands = {
       let xpToNextLevel = `${progression[1]}/${levels.getXpForLevel(level)}`;
 
       var embed = new Discord.RichEmbed();
-      embed.title = `${user.username}'s profile`;
+      embed.title = mustache.render(lang.profile.title, user);
       embed.setThumbnail(url = user.avatarURL)
-      embed.addField(name = "Level: ", value = `${level} (${xpToNextLevel})`, inline = true)
-      embed.addField(name = "Warnings", value = userData.warnings, inline = true)
-      embed.addField(name = "Total XP", value = userData.xp, inline = true)
-      embed.setFooter(text = `Client id: ${user.id}`)
+      embed.addField(name = lang.profile.level, value = `${level} (${xpToNextLevel})`, inline = true)
+      embed.addField(name = lang.profile.warnings, value = userData.warnings, inline = true)
+      embed.addField(name = lang.profile.xp, value = userData.xp, inline = true)
+      embed.setFooter(text = mustache.render(lang.profile.footer, user))
       msg.channel.send({
         embed
       });
@@ -200,7 +195,7 @@ var commands = {
     category: "Fun",
     execute: function(msg) {
       player.play('hello', msg);
-      msg.reply(localization.replies.hello);
+      msg.reply(lang.hello.hi);
     }
   },
   tnt: {
@@ -208,7 +203,7 @@ var commands = {
     permLvl: "everyone",
     category: "Fun",
     execute: function(msg) {
-      msg.reply(localization.replies.tnt);
+      msg.reply(lang.tnt.fuse);
       player.play('tnt', msg);
     }
   },
@@ -217,7 +212,7 @@ var commands = {
     permLvl: "everyone",
     category: "Fun",
     execute: function(msg) {
-      msg.reply(Math.floor(Math.random() * 2) == 0 ? 'heads' : 'tails');
+      msg.reply(Math.floor(Math.random() * 2) == 0 ? lang.flipcoin.heads : lang.flipcoin.tails);
     }
   },
   roll: {
@@ -294,7 +289,7 @@ var commands = {
     permLvl: "roleModo",
     category: "Moderation",
     execute: function(msg) {
-      console.log('Shutting down...');
+      console.log(lang.general.stopping);
       process.exitCode = 0;
       process.exit();
     }
@@ -314,7 +309,7 @@ var commands = {
       });
       child.unref();
 
-      console.log('Restarting');
+      console.log(lang.general.restarting);
 
       //Exit this process
       process.exitCode = 0;
@@ -328,7 +323,7 @@ var commands = {
       var botChannel = msg.channel;
       //Modify default channel in database
       defaultChannel.setChannel(msg, botChannel);
-      botChannel.send('New default channel set!')
+      botChannel.send(lang.setchannel.newDefaultChannel);
     }
   }
 }
@@ -336,10 +331,9 @@ var commands = {
 var keys = Object.keys(commands);
 
 /*
-*Function fired when a message is posted
-*to check if the message is calli
-ng a command
-*/
+ *Function fired when a message is posted
+ *to check if the message is calling a command
+ */
 client.on('message', msg => {
   //Ignore bot
   if (msg.author.bot) return;
@@ -395,7 +389,7 @@ function clear(msg, num) {
       limit: parseInt(num)
     })
     .then(messages => {
-      console.log("Max messages to delete: " + num);
+      console.log(lang.clearlog.maxNum + num);
       var msg = messages.array();
       var deletedMessages = 0;
 
@@ -416,7 +410,7 @@ function clear(msg, num) {
           }
         }
       }
-      console.log(deletedMessages + ' messages deleted!');
+      console.log(mustache.render(lang.clearlog.deleted, {deletedMessages}));
     })
     .catch(console.error);
 }
@@ -474,7 +468,7 @@ function checkRole(msg, role) {
 
   //Compare user and needed permission level
   if (currentPermLevel < permLevel) {
-    console.log("Not enough permissions");
+    console.log(lang.error.notEnoughPermissions);
     return false;
   } else {
     return true;
@@ -488,12 +482,14 @@ async function sendDefaultChannel(member, text) {
 
 //When users join the server
 client.on('guildMemberAdd', member => {
-  sendDefaultChannel(member, `Welcome to the server, ${member}!`);
+  console.log(member);
+  console.log({member});
+  sendDefaultChannel(member, mustache.render(lang.general.member.joined, {member}));
 });
 
 //When users leave the server
 client.on('guildMemberRemove', member => {
-  sendDefaultChannel(member, `${member} left the server :slight_frown:`);
+  sendDefaultChannel(member, mustache.render(lang.general.member.left, {member}));
 });
 
 //Make sure the process exits correctly and don't fails to close
