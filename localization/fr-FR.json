@@ -1,0 +1,229 @@
+{
+  "general": {
+    "logged": "Connecté en tant que {{user.username}}!",
+    "language": "Langue sélectionnée: français",
+    "stopping": "Fermeture...",
+    "restarting": "Redémarrage...",
+    "member": {
+      "joined": "Bienvenue sur le serveur, <@{{member.user.id}}>!",
+      "left": "<@{{member.user.id}}> ({{member.user.username}}) a quitté le serveur :slight_frown:",
+      "leveled": "<@{{msg.author.id}}> vient juste de monté au niveau {{progression}}!"
+    }
+  },
+  "error": {
+    "usage": "Utilisation incorrecte",
+    "missingArg": {
+      "channel": "Argument manquant: salon",
+      "message": "Argument manquant: message"
+    },
+    "invalidArg": {
+      "cmd": "Cette commande n'est pas valide",
+      "category": "Attention: {{cmds}} n'a pas de catégorie valide",
+      "user": "Utilisateur non valide"
+    },
+    "notLocalized": {
+      "cmd": "Erreur: cette commande n'est pas traduite!"
+    },
+    "notEnoughPermissions": "Permissions insuffisantes"
+  },
+  "help": {
+    "msg": "Pour plus d'information sur une commande et son utilisation, tapez `{{config.prefix}}help nomDeLaCommande`.",
+    "desc": "Description:",
+    "permLvl": "Niveau de permission:",
+    "usage": "Usage",
+    "ping": [{
+      "name": "ping",
+      "args": "",
+      "msg": "Pong!"
+    }],
+    "gif": [{
+      "name": "gif",
+      "args": "",
+      "msg": "Met un petit GIF"
+    }],
+    "clearlog": [{
+      "name": "clearlog",
+      "args": "<messages à regarder>",
+      "msg": "Supprime les commandes dans le salon"
+    }],
+    "hello": [{
+      "name": "hello",
+      "args": "",
+      "msg": "Salut!"
+    }],
+    "stop": [{
+      "name": "stop",
+      "args": "",
+      "msg": "Fait quitter l'agent du salon vocal"
+    }],
+    "help": [{
+      "name": "help",
+      "args": "",
+      "msg": "Affiche ceci"
+    }, {
+      "name": "help",
+      "args": "<commande>",
+      "msg": "Affiche l'aide pour la commande"
+    }],
+    "restart": [{
+      "name": "restart",
+      "args": "",
+      "msg": "Redémarre l'agent"
+    }],
+    "info": [{
+      "name": "info",
+      "args": "",
+      "msg": "Affiche des informations sur l'agent"
+    }],
+    "tnt": [{
+      "name": "tnt",
+      "args": "",
+      "msg": "TNT < 3"
+    }],
+    "kill": [{
+      "name": "kill",
+      "args": "",
+      "msg": "Ferme l'agent"
+    }],
+    "warn": [{
+      "name": "warn",
+      "args": "<utilisateur>",
+      "msg": "Met un avertissement sur l'utilisateur"
+    }, {
+      "name": "warn clear",
+      "args": "<utilisateur>",
+      "msg": "Enlève tous les avertissements d'un utilisateur"
+    }, {
+      "name": "warn clear all",
+      "args": "",
+      "msg": "Enlève tous les avertissements"
+    }, {
+      "name": "warn list",
+      "args": "",
+      "msg": "Liste tous les avertissements"
+    }, {
+      "name": "warn list",
+      "args": "<utilisateur>",
+      "msg": "Liste les avertissements de l'utilisateur"
+    }, {
+      "name": "warn remove",
+      "args": "<utilisateur>",
+      "msg": "Enlève un avertissement de l'utilisateur"
+    }],
+    "play": [{
+      "name": "play",
+      "args": "<song url or tags>",
+      "msg": "Enlève un avertissement de l'utilisateur"
+    }],
+    "skip": [{
+      "name": "skip",
+      "args": "",
+      "msg": "Saute la chanson qui joue"
+    }],
+    "queue": [{
+      "name": "queue",
+      "args": "",
+      "msg": "Liste les chansons en attente"
+    }],
+    "flipcoin": [{
+      "name": "flipcoin",
+      "args": "",
+      "msg": "Pile ou face"
+    }],
+    "roll": [{
+      "name": "roll",
+      "args": "<Nombre de dés>d<Nombre de faces><modificateur>",
+      "msg": "Lance des dés"
+    }],
+    "status": [{
+      "name": "status",
+      "args": "<nouveau statut>",
+      "msg": "Change le status"
+    }],
+    "avatar": [{
+      "name": "avatar",
+      "args": "<user>",
+      "msg": "Donne l'avatar d'un utilisateur"
+    }],
+    "profile": [{
+      "name": "profile",
+      "args": "<user>",
+      "msg": "Donne le profile d'un joueur"
+    }],
+    "say": [{
+      "name": "say",
+      "args": "<salon> <message>",
+      "msg": "Envoie un message dans le salon"
+    }],
+    "setchannel": [{
+      "name": "setchannel",
+      "args": "",
+      "msg": "Change le salon pour les annonces de l'agent"
+    }]
+  },
+  "ping": {
+    "pong": "Pong!"
+  },
+  "info": {
+    "title": "~Infos~",
+    "general": {
+      "title": "Général",
+      "name": "Nom:",
+      "version": "Version",
+      "desc": "Description",
+      "author": "Auteur",
+      "uptime": "Temps de fonctionnement"
+    },
+    "config": {
+      "title": "Config:",
+      "language": "Language",
+      "roleMember": "RoleMember",
+      "roleModo": "RoleModo"
+    },
+    "footer": {
+      "clientId": "ID du client:"
+    }
+  },
+  "profile": {
+    "title": "Profit de {{username}}",
+    "level": "Niveau:",
+    "warnings": "Avertissements:",
+    "xp": "XP total:",
+    "footer": "ID du client: {{id}}"
+  },
+  "hello": {
+    "hi": "Bonjour!"
+  },
+  "tnt": {
+    "fuse": "ssSSSsss...",
+    "boom": "Boom!"
+  },
+  "flipcoin": {
+    "heads": "face",
+    "tails": "pile"
+  },
+  "play": {
+    "added": {
+      "video": "\"{{values.1}}\" a été ajouté à la file d'attente",
+      "playlist": "La liste de lecture a été ajouté à la file d'attente"
+    },
+    "skipped": "Vidéo passé!",
+    "playing": "Joue: \"{{queue.0.1}}\" ({{queue.0.2}})",
+    "queue": "**Liste de vidéos dans la file d'attente:**",
+    "disconnected": "Déconnecté!",
+    "unavailable": "Cette vidéo n'est pas disponible"
+  },
+  "clearlog": {
+    "maxNum": "Nombre maximal de messages à supprimer: ",
+    "deleted": "{{deletedMessages}} messages supprimés!"
+  },
+  "warn": {
+    "list": "<@{{userId}}>: {{warnings}} avertissement",
+    "noWarns": "Il n'y pas avertissement",
+    "usersCleared": "Tous les utilisateurs ont été purgés",
+    "userCleared": "Utilisateur purgé"
+  },
+  "setchannel": {
+    "newDefaultChannel": "Nouveu salon par défaut sélectionné!"
+  }
+}

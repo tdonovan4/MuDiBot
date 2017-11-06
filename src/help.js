@@ -1,4 +1,6 @@
 const config = require('../config.js');
+const mustache = require('mustache');
+var lang = require('./localization.js').getLocalization();
 
 module.exports = {
   //Create the help message
@@ -20,7 +22,7 @@ module.exports = {
       if (category in categories) {
         categories[category].push(cmds[i][0]);
       } else {
-        console.log(`Warning: ${cmds[i]} doesn't have a valid category`)
+        console.log(mustache.render(lang.error.invalidArg.category, {cmds : cmds[i][0]}));
       }
     }
 
@@ -66,7 +68,7 @@ module.exports = {
     msg.channel.send([rows], {
       code: 'css'
     });
-    msg.channel.send(`For more information about a command and its usage, type \`${config.prefix}help CommandName\``);
+    msg.channel.send(mustache.render(lang.help.msg, {config}));
   },
   printCmd: function(msg, localization, cmd) {
     var args = msg.content.split(" ").slice(1);
@@ -80,15 +82,15 @@ module.exports = {
         var embed = new Discord.RichEmbed();
         embed.title = config.prefix + help[i].name;
         embed.color = 0x00ff00;
-        embed.addField(name = "Description: ", value = help[i].msg, inline = false)
-        embed.addField(name = "Permission level", value = cmd.permLvl, inline = true)
-        embed.addField(name = "Usage", value = config.prefix + help[i].name + help[i].args, inline = true)
+        embed.addField(name = lang.help.desc, value = help[i].msg, inline = false)
+        embed.addField(name = lang.help.permLvl, value = cmd.permLvl, inline = true)
+        embed.addField(name = lang.help.usage, value = `${config.prefix + help[i].name} ${help[i].args}`, inline = true)
         msg.channel.send({
           embed
         });
       }
     } else {
-      console.log('Error: this command is not localized');
+      console.log(lang.error.notLocalized.cmd);
     }
   }
 }

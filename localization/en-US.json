@@ -1,0 +1,229 @@
+{
+  "general": {
+    "logged": "Logged in as {{user.username}}!",
+    "language": "Selected language: English",
+    "stopping": "Shutting down...",
+    "restarting": "Restarting...",
+    "member": {
+      "joined": "Welcome to the server, <@{{member.user.id}}>!",
+      "left": "<@{{member.user.id}}> ({{member.user.username}}) left the server :slight_frown:",
+      "leveled": "<@{{msg.author.id}}> just leveled up to level {{progression}}!"
+    }
+  },
+  "error": {
+    "usage": "Wrong usage",
+    "missingArg": {
+      "channel": "Missing argument: channel",
+      "message": "Missing argument: message"
+    },
+    "invalidArg": {
+      "cmd": "This is not a valid command",
+      "category": "Warning: {{cmds}} doesn't have a valid category",
+      "user": "Invalid user"
+    },
+    "notLocalized": {
+      "cmd": "Error: this command is not localized!"
+    },
+    "notEnoughPermissions": "Not enough permissions"
+  },
+  "help": {
+    "msg": "For more information about a command and its usage, type '{{config.prefix}}help CommandName'.",
+    "desc": "Description:",
+    "permLvl": "Permission level:",
+    "usage": "Usage",
+    "ping": [{
+      "name": "ping",
+      "args": "",
+      "msg": "Pong!"
+    }],
+    "gif": [{
+      "name": "gif",
+      "args": "",
+      "msg": "Inserts a little GIF"
+    }],
+    "clearlog": [{
+      "name": "clearlog",
+      "args": "<messages to check>",
+      "msg": "Deletes all commands related to the bot"
+    }],
+    "hello": [{
+      "name": "hello",
+      "args": "",
+      "msg": "Hello!"
+    }],
+    "stop": [{
+      "name": "stop",
+      "args": "",
+      "msg": "Makes the bot leave the voice channel"
+    }],
+    "help": [{
+      "name": "help",
+      "args": "",
+      "msg": "Displays this"
+    }, {
+      "name": "help",
+      "args": "<command>",
+      "msg": "Displays help for the command"
+    }],
+    "restart": [{
+      "name": "restart",
+      "args": "",
+      "msg": "Restarts the bot"
+    }],
+    "info": [{
+      "name": "info",
+      "args": "",
+      "msg": "Displays information about the bot"
+    }],
+    "tnt": [{
+      "name": "tnt",
+      "args": "",
+      "msg": "TNT <3"
+    }],
+    "kill": [{
+      "name": "kill",
+      "args": "",
+      "msg": "Kills the process"
+    }],
+    "warn": [{
+      "name": "warn",
+      "args": "<user>",
+      "msg": "Puts a warning on user"
+    }, {
+      "name": "warn clear",
+      "args": "<user>",
+      "msg": "Clears all warnings on user"
+    }, {
+      "name": "warn clear all",
+      "args": "",
+      "msg": "Clears all warnings"
+    }, {
+      "name": "warn list",
+      "args": "",
+      "msg": "Lists all warnings"
+    }, {
+      "name": "warn list",
+      "args": "<user>",
+      "msg": "Lists warnings on user"
+    }, {
+      "name": "warn remove",
+      "args": "<user>",
+      "msg": "Removes one warning from user"
+    }],
+    "play": [{
+      "name": "play",
+      "args": "<song url or tags>",
+      "msg": "Puts a song in queue and plays it"
+    }],
+    "skip": [{
+      "name": "skip",
+      "args": "",
+      "msg": "Skip the current song"
+    }],
+    "queue": [{
+      "name": "queue",
+      "args": "",
+      "msg": "Display songs in queue"
+    }],
+    "flipcoin": [{
+      "name": "flipcoin",
+      "args": "",
+      "msg": "Flip a digital coin"
+    }],
+    "roll": [{
+      "name": "roll",
+      "args": "<# of dice>d<# of faces><modifier>",
+      "msg": "Flip digital dice"
+    }],
+    "status": [{
+      "name": "status",
+      "args": "<new status>",
+      "msg": "Change bot status"
+    }],
+    "avatar": [{
+      "name": "avatar",
+      "args": "<user>",
+      "msg": "Get an user avatar"
+    }],
+    "profile": [{
+      "name": "profile",
+      "args": "<user>",
+      "msg": "Get an user profile"
+    }],
+    "say": [{
+      "name": "say",
+      "args": "<channel> <message>",
+      "msg": "Send a message into the channel"
+    }],
+    "setchannel": [{
+      "name": "setchannel",
+      "args": "",
+      "msg": "Change the channel for announcements from the bot"
+    }]
+  },
+  "ping": {
+    "pong": "Pong!"
+  },
+  "info": {
+    "title": "~Infos~",
+    "general": {
+      "title": "General",
+      "name": "Name:",
+      "version": "Version",
+      "desc": "Description",
+      "author": "Author",
+      "uptime": "Uptime"
+    },
+    "config": {
+      "title": "Config:",
+      "language": "Language",
+      "roleMember": "RoleMember",
+      "roleModo": "RoleModo"
+    },
+    "footer": {
+      "clientId": "Client ID"
+    }
+  },
+  "profile": {
+    "title": "{{username}}'s profile",
+    "level": "Level:",
+    "warnings": "Warnings:",
+    "xp": "Total XP:",
+    "footer": "Client id: {{id}}"
+  },
+  "hello": {
+    "hi": "Hi!"
+  },
+  "tnt": {
+    "fuse": "ssSSSsss...",
+    "boom": "Boom!"
+  },
+  "flipcoin": {
+    "heads": "heads",
+    "tails": "tails"
+  },
+  "play": {
+    "added": {
+      "video": "\"{{values.1}}\" added to the queue",
+      "playlist": "Playlist added to the queue"
+    },
+    "skipped": "Video skipped!",
+    "playing": "Playing: \"{{queue.0.1}}\" ({{queue.0.2}})",
+    "queue": "**List of videos in queue:**",
+    "disconnected": "Disconnected!",
+    "unavailable": "This video is unavailable"
+  },
+  "clearlog": {
+    "maxNum": "Max number of messages to delete: ",
+    "deleted": "{{deletedMessages}} messages deleted!"
+  },
+  "warn": {
+    "list": "<@{{userId}}>: {{warnings}} warnings",
+    "noWarns": "There is no warnings",
+    "usersCleared": "All users cleared",
+    "userCleared": "User cleared"
+  },
+  "setchannel": {
+    "newDefaultChannel": "New default channel set!"
+  }
+}

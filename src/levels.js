@@ -1,5 +1,7 @@
 const storage = require('./storage.js');
 const bot = require('./bot.js');
+const mustache = require('mustache');
+var lang = require('./localization.js').getLocalization();
 
 module.exports = {
   getXpForLevel: function(level) {
@@ -29,7 +31,7 @@ module.exports = {
       //Check if user has level up
       if (xpGained > xpForNextLevel) {
         //Level up!
-        bot.printMsg(msg, `${msg.author} just leveled up to level ${progression[0]+1}!`);
+        bot.printMsg(msg, mustache.render(lang.general.member.leveled, {msg, progression: progression[0]+1}));
       }
     }
   }

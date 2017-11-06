@@ -10,6 +10,8 @@ exist = function(obj, key) {
 //Handle warnings
 const storage = require('./storage.js');
 const bot = require('./bot.js');
+const mustache = require('mustache');
+var lang = require('./localization.js').getLocalization();
 
 module.exports = {
   warningList: null,
@@ -24,12 +26,12 @@ module.exports = {
         clear: {
           all: function() {
             storage.modifyUsers(msg, 'warnings', 0)
-            bot.printMsg(msg, 'Storage cleared');
+            bot.printMsg(msg, lang.warn.usersCleared);
           },
           user: function() {
             var userId = msg.mentions.users.first().id;
             storage.modifyUser(msg, userId, 'warnings', 0)
-            bot.printMsg(msg, 'User cleared');
+            bot.printMsg(msg, lang.warn.userCleared);
           }
         },
         list: {
@@ -37,7 +39,7 @@ module.exports = {
             var users = await storage.getUsers(msg);
 
             if (users == undefined) {
-              bot.printMsg(msg, 'There is no warnings');
+              bot.printMsg(msg, lang.warn.noWarns);
             } else {
               var output = '';
               for (i = 0; i < users.length; i++) {
@@ -45,43 +47,45 @@ module.exports = {
                   if (output !== '') {
                     output += '\n';
                   }
-                  output += `<@${users[i].userId}>: ${users[i].warnings} warnings`;
+                  output += mustache.render(lang.warn.list, users[i]);
                 }
               }
               if (output === '') {
-                output = 'There is no warnings';
+                output = lang.warn.noWarns;
               }
               bot.printMsg(msg, output);
             }
           },
           user: async function() {
             var user = await storage.getUser(msg, msg.mentions.users.first().id);
-            bot.printMsg(msg, `${args[1]}: ${user.warnings} warnings`);
-          }
-        },
-
-        remove: {
-          user: async function() {
-            var warnings = await storage.getUser(msg, msg.mentions.users.first().id);
-            warnings = warnings.warnings - 1;
-
-            if (warnings >= 0 && warnings != undefined) {
-              var userId = msg.mentions.users.first().id;
-              storage.modifyUser(msg, userId, 'warnings', warnings);
-              bot.printMsg(msg, args[1] + ': ' + warnings + ' warnings');
+            if(user != undefined) {
+              bot.printMsg(msg, mustache.render(lang.warn.list, user));
             } else {
-              bot.printMsg(msg, "User already have 0 warnings")
+              bot.printMsg(msg, lang.error.invalidArg.user);
             }
           }
         },
-        user: async function() {
-          var warnings = await storage.getUser(msg, msg.mentions.users.first().id);
-          if (warnings != undefined) {
-            warnings = warnings.warnings + 1;
+        remove: {
+          user: async function() {
+            var user = await storage.getUser(msg, msg.mentions.users.first().id);
+            var warnings = user.warnings;
 
-            var userId = msg.mentions.users.first().id;
-            storage.modifyUser(msg, userId, 'warnings', warnings);
-            bot.printMsg(msg, args[0] + ': ' + warnings + ' warnings');
+            if (warnings > 0 && warnings != undefined) {
+              warnings--;
+              storage.modifyUser(msg, user.userId, 'warnings', warnings);
+              user.warnings = warnings;
+            }
+            bot.printMsg(msg, mustache.render(lang.warn.list, user));
+          }
+        },
+        user: async function() {
+          var user = await storage.getUser(msg, msg.mentions.users.first().id);
+          var warnings = user.warnings
+          if (warnings != undefined) {
+            warnings++;
+            storage.modifyUser(msg, user.userId, 'warnings', warnings);
+            user.warnings = warnings;
+            bot.printMsg(msg, mustache.render(lang.warn.list, user));
           }
         }
       }
@@ -104,14 +108,14 @@ module.exports = {
           if (exist(warnCmd, args[i] + '.' + 'undefined')) {
             obj[args[i]]['undefined']();
           } else {
-            bot.printMsg(msg, 'Wrong usage');
+            bot.printMsg(msg, lang.error.usage);
           }
         } else {
-          bot.printMsg(msg, 'Wrong usage');
+          bot.printMsg(msg, lang.error.usage);
         }
       }
     } else {
-      bot.printMsg(msg, 'Wrong usage');
+      bot.printMsg(msg, lang.error.usage);
     }
   }
 }
