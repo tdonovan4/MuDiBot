@@ -14,8 +14,8 @@ module.exports = {
 	===============*/
 	//The prefix for a command (for example $help)
 	prefix: '$',
-	//Localization ('english' or 'french')
-	language: '',
+	//The locales for the localization (by default en-US or fr-FR)
+	locale: '',
 	//The 'game' the bot is playing (more like a status)
 	status: 'Type $help',
 	//List of users (id) with all permissions
