@@ -89,26 +89,21 @@
       "name": "warn",
       "args": "<user>",
       "msg": "Puts a warning on user"
-    }, {
-      "name": "warn clear",
+    }],
+    "unwarn": [{
+      "name": "unwarn",
       "args": "<user>",
-      "msg": "Clears all warnings on user"
-    }, {
-      "name": "warn clear all",
-      "args": "",
-      "msg": "Clears all warnings"
-    }, {
-      "name": "warn list",
-      "args": "",
-      "msg": "Lists all warnings"
-    }, {
-      "name": "warn list",
+      "msg": "Removes a warning from user"
+    }],
+    "warnlist": [{
+      "name": "warnlist",
+      "args": "<user> or all",
+      "msg": "Lists warnings of an user or all users"
+    }],
+    "warnpurge": [{
+      "name": "warnpurge",
       "args": "<user>",
-      "msg": "Lists warnings on user"
-    }, {
-      "name": "warn remove",
-      "args": "<user>",
-      "msg": "Removes one warning from user"
+      "msg": "Removes all warnings from an user or all users"
     }],
     "play": [{
       "name": "play",

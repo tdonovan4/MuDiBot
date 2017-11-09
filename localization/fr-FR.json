@@ -89,26 +89,21 @@
       "name": "warn",
       "args": "<utilisateur>",
       "msg": "Met un avertissement sur l'utilisateur"
-    }, {
-      "name": "warn clear",
-      "args": "<utilisateur>",
-      "msg": "Enlève tous les avertissements d'un utilisateur"
-    }, {
-      "name": "warn clear all",
-      "args": "",
-      "msg": "Enlève tous les avertissements"
-    }, {
-      "name": "warn list",
-      "args": "",
-      "msg": "Liste tous les avertissements"
-    }, {
-      "name": "warn list",
-      "args": "<utilisateur>",
-      "msg": "Liste les avertissements de l'utilisateur"
-    }, {
-      "name": "warn remove",
+    }],
+    "unwarn": [{
+      "name": "unwarn",
       "args": "<utilisateur>",
       "msg": "Enlève un avertissement de l'utilisateur"
+    }],
+    "warnlist": [{
+      "name": "warnlist",
+      "args": "<utilisateur> ou all",
+      "msg": "Liste les avertissements d'un utilisateur ou de tous les utilisateurs"
+    }],
+    "warnpurge": [{
+      "name": "warnpurge",
+      "args": "<utilisateur>",
+      "msg": "Enlève tous les avertissements d'un utilisateur ou de tous les utilisateurs"
     }],
     "play": [{
       "name": "play",

@@ -1,7 +1,7 @@
 //Main class
 const Discord = require("discord.js");
 const client = new Discord.Client();
-const warning = require('./warning.js');
+const warnings = require('./warnings.js');
 const player = require('./audio-player.js');
 const levels = require('./levels.js');
 const defaultChannel = require('./default-channel.js');
@@ -260,6 +260,35 @@ var commands = {
       player.listQueue(msg);
     }
   },
+  warn: {
+    permLvl: "roleModo",
+    category: "Warnings",
+    execute: function(msg) {
+      warnings.warn(msg, 1);
+    }
+  },
+  unwarn: {
+    permLvl: "roleModo",
+    category: "Warnings",
+    execute: function(msg) {
+      warnings.warn(msg, -1);
+    }
+  },
+  warnlist: {
+    permLvl: "roleModo",
+    category: "Warnings",
+    execute: function(msg) {
+      warnings.list(msg);
+    }
+  },
+  warnpurge: {
+    //Handle warnings
+    permLvl: "roleModo",
+    category: "Warnings",
+    execute: function(msg) {
+      warnings.purge(msg);
+    }
+  },
   clearlog: {
     //Clear listed commands
     permLvl: "roleModo",
@@ -274,14 +303,6 @@ var commands = {
         numToDel = '50';
       }
       clear(msg, numToDel);
-    }
-  },
-  warn: {
-    //Handle warnings
-    permLvl: "roleModo",
-    category: "Moderation",
-    execute: function(msg) {
-      warning.warn(msg);
     }
   },
   kill: {
