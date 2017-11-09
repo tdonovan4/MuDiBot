@@ -76,7 +76,7 @@ module.exports = {
               row = insertUser(msg, userId).then(() => {
                 resolve(row);
               });
-            }).catch(() => {
+            }).catch(error => {
               console.log(error);
             });
         });

@@ -13,6 +13,7 @@ module.exports = {
       User: [],
       Fun: [],
       Music: [],
+      Warnings: [],
       Moderation: []
     };
 
