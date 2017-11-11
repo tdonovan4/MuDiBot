@@ -2,6 +2,7 @@
   "general": {
     "logged": "Connecté en tant que {{user.username}}!",
     "language": "Langue sélectionnée: français",
+    "startupTime": "Le démarrage a pris {{time}}ms",
     "stopping": "Fermeture...",
     "restarting": "Redémarrage...",
     "member": {
