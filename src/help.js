@@ -71,25 +71,28 @@ module.exports = {
     });
     msg.channel.send(mustache.render(lang.help.msg, {config}));
   },
-  printCmd: function(msg, localization, cmd) {
+  printCmd: function(msg, cmd) {
     var args = msg.content.split(" ").slice(1);
-    var help = localization.help[args[0]];
+    var help = lang.help[args[0]];
 
     if (help != undefined) {
       const Discord = require("discord.js");
-      var output = [];
-      for (var i = 0; i < help.length; i++) {
-        //output += `${config.prefix + help[i].name}:${help[i].args} [${cmd.permLvl}] ${help[i].msg}`;
-        var embed = new Discord.RichEmbed();
-        embed.title = config.prefix + help[i].name;
-        embed.color = 0x00ff00;
-        embed.addField(name = lang.help.desc, value = help[i].msg, inline = false)
-        embed.addField(name = lang.help.permLvl, value = cmd.permLvl, inline = true)
-        embed.addField(name = lang.help.usage, value = `${config.prefix + help[i].name} ${help[i].args}`, inline = true)
-        msg.channel.send({
-          embed
-        });
+
+      var usages = '';
+      for (var i = 0; i < help.args.length; i++) {
+        //Insert usages
+        usages += `${config.prefix + help.name} ${help.args[i]}\n`
       }
+
+      var embed = new Discord.RichEmbed();
+      embed.title = config.prefix + help.name;
+      embed.color = 0x00ff00;
+      embed.addField(name = lang.help.desc, value = help.msg, inline = false)
+      embed.addField(name = lang.help.permLvl, value = cmd.permLvl, inline = true)
+      embed.addField(name = lang.help.usage, value = usages, inline = true);
+      msg.channel.send({
+        embed
+      });
     } else {
       console.log(lang.error.notLocalized.cmd);
     }

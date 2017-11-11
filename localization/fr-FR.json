@@ -31,130 +31,126 @@
     "desc": "Description:",
     "permLvl": "Niveau de permission:",
     "usage": "Usage",
-    "ping": [{
+    "ping": {
       "name": "ping",
-      "args": "",
+      "args": [""],
       "msg": "Pong!"
-    }],
-    "gif": [{
+    },
+    "gif": {
       "name": "gif",
-      "args": "",
+      "args": [""],
       "msg": "Met un petit GIF"
-    }],
-    "clearlog": [{
+    },
+    "clearlog": {
       "name": "clearlog",
-      "args": "<messages à regarder>",
+      "args": ["<messages à regarder>"],
       "msg": "Supprime les commandes dans le salon"
-    }],
-    "hello": [{
+    },
+    "hello": {
       "name": "hello",
-      "args": "",
+      "args": [""],
       "msg": "Salut!"
-    }],
-    "stop": [{
+    },
+    "stop": {
       "name": "stop",
-      "args": "",
+      "args": [""],
       "msg": "Fait quitter l'agent du salon vocal"
-    }],
-    "help": [{
+    },
+    "help": {
       "name": "help",
-      "args": "",
-      "msg": "Affiche ceci"
-    }, {
-      "name": "help",
-      "args": "<commande>",
-      "msg": "Affiche l'aide pour la commande"
-    }],
-    "restart": [{
+      "args": ["","<commande>"],
+      "msg": "Affiche toutes les commandes ou l'aide pour une commande"
+    },
+    "restart": {
       "name": "restart",
-      "args": "",
+      "args": [""],
       "msg": "Redémarre l'agent"
-    }],
-    "info": [{
+    },
+    "info": {
       "name": "info",
-      "args": "",
+      "args": [""],
       "msg": "Affiche des informations sur l'agent"
-    }],
-    "tnt": [{
+    },
+    "tnt": {
       "name": "tnt",
-      "args": "",
+      "args": [""],
       "msg": "TNT < 3"
-    }],
-    "kill": [{
+    },
+    "kill": {
       "name": "kill",
-      "args": "",
+      "args": [""],
       "msg": "Ferme l'agent"
-    }],
-    "warn": [{
+    },
+    "warn": {
       "name": "warn",
-      "args": "<utilisateur>",
+      "args": ["<utilisateur>"],
       "msg": "Met un avertissement sur l'utilisateur"
-    }],
-    "unwarn": [{
+    },
+    "unwarn": {
       "name": "unwarn",
-      "args": "<utilisateur>",
+      "args": ["<utilisateur>"],
       "msg": "Enlève un avertissement de l'utilisateur"
-    }],
-    "warnlist": [{
+    },
+    "warnlist": {
       "name": "warnlist",
-      "args": "<utilisateur> ou all",
+      "args": ["<utilisateur>", "all"],
       "msg": "Liste les avertissements d'un utilisateur ou de tous les utilisateurs"
-    }],
-    "warnpurge": [{
+    },
+    "warnpurge": {
       "name": "warnpurge",
-      "args": "<utilisateur>",
+      "args": ["<utilisateur>"],
       "msg": "Enlève tous les avertissements d'un utilisateur ou de tous les utilisateurs"
-    }],
-    "play": [{
+    },
+    "play": {
       "name": "play",
-      "args": "<song url or tags>",
+      "args": ["<song url or tags>"],
       "msg": "Enlève un avertissement de l'utilisateur"
-    }],
-    "skip": [{
+    },
+    "skip": {
       "name": "skip",
-      "args": "",
+      "args": [""],
       "msg": "Saute la chanson qui joue"
-    }],
-    "queue": [{
+    },
+    "queue": {
       "name": "queue",
-      "args": "",
+      "args": [""],
       "msg": "Liste les chansons en attente"
-    }],
-    "flipcoin": [{
+    },
+    "flipcoin": {
       "name": "flipcoin",
-      "args": "",
+      "args": [""],
       "msg": "Pile ou face"
-    }],
-    "roll": [{
+    },
+    "roll": {
       "name": "roll",
-      "args": "<Nombre de dés>d<Nombre de faces><modificateur>",
+      "args": ["<Nombre de dés>d<Nombre de faces><modificateur>"],
       "msg": "Lance des dés"
-    }],
-    "status": [{
+    },
+    "status": {
       "name": "status",
-      "args": "<nouveau statut>",
+      "args": ["<nouveau statut>"],
       "msg": "Change le status"
-    }],
-    "avatar": [{
+    },
+    "avatar": {
       "name": "avatar",
-      "args": "<user>",
+      "args": ["<user>"],
       "msg": "Donne l'avatar d'un utilisateur"
-    }],
-    "profile": [{
+    },
+    "profile": {
       "name": "profile",
-      "args": "<user>",
+      "args": ["<user>"],
       "msg": "Donne le profile d'un joueur"
-    }],
-    "say": [{
+    },
+    "say": {
       "name": "say",
-      "args": "<salon> <message>",
+      "args": ["<salon> <message>"],
       "msg": "Envoie un message dans le salon"
-    }],
-    "setchannel": [{
+    },
+    "setchannel": {
       "name": "setchannel",
-      "args": "",
+      "args": [""],
       "msg": "Change le salon pour les annonces de l'agent"
-    }]
+    }
   },
   "ping": {
     "pong": "Pong!"
