@@ -28,7 +28,7 @@ module.exports = {
       var output = '';
       for (i = 0; i < users.length; i++) {
         if (users[i].warnings > 0) {
-          if (i > 0) {
+          if (output.length > 0) {
             output += '\n';
           }
           output += mustache.render(lang.warn.list, users[i]);
