@@ -12,7 +12,8 @@ var config = require('../config.js');
 var lang;
 
 //Log to the discord user  with the token
-client.login(config.botToken);
+var startTime;
+client.login(config.botToken).then(startTime = Date.now());
 
 //Start the bot
 client.on('ready', () => {
@@ -22,6 +23,9 @@ client.on('ready', () => {
   console.log(lang.general.language);
   //Set status
   client.user.setGame(config.status);
+  //Display startup time
+  var time = Date.now()-startTime;+
+  console.log(mustache.render(lang.general.startupTime, {time}));
 });
 
 module.exports.printMsg = function(msg, text) {

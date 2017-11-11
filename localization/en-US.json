@@ -2,6 +2,7 @@
   "general": {
     "logged": "Logged in as {{user.username}}!",
     "language": "Selected language: English",
+    "startupTime": "Startup took {{time}}ms",
     "stopping": "Shutting down...",
     "restarting": "Restarting...",
     "member": {
