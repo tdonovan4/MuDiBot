@@ -50,7 +50,7 @@ var commands = {
         //Check if args is a valid command
         if (args[0] in commands) {
           //Valid command
-          help.printCmd(msg, lang, commands[args[0]]);
+          help.printCmd(msg, commands[args[0]]);
         } else {
           printMsg(msg, lang.error.invalidArg.cmd);
         }

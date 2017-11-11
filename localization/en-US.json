@@ -31,130 +31,126 @@
     "desc": "Description:",
     "permLvl": "Permission level:",
     "usage": "Usage",
-    "ping": [{
+    "ping": {
       "name": "ping",
-      "args": "",
+      "args": [""],
       "msg": "Pong!"
-    }],
-    "gif": [{
+    },
+    "gif": {
       "name": "gif",
-      "args": "",
+      "args": [""],
       "msg": "Inserts a little GIF"
-    }],
-    "clearlog": [{
+    },
+    "clearlog": {
       "name": "clearlog",
-      "args": "<messages to check>",
+      "args": ["<messages to check>"],
       "msg": "Deletes all commands related to the bot"
-    }],
-    "hello": [{
+    },
+    "hello": {
       "name": "hello",
-      "args": "",
+      "args": [""],
       "msg": "Hello!"
-    }],
-    "stop": [{
+    },
+    "stop": {
       "name": "stop",
-      "args": "",
+      "args": [""],
       "msg": "Makes the bot leave the voice channel"
-    }],
-    "help": [{
+    },
+    "help": {
       "name": "help",
-      "args": "",
-      "msg": "Displays this"
-    }, {
-      "name": "help",
-      "args": "<command>",
-      "msg": "Displays help for the command"
-    }],
-    "restart": [{
+      "args": ["", "<command>"],
+      "msg": "Displays all commands or help for a specific command"
+    },
+    "restart": {
       "name": "restart",
-      "args": "",
+      "args": [""],
       "msg": "Restarts the bot"
-    }],
-    "info": [{
+    },
+    "info": {
       "name": "info",
-      "args": "",
+      "args": [""],
       "msg": "Displays information about the bot"
-    }],
-    "tnt": [{
+    },
+    "tnt": {
       "name": "tnt",
-      "args": "",
+      "args": [""],
       "msg": "TNT <3"
-    }],
-    "kill": [{
+    },
+    "kill": {
       "name": "kill",
-      "args": "",
+      "args": [""],
       "msg": "Kills the process"
-    }],
-    "warn": [{
+    },
+    "warn": {
       "name": "warn",
-      "args": "<user>",
+      "args": ["<user>"],
       "msg": "Puts a warning on user"
-    }],
-    "unwarn": [{
+    },
+    "unwarn": {
       "name": "unwarn",
-      "args": "<user>",
+      "args": ["<user>"],
       "msg": "Removes a warning from user"
-    }],
-    "warnlist": [{
+    },
+    "warnlist": {
       "name": "warnlist",
-      "args": "<user> or all",
+      "args": ["<user>", "all"],
       "msg": "Lists warnings of an user or all users"
-    }],
-    "warnpurge": [{
+    },
+    "warnpurge": {
       "name": "warnpurge",
-      "args": "<user>",
+      "args": ["<user>"],
       "msg": "Removes all warnings from an user or all users"
-    }],
-    "play": [{
+    },
+    "play": {
       "name": "play",
-      "args": "<song url or tags>",
+      "args": ["<song url", "tags>"],
       "msg": "Puts a song in queue and plays it"
-    }],
-    "skip": [{
+    },
+    "skip": {
       "name": "skip",
-      "args": "",
+      "args": [""],
       "msg": "Skip the current song"
-    }],
-    "queue": [{
+    },
+    "queue": {
       "name": "queue",
-      "args": "",
+      "args": [""],
       "msg": "Display songs in queue"
-    }],
-    "flipcoin": [{
+    },
+    "flipcoin": {
       "name": "flipcoin",
-      "args": "",
+      "args": [""],
       "msg": "Flip a digital coin"
-    }],
-    "roll": [{
+    },
+    "roll": {
       "name": "roll",
-      "args": "<# of dice>d<# of faces><modifier>",
+      "args": ["<# of dice>d<# of faces><modifier>"],
       "msg": "Flip digital dice"
-    }],
-    "status": [{
+    },
+    "status": {
       "name": "status",
-      "args": "<new status>",
+      "args": ["<new status>"],
       "msg": "Change bot status"
-    }],
-    "avatar": [{
+    },
+    "avatar": {
       "name": "avatar",
-      "args": "<user>",
+      "args": ["<user>"],
       "msg": "Get an user avatar"
-    }],
-    "profile": [{
+    },
+    "profile": {
       "name": "profile",
-      "args": "<user>",
+      "args": ["<user>"],
       "msg": "Get an user profile"
-    }],
-    "say": [{
+    },
+    "say": {
       "name": "say",
-      "args": "<channel> <message>",
+      "args": ["<channel> <message>"],
       "msg": "Send a message into the channel"
-    }],
-    "setchannel": [{
+    },
+    "setchannel": {
       "name": "setchannel",
-      "args": "",
+      "args": [""],
       "msg": "Change the channel for announcements from the bot"
-    }]
+    }
   },
   "ping": {
     "pong": "Pong!"
