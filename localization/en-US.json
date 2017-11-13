@@ -39,8 +39,13 @@
     },
     "gif": {
       "name": "gif",
-      "args": [""],
-      "msg": "Inserts a little GIF"
+      "args": ["", "<what to search>"],
+      "msg": "Searches for a gif or sends a trending GIF if there is no argument"
+    },
+    "gifrandom": {
+      "name": "gifrandom",
+      "args": ["", "<tag>"],
+      "msg": "Sends a random GIF"
     },
     "clearlog": {
       "name": "clearlog",

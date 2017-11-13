@@ -8,6 +8,8 @@ module.exports = {
 	botToken: '',
 	//Your YouTube Data API key
 	youtubeAPIKey: '',
+	//Your GIPHY API key
+	giphyAPIKey: '',
 
 	/*===============
 		-General-

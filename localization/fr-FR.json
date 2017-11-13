@@ -39,8 +39,13 @@
     },
     "gif": {
       "name": "gif",
-      "args": [""],
-      "msg": "Met un petit GIF"
+      "args": ["", "<quoi chercher>"],
+      "msg": "Cherche un GIF ou envoie un GIF populaire"
+    },
+    "gifrandom": {
+      "name": "gifrandom",
+      "args": ["", "<tag>"],
+      "msg": "Envoie un GIF aléatoire"
     },
     "clearlog": {
       "name": "clearlog",
