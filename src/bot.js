@@ -189,8 +189,28 @@ var commands = {
     //A GIF of a robot, just a funny little feature
     permLvl: "roleMember",
     category: "Fun",
-    execute: function(msg) {
-      msg.reply('http://giphy.com/gifs/l4FGBpKfVMG4qraJG');
+    execute: async function(msg) {
+      const giphy = require('./giphy-api.js');
+      let args = msg.content.split(" ").slice(1);
+
+      var url = await giphy.search(args);
+      if(url != undefined) {
+        msg.channel.send(url);
+      }
+    }
+  },
+  gifrandom: {
+    //A GIF of a robot, just a funny little feature
+    permLvl: "roleMember",
+    category: "Fun",
+    execute: async function(msg) {
+      const giphy = require('./giphy-api.js');
+      let args = msg.content.split(" ").slice(1);
+
+      var url = await giphy.random(args);
+      if(url != undefined) {
+        msg.channel.send(url);
+      }
     }
   },
   hello: {
