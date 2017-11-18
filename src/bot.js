@@ -382,7 +382,11 @@ var keys = Object.keys(commands);
 client.on('message', msg => {
   //Ignore bot
   if (msg.author.bot) return;
-  levels.newMessage(msg);
+  if(config.levels.activated == true) {
+      //Add xp
+      levels.newMessage(msg);
+  }
+
   //Check if the author is not the bot and if message begins with prefix
   if (msg.author != client.user &&
     msg.content.substring(0, config.prefix.length) == config.prefix) {
@@ -392,7 +396,9 @@ client.on('message', msg => {
       cmd = cmd[0].split(' ');
     }
 
-    if (cmd[0] in commands) {
+    var cmdActivated = config[cmd[0]] != undefined ? config[cmd[0]].activated : true;
+
+    if (cmd[0] in commands && cmdActivated) {
       console.log(msg.author.username + ' - ' + msg.content);
       commands[cmd[0]].execute(msg);
     }
@@ -527,14 +533,16 @@ async function sendDefaultChannel(member, text) {
 
 //When users join the server
 client.on('guildMemberAdd', member => {
-  console.log(member);
-  console.log({member});
-  sendDefaultChannel(member, mustache.render(lang.general.member.joined, {member}));
+  if(config.greeting.activated == true) {
+    sendDefaultChannel(member, mustache.render(lang.general.member.joined, {member}));
+  }
 });
 
 //When users leave the server
 client.on('guildMemberRemove', member => {
-  sendDefaultChannel(member, mustache.render(lang.general.member.left, {member}));
+  if(config.farewell.activated == true) {
+    sendDefaultChannel(member, mustache.render(lang.general.member.left, {member}));
+  }
 });
 
 //Make sure the process exits correctly and don't fails to close
