@@ -31,29 +31,29 @@ module.exports = {
   //Role name for "botModo"
   roleModo: '',
 
-	/*===============
+  /*===============
   	-Modules-
   ===============*/
 
-	/*---------------
-	-Xp and levels-
-	---------------*/
-	levels: {
-		//Is this module activated? Set to false to disable the module
-		activated: true
-	},
+  /*---------------
+  -Xp and levels-
+  ---------------*/
+  levels: {
+    //Is this module activated? Set to false to disable the module
+    activated: true
+  },
 
-	/*---------------
-	-Greetings and farewells-
-	---------------*/
-	greeting: {
-		//Is this module activated? Set to false to disable the module
-		activated: true
-	},
-	farewell: {
-		//Is this module activated? Set to false to disable the module
-		activated: true
-	},
+  /*---------------
+  -Greetings and farewells-
+  ---------------*/
+  greeting: {
+    //Is this module activated? Set to false to disable the module
+    activated: true
+  },
+  farewell: {
+    //Is this module activated? Set to false to disable the module
+    activated: true
+  },
 
   /*===============
   	-Commands-
@@ -63,9 +63,9 @@ module.exports = {
   They also can be activated or desactivated.
   All commands are activated by default.*/
 
-	/*---------------
-	-Category: General-
-	---------------*/
+  /*---------------
+  -Category: General-
+  ---------------*/
   help: {
     //Is the command activated? Set to false to disable the command
     activated: true
@@ -91,9 +91,9 @@ module.exports = {
     activated: true
   },
 
-	/*---------------
-	-Category: User-
-	---------------*/
+  /*---------------
+  -Category: User-
+  ---------------*/
   avatar: {
     //Is the command activated? Set to false to disable a command
     activated: true
@@ -104,9 +104,9 @@ module.exports = {
     activated: true
   },
 
-	/*---------------
-	-Category: Fun-
-	---------------*/
+  /*---------------
+  -Category: Fun-
+  ---------------*/
   gif: {
     //Is the command activated? Set to false to disable a command
     activated: true
@@ -157,9 +157,9 @@ module.exports = {
     activated: true
   },
 
-	/*---------------
-	-Category: Warnings-
-	---------------*/
+  /*---------------
+  -Category: Warnings-
+  ---------------*/
   warn: {
     //Is the command activated? Set to false to disable a command
     activated: true
@@ -180,16 +180,16 @@ module.exports = {
     activated: true
   },
 
-	/*---------------
-	-Category: Moderation-
-	---------------*/
+  /*---------------
+  -Category: Moderation-
+  ---------------*/
   clearlog: {
     //Is the command activated? Set to false to disable a command
     activated: true,
-		//List of commands to clear with "$clearlog"
-	  commandsToClear: [''],
-	  //List of users (id) to clear with "$clearlog"
-	  usersToClear: ['']
+    //List of commands to clear with "$clearlog"
+    commandsToClear: [''],
+    //List of users (id) to clear with "$clearlog"
+    usersToClear: ['']
   },
 
   kill: {
