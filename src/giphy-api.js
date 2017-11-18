@@ -1,5 +1,5 @@
 const https = require('https');
-var config = require('../config.js');
+var config = require('./args.js').getConfig();
 
 function get(url) {
   return new Promise(function(resolve) {

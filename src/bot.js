@@ -7,7 +7,7 @@ const levels = require('./levels.js');
 const defaultChannel = require('./default-channel.js');
 const fs = require('fs');
 const mustache = require('mustache');
-var config = require('../config.js');
+var config = require('./args.js').getConfig();
 //For localization
 var lang;
 

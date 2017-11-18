@@ -1,5 +1,4 @@
-var config = require('../config.js');
-var localization;
+var config = require('./args.js').getConfig();
 
 module.exports = {
   getLocalization: function() {
