@@ -156,6 +156,20 @@ module.exports = {
     //Is the command activated? Set to false to disable a command
     activated: true
   },
+  custcmd: {
+    //Is the command activated? Set to false to disable a command
+    activated: true,
+    //The maximum number of custom commands an user can create
+    maxCmdsPerUser: 5
+  },
+  custcmdlist: {
+    //Is the command activated? Set to false to disable a command
+    activated: true
+  },
+  custcmdremove: {
+    //Is the command activated? Set to false to disable a command
+    activated: true
+  },
 
   /*---------------
   -Category: Warnings-

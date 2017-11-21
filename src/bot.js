@@ -24,8 +24,10 @@ client.on('ready', () => {
   //Set status
   client.user.setGame(config.status);
   //Display startup time
-  var time = Date.now()-startTime;+
-  console.log(mustache.render(lang.general.startupTime, {time}));
+  var time = Date.now() - startTime; +
+  console.log(mustache.render(lang.general.startupTime, {
+    time
+  }));
 });
 
 module.exports.printMsg = function(msg, text) {
@@ -194,7 +196,7 @@ var commands = {
       let args = msg.content.split(" ").slice(1);
 
       var url = await giphy.search(args);
-      if(url != undefined) {
+      if (url != undefined) {
         msg.channel.send(url);
       }
     }
@@ -208,7 +210,7 @@ var commands = {
       let args = msg.content.split(" ").slice(1);
 
       var url = await giphy.random(args);
-      if(url != undefined) {
+      if (url != undefined) {
         msg.channel.send(url);
       }
     }
@@ -250,6 +252,33 @@ var commands = {
         num += Math.floor(Math.random() * args[1]) + 1;
       }
       msg.reply(num);
+    }
+  },
+  custcmd: {
+    permLvl: "roleMember",
+    category: "Fun",
+    execute: function(msg) {
+      const customCmd = require('./custom-cmd.js');
+      var args = msg.content.split(" ").slice(1);
+      customCmd.addCmd(msg, args);
+    }
+  },
+  custcmdlist: {
+    permLvl: "roleMember",
+    category: "Fun",
+    execute: function(msg) {
+      const customCmd = require('./custom-cmd.js');
+      var args = msg.content.split(" ").slice(1);
+      customCmd.printCmds(msg, args);
+    }
+  },
+  custcmdremove: {
+    permLvl: "roleModo",
+    category: "Fun",
+    execute: function(msg) {
+      const customCmd = require('./custom-cmd.js');
+      var args = msg.content.split(" ").slice(1);
+      customCmd.removeCmd(msg, args);
     }
   },
   play: {
@@ -382,25 +411,44 @@ var keys = Object.keys(commands);
 client.on('message', msg => {
   //Ignore bot
   if (msg.author.bot) return;
-  if(config.levels.activated == true) {
-      //Add xp
-      levels.newMessage(msg);
+  if (config.levels.activated == true) {
+    //Add xp
+    levels.newMessage(msg);
   }
 
   //Check if the author is not the bot and if message begins with prefix
-  if (msg.author != client.user &&
-    msg.content.substring(0, config.prefix.length) == config.prefix) {
-    let cmd = msg.content.split(config.prefix).slice(1);
+  if (msg.author != client.user) {
+    if (msg.content.substring(0, config.prefix.length) == config.prefix) {
 
-    if (cmd[0] != undefined) {
-      cmd = cmd[0].split(' ');
-    }
+      let cmd = msg.content.split(config.prefix).slice(1);
+      if (cmd[0] != undefined) {
+        cmd = cmd[0].split(' ');
+      }
 
-    var cmdActivated = config[cmd[0]] != undefined ? config[cmd[0]].activated : true;
+      var cmdActivated = config[cmd[0]] != undefined ? config[cmd[0]].activated : true;
 
-    if (cmd[0] in commands && cmdActivated) {
-      console.log(msg.author.username + ' - ' + msg.content);
-      commands[cmd[0]].execute(msg);
+      if (cmd[0] in commands && cmdActivated) {
+        console.log(msg.author.username + ' - ' + msg.content);
+        commands[cmd[0]].execute(msg);
+      }
+    } else {
+      const customCmd = require('./custom-cmd.js');
+
+      customCmd.getCmds(msg).then(custCmds => {
+        var cmd = custCmds.find(x => x.name == msg.content);
+        if (cmd != undefined) {
+          switch(cmd.action) {
+            case 'say':
+              msg.channel.send(cmd.arg);
+              break;
+            case 'play':
+              player.playYoutube(msg, cmd.arg);
+              break;
+            default:
+              console.log(lang.error.invalidArg.cmd);
+          }
+        }
+      });
     }
   }
 });
@@ -461,7 +509,9 @@ function clear(msg, num) {
           }
         }
       }
-      console.log(mustache.render(lang.clearlog.deleted, {deletedMessages}));
+      console.log(mustache.render(lang.clearlog.deleted, {
+        deletedMessages
+      }));
     })
     .catch(console.error);
 }
@@ -533,15 +583,19 @@ async function sendDefaultChannel(member, text) {
 
 //When users join the server
 client.on('guildMemberAdd', member => {
-  if(config.greeting.activated == true) {
-    sendDefaultChannel(member, mustache.render(lang.general.member.joined, {member}));
+  if (config.greeting.activated == true) {
+    sendDefaultChannel(member, mustache.render(lang.general.member.joined, {
+      member
+    }));
   }
 });
 
 //When users leave the server
 client.on('guildMemberRemove', member => {
-  if(config.farewell.activated == true) {
-    sendDefaultChannel(member, mustache.render(lang.general.member.left, {member}));
+  if (config.farewell.activated == true) {
+    sendDefaultChannel(member, mustache.render(lang.general.member.left, {
+      member
+    }));
   }
 });
 
