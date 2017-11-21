@@ -1,47 +1,104 @@
-//Handle writing and reading on files
-const fs = require('fs');
-//TODO: Add argument for path
+//Handle SQL
+const sql = require('sqlite');
+const checkTable = 'CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER)';
+
+function insertUser(msg, userId) {
+  return new Promise((resolve, reject) => {
+    sql.run('INSERT INTO users (serverId, userId, xp, warnings) VALUES (?, ?, ?, ?)', [msg.guild.id, userId, 0, 0])
+      .catch(error => {
+        console.log(error);
+      });
+
+    //Try to get user after he was created
+    sql.get(`SELECT * FROM users WHERE serverId = ${msg.guild.id} AND userId = ${userId}`)
+      .then(row => {
+        resolve(row);
+      }).catch(error => {
+        console.log(error); //Really nasty errors...
+      });
+  });
+}
+
 module.exports = {
-	write: function (file, obj) {
-		var json = JSON.stringify(obj);
+  modifyUsers: function(msg, row, value) {
+    sql.open('./storage/data.db').then(() => {
+      sql.run(checkTable)
+        .then(() => {
+          sql.run(`UPDATE users SET ${row} = ${value} WHERE serverId = ${msg.guild.id}`).catch(error => {
+            console.log(error);
+          });
+        }).catch(error => {
+          console.log(error);
+        });
+      sql.close();
+    }).catch(error => {
+      console.log(error);
+    });
+  },
+  modifyUser: function(msg, userId, row, value) {
+    sql.open('./storage/data.db').then(() => {
+      sql.run(checkTable)
+        .then(() => {
+          sql.run(`UPDATE users SET ${row} = ${value} WHERE serverId = ${msg.guild.id} AND userId = ${userId}`)
+            .catch(error => {
+              console.log(error);
+            });
+        }).catch(error => {
+          console.log(error);
+        });
+      sql.close();
+    }).catch(error => {
+      console.log(error);
+    });
+  },
+  getUsers: function(msg) {
+    return new Promise((resolve, reject) => {
+      sql.open('./storage/data.db').then(() => {
+        sql.all(`SELECT * FROM users WHERE serverId = ${msg.guild.id}`)
+          .then(row => {
+            resolve(row);
+          }).catch(error => {
+            console.log(error); //Nasty errors...
 
-		fs.writeFile(file, json, 'utf8', (err) => {
-			if (err){ console.log(err); }
-		});
-	},
-
-	read: function (file) {
-		return JSON.parse(fs.readFileSync(file, 'utf8'));
-	},
-
-	modifyText: function (file, text, value) {
-		fs.readFile(file, 'utf8', function (err,data) {
-		  if (err) {
-		    return console.log(err);
-		  }
-		  var result = data.replace(text, value);
-
-		  fs.writeFile(file, result, 'utf8', function (err) {
-		     if (err) return console.log(err);
-		  });
-		});
-	},
-
-	empty: function (file) {
-		if(fs.readFileSync(file, 'utf8') == '') {
-			return true;
-			} else {
-			return false;
-		}
-	},
-
-	exist: function (file) {
-		if (!fs.existsSync(file)) {
-			fs.openSync(file, 'w');
-		}
-	},
-
-	delete: function (file) {
-		fs.unlinkSync(file);
-	}
+            //Check if table exist
+            sql.run(checkTable)
+              .then(() => {
+                resolve(row);
+              }).catch(error => {
+                console.log(error);
+              });
+          });
+        sql.close();
+      }).catch(error => {
+        console.log(error);
+      });
+    });
+  },
+  getUser: function(msg, userId) {
+    return new Promise((resolve, reject) => {
+      sql.open('./storage/data.db').then(() => {
+        sql.get(`SELECT * FROM users WHERE serverId = ${msg.guild.id} AND userId = ${userId}`)
+          .then(row => {
+            if (!row) {
+              //User is not defined
+              row = insertUser(msg, userId);
+            }
+            resolve(row);
+          }).catch(() => {
+            //Check if table exist
+            sql.run(checkTable)
+              .then(() => {
+                row = insertUser(msg, userId).then(() => {
+                  resolve(row);
+                });
+              }).catch(error => {
+                console.log(error);
+              });
+          });
+        sql.close();
+      }).catch(error => {
+        console.log(error);
+      });
+    });
+  }
 }
