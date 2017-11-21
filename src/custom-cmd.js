@@ -95,7 +95,7 @@ module.exports = {
   },
   printCmds: async function(msg, args) {
     var cmds = await this.getCmds(msg);
-    if (cmds != undefined) {
+    if (cmds.length > 0) {
       var cmd = cmds.find(x => x.name == args[0]);
       if (cmd != undefined) {
         //Print info about the command
@@ -138,7 +138,7 @@ module.exports = {
         }
       }
     } else {
-      console.log(lang.custcmdlist.empty);
+      bot.printMsg(msg, lang.custcmdlist.empty);
     }
   }
 }
