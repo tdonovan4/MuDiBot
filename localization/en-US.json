@@ -25,6 +25,14 @@
     "notLocalized": {
       "cmd": "Error: this command is not localized!"
     },
+    "notFound": {
+      "cmd": "Command not found"
+    },
+    "tooMuch": {
+      "cmds": "There is too much custom commands!",
+      "cmdsUser": "You have too many custom commands!"
+    },
+    "cmdAlreadyExists": "This command already exists!",
     "notEnoughPermissions": "Not enough permissions"
   },
   "help": {
@@ -156,6 +164,21 @@
       "name": "setchannel",
       "args": [""],
       "msg": "Change the channel for announcements from the bot"
+    },
+    "custcmd": {
+      "name": "custcmd",
+      "args": ["<name> <action> <arg>"],
+      "msg": "Add a custom cmd. <action> can be `say` or `play`, <arg> is the argument of the action."
+    },
+    "custcmdlist": {
+      "name": "custcmdlist",
+      "args": ["", "<user>", "<cmd>"],
+      "msg": "List all custom commands by default. You can add an user to list all of his commands or you can add a command for more information about it."
+    },
+    "custcmdremove": {
+      "name": "custcmdremove",
+      "args": ["<command>"],
+      "msg": "Remove a custom command"
     }
   },
   "ping": {
@@ -198,6 +221,19 @@
   "flipcoin": {
     "heads": "heads",
     "tails": "tails"
+  },
+  "custcmd": {
+    "cmdAdded": "Command added"
+  },
+  "custcmdlist": {
+    "empty": "No custom commands found",
+    "msg": "For more information about a command, type {{config.prefix}}custcmdlist <name of the command>.",
+    "action": "Action",
+    "creator": "Creator",
+    "arg": "Argument"
+  },
+  "custcmdremove": {
+    "cmdRemoved": "Command removed"
   },
   "play": {
     "added": {

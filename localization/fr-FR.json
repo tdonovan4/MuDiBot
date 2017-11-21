@@ -25,6 +25,14 @@
     "notLocalized": {
       "cmd": "Erreur: cette commande n'est pas traduite!"
     },
+    "notFound": {
+      "cmd": "Commande non trouvée"
+    },
+    "tooMuch": {
+      "cmds": "Il y a trop de commandes personnalisée!",
+      "cmdsUser:": "Vous avez trop de commandes personnalisée!"
+    },
+    "cmdAlreadyExists": "Cette commande existe déjà!",
     "notEnoughPermissions": "Permissions insuffisantes"
   },
   "help": {
@@ -156,6 +164,21 @@
       "name": "setchannel",
       "args": [""],
       "msg": "Change le salon pour les annonces de l'agent"
+    },
+    "custcmd": {
+      "name": "custcmd",
+      "args": ["<nom> <action> <arg>"],
+      "msg": "Ajoute une commande personnalisée. <action> peut être `say` ou `play`, <arg> est l'argument de l'action."
+    },
+    "custcmdlist": {
+      "name": "custcmdlist",
+      "args": ["", "<utilisateur>", "<cmd>"],
+      "msg": "Par défaut, liste toutes les commandes personnalisée. Vous pouvez ajouter un utilisateur pour trouver ses commandes ou une commande pour plus d'information sur celle-ci."
+    },
+    "custcmdremove": {
+      "name": "custcmdremove",
+      "args": ["<commande>"],
+      "msg": "Supprime une commande personnalisée"
     }
   },
   "ping": {
@@ -198,6 +221,19 @@
   "flipcoin": {
     "heads": "face",
     "tails": "pile"
+  },
+  "customcmd": {
+    "cmdAdded": "Commande ajoutée"
+  },
+  "custcmdlist": {
+    "empty": "Aucune commande personnalisée trouvée",
+    "msg": "Pour plus d'information sur une commande, tapez {{prefix}}custcmdlist <nom de la commande>.",
+    "action": "Action",
+    "creator": "Créateur",
+    "arg": "Argument"
+  },
+  "custcmdremove": {
+    "cmdRemoved": "Commande supprimée"
   },
   "play": {
     "added": {
