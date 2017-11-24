@@ -119,40 +119,6 @@ function playVideo(connection, message) {
   });
 }
 module.exports = {
-  currentVoice: null,
-  //Sound effects
-  play: function(sound, message) {
-    var emoji = message.guild.emojis.find('name', 'tnt');
-    if (emoji === null) {
-      emoji = '';
-    }
-    var channel = message.member.voiceChannel;
-
-    if (typeof channel !== "undefined") {
-      if (sound === 'hello') {
-        channel.join()
-          .then(connection => {
-            dispatcher = connection.playFile('./sound/hello.wav');
-            dispatcher.on('end', () => connection.disconnect());
-          })
-          .catch(console.error);
-      }
-      if (sound === 'tnt') {
-        channel.join()
-          .then(connection => {
-            dispatcher = connection.playFile('./sound/explosion.wav');
-            dispatcher.on('end', () => {
-              connection.disconnect();
-              message.reply('Boom! ' + emoji);
-            });
-          })
-          .catch(console.error);
-      }
-      currentVoice = channel;
-    } else if (sound === 'tnt') {
-      message.reply(lang.tnt.boom + emoji);
-    }
-  },
   //Get YouTube video
   playYoutube: function(message, link) {
     var regex = /^(http(s)??\:\/\/)?(www\.)?((youtube\.com\/watch\?v=)|(youtu.be\/))([a-zA-Z0-9\-_])+/

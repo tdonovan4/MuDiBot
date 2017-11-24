@@ -60,11 +60,6 @@
       "args": ["<messages à regarder>"],
       "msg": "Supprime les commandes dans le salon"
     },
-    "hello": {
-      "name": "hello",
-      "args": [""],
-      "msg": "Salut!"
-    },
     "stop": {
       "name": "stop",
       "args": [""],
@@ -84,11 +79,6 @@
       "name": "info",
       "args": [""],
       "msg": "Affiche des informations sur l'agent"
-    },
-    "tnt": {
-      "name": "tnt",
-      "args": [""],
-      "msg": "TNT < 3"
     },
     "kill": {
       "name": "kill",
@@ -210,13 +200,6 @@
     "warnings": "Avertissements:",
     "xp": "XP total:",
     "footer": "ID du client: {{id}}"
-  },
-  "hello": {
-    "hi": "Bonjour!"
-  },
-  "tnt": {
-    "fuse": "ssSSSsss...",
-    "boom": "Boom!"
   },
   "flipcoin": {
     "heads": "face",

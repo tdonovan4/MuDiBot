@@ -117,16 +117,6 @@ module.exports = {
     activated: true
   },
 
-  hello: {
-    //Is the command activated? Set to false to disable a command
-    activated: true
-  },
-
-  tnt: {
-    //Is the command activated? Set to false to disable a command
-    activated: true
-  },
-
   flipcoin: {
     //Is the command activated? Set to false to disable a command
     activated: true
