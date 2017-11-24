@@ -39,7 +39,6 @@ module.exports = {
     return new Promise((resolve) => {
       get(`https://api.giphy.com/v1/gifs/random?api_key=${config.giphyAPIKey}${args[0] == undefined ? '' : '&tag=' + args[0]}&limit=1&rating=g`)
         .then(function(response) {
-          console.log(response);
           resolve(response.data.url)
         });
     });
