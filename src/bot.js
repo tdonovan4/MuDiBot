@@ -215,24 +215,6 @@ var commands = {
       }
     }
   },
-  hello: {
-    //Play a greeting sound and reply hi
-    permLvl: "everyone",
-    category: "Fun",
-    execute: function(msg) {
-      player.play('hello', msg);
-      msg.reply(lang.hello.hi);
-    }
-  },
-  tnt: {
-    //Play a big boom!
-    permLvl: "everyone",
-    category: "Fun",
-    execute: function(msg) {
-      msg.reply(lang.tnt.fuse);
-      player.play('tnt', msg);
-    }
-  },
   flipcoin: {
     //Flip a coin
     permLvl: "everyone",

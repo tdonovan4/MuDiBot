@@ -60,11 +60,6 @@
       "args": ["<messages to check>"],
       "msg": "Deletes all commands related to the bot"
     },
-    "hello": {
-      "name": "hello",
-      "args": [""],
-      "msg": "Hello!"
-    },
     "stop": {
       "name": "stop",
       "args": [""],
@@ -84,11 +79,6 @@
       "name": "info",
       "args": [""],
       "msg": "Displays information about the bot"
-    },
-    "tnt": {
-      "name": "tnt",
-      "args": [""],
-      "msg": "TNT <3"
     },
     "kill": {
       "name": "kill",
@@ -210,13 +200,6 @@
     "warnings": "Warnings:",
     "xp": "Total XP:",
     "footer": "Client id: {{id}}"
-  },
-  "hello": {
-    "hi": "Hi!"
-  },
-  "tnt": {
-    "fuse": "ssSSSsss...",
-    "boom": "Boom!"
   },
   "flipcoin": {
     "heads": "heads",
