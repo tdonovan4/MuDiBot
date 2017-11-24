@@ -5,7 +5,7 @@ var lang = require('./localization.js').getLocalization();
 
 module.exports = {
   getXpForLevel: function(level) {
-    return 10 * (level) + 75;
+    return 10 * (level ** 2) + 100
   },
   getProgression: function(remainingXp) {
     level = 0;
@@ -31,7 +31,10 @@ module.exports = {
       //Check if user has level up
       if (xpGained > xpForNextLevel) {
         //Level up!
-        bot.printMsg(msg, mustache.render(lang.general.member.leveled, {msg, progression: progression[0]+1}));
+        bot.printMsg(msg, mustache.render(lang.general.member.leveled, {
+          msg,
+          progression: progression[0] + 1
+        }));
       }
     }
   }
