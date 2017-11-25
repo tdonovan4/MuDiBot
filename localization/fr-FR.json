@@ -102,7 +102,7 @@
     },
     "warnpurge": {
       "name": "warnpurge",
-      "args": ["<utilisateur>"],
+      "args": ["<utilisateur>", "all"],
       "msg": "Enlève tous les avertissements d'un utilisateur ou de tous les utilisateurs"
     },
     "play": {
