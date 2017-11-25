@@ -93,7 +93,7 @@ var commands = {
         **${info.general.version}:** ${pjson.version}
         **${info.general.uptime}:** ${time()}`.replace(/^( *)/gm, ''), inline = false)
       embed.addField(name = `**${info.config.title}**`, value = `
-        **${info.config.language}:** ${config.language}
+        **${info.config.language}:** ${config.locale}
         **${info.config.roleMember}:** ${config.roleMember}
         **${info.config.roleModo}:** ${config.roleModo}`.replace(/^( *)/gm, ''), inline = false)
       embed.setFooter(text = `${info.footer.clientId}: ${client.user.id}`)
