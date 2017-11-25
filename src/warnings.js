@@ -5,7 +5,7 @@ const mustache = require('mustache');
 const sql = require('sqlite');
 var lang = require('./localization.js').getLocalization();
 
-function modifyUsersWarnings (msg, value) {
+function modifyUsersWarnings(msg, value) {
   sql.open('./storage/data.db').then(() => {
     sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER)')
       .then(() => {
@@ -20,7 +20,8 @@ function modifyUsersWarnings (msg, value) {
     console.log(error);
   });
 }
-function modifyUserWarnings (msg, userId, value) {
+
+function modifyUserWarnings(msg, userId, value) {
   sql.open('./storage/data.db').then(() => {
     sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER)')
       .then(() => {
@@ -39,17 +40,22 @@ function modifyUserWarnings (msg, userId, value) {
 
 module.exports = {
   warn: async function(msg, num) {
-    var user = await storage.getUser(msg, msg.mentions.users.first().id);
-    var warnings = user.warnings
+    if (msg.mentions.users.first() != undefined) {
+      //There is a mention
+      var user = await storage.getUser(msg, msg.mentions.users.first().id);
+      var warnings = user.warnings
 
-    if (warnings != undefined) {
-      //User warnings found!
-      warnings = warnings + num;
-      modifyUserWarnings(msg, user.userId, warnings);
-      user.warnings = warnings;
-      bot.printMsg(msg, mustache.render(lang.warn.list, user));
+      if (warnings != undefined) {
+        //User warnings found!
+        warnings = warnings + num;
+        modifyUserWarnings(msg, user.userId, warnings);
+        user.warnings = warnings;
+        bot.printMsg(msg, mustache.render(lang.warn.list, user));
+      } else {
+        bot.printMsg(msg, lang.error.invalidArg.user);
+      }
     } else {
-      bot.printMsg(msg, lang.error.invalidArg.user);
+      bot.printMsg(msg, lang.error.usage);
     }
   },
   list: async function(msg) {
