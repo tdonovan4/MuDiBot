@@ -79,13 +79,13 @@ module.exports = {
       const Discord = require("discord.js");
 
       var usages = '';
-      for (var i = 0; i < help.args.length; i++) {
+      for (var i = 0; i < help.usages.length; i++) {
         //Insert usages
-        usages += `${config.prefix + help.name} ${help.args[i]}\n`
+        usages += `${config.prefix + args[0]} ${help.usages[i]}\n`
       }
 
       var embed = new Discord.RichEmbed();
-      embed.title = config.prefix + help.name;
+      embed.title = config.prefix + args[0];
       embed.color = 0x00ff00;
       embed.addField(name = lang.help.desc, value = help.msg, inline = false)
       embed.addField(name = lang.help.permLvl, value = cmd.permLvl, inline = true)
