@@ -40,135 +40,109 @@
     "desc": "Description:",
     "permLvl": "Permission level:",
     "usage": "Usage",
-    "ping": {
-      "name": "ping",
-      "args": [""],
-      "msg": "Pong!"
-    },
-    "gif": {
-      "name": "gif",
-      "args": ["", "<what to search>"],
-      "msg": "Searches for a gif or sends a trending GIF if there is no argument"
-    },
-    "gifrandom": {
-      "name": "gifrandom",
-      "args": ["", "<tag>"],
-      "msg": "Sends a random GIF"
-    },
-    "clearlog": {
-      "name": "clearlog",
-      "args": ["<messages to check>"],
-      "msg": "Deletes all commands related to the bot"
-    },
-    "stop": {
-      "name": "stop",
-      "args": [""],
-      "msg": "Makes the bot leave the voice channel"
-    },
     "help": {
-      "name": "help",
-      "args": ["", "<command>"],
+      "usages": ["", "<command>"],
       "msg": "Displays all commands or help for a specific command"
     },
-    "restart": {
-      "name": "restart",
-      "args": [""],
-      "msg": "Restarts the bot"
+    "ping": {
+      "usages": [""],
+      "msg": "Pong!"
     },
     "info": {
-      "name": "info",
-      "args": [""],
+      "usages": [""],
       "msg": "Displays information about the bot"
     },
-    "kill": {
-      "name": "kill",
-      "args": [""],
-      "msg": "Kills the process"
-    },
-    "warn": {
-      "name": "warn",
-      "args": ["<user>"],
-      "msg": "Puts a warning on user"
-    },
-    "unwarn": {
-      "name": "unwarn",
-      "args": ["<user>"],
-      "msg": "Removes a warning from user"
-    },
-    "warnlist": {
-      "name": "warnlist",
-      "args": ["<user>", "all"],
-      "msg": "Lists warnings of an user or all users"
-    },
-    "warnpurge": {
-      "name": "warnpurge",
-      "args": ["<user>", "all"],
-      "msg": "Removes all warnings from an user or all users"
-    },
-    "play": {
-      "name": "play",
-      "args": ["<song url", "tags>"],
-      "msg": "Puts a song in queue and plays it"
-    },
-    "skip": {
-      "name": "skip",
-      "args": [""],
-      "msg": "Skip the current song"
-    },
-    "queue": {
-      "name": "queue",
-      "args": [""],
-      "msg": "Display songs in queue"
-    },
-    "flipcoin": {
-      "name": "flipcoin",
-      "args": [""],
-      "msg": "Flip a digital coin"
-    },
-    "roll": {
-      "name": "roll",
-      "args": ["<# of dice>d<# of faces><modifier>"],
-      "msg": "Flip digital dice"
-    },
     "status": {
-      "name": "status",
-      "args": ["<new status>"],
+      "usages": ["<new status>"],
       "msg": "Change bot status"
     },
+    "say": {
+      "usages": ["<channel> <message>"],
+      "msg": "Send a message into the channel"
+    },
     "avatar": {
-      "name": "avatar",
-      "args": ["<user>"],
+      "usages": ["<user>"],
       "msg": "Get an user avatar"
     },
     "profile": {
-      "name": "profile",
-      "args": ["<user>"],
+      "usages": ["<user>"],
       "msg": "Get an user profile"
     },
-    "say": {
-      "name": "say",
-      "args": ["<channel> <message>"],
-      "msg": "Send a message into the channel"
+    "gif": {
+      "usages": ["", "<what to search>"],
+      "msg": "Searches for a gif or sends a trending GIF if there is no argument"
     },
-    "setchannel": {
-      "name": "setchannel",
-      "args": [""],
-      "msg": "Change the channel for announcements from the bot"
+    "gifrandom": {
+      "usages": ["", "<tag>"],
+      "msg": "Sends a random GIF"
+    },
+    "flipcoin": {
+      "usages": [""],
+      "msg": "Flip a digital coin"
+    },
+    "roll": {
+      "usages": ["<# of dice>d<# of faces><modifier>"],
+      "msg": "Flip digital dice"
     },
     "custcmd": {
-      "name": "custcmd",
-      "args": ["<name> <action> <arg>"],
+      "usages": ["<name> <action> <arg>"],
       "msg": "Add a custom cmd. <action> can be `say` or `play`, <arg> is the argument of the action."
     },
     "custcmdlist": {
-      "name": "custcmdlist",
-      "args": ["", "<user>", "<cmd>"],
+      "usages": ["", "<user>", "<cmd>"],
       "msg": "List all custom commands by default. You can add an user to list all of his commands or you can add a command for more information about it."
     },
     "custcmdremove": {
-      "name": "custcmdremove",
-      "args": ["<command>"],
+      "usages": ["<command>"],
       "msg": "Remove a custom command"
+    },
+    "play": {
+      "usages": ["<song url", "tags>"],
+      "msg": "Puts a song in queue and plays it"
+    },
+    "stop": {
+      "usages": [""],
+      "msg": "Makes the bot leave the voice channel"
+    },
+    "skip": {
+      "usages": [""],
+      "msg": "Skip the current song"
+    },
+    "queue": {
+      "usages": [""],
+      "msg": "Display songs in queue"
+    },
+    "warn": {
+      "usages": ["<user>"],
+      "msg": "Puts a warning on user"
+    },
+    "unwarn": {
+      "usages": ["<user>"],
+      "msg": "Removes a warning from user"
+    },
+    "warnlist": {
+      "usages": ["<user>", "all"],
+      "msg": "Lists warnings of an user or all users"
+    },
+    "warnpurge": {
+      "usages": ["<user>", "all"],
+      "msg": "Removes all warnings from an user or all users"
+    },
+    "clearlog": {
+      "usages": ["<messages to check>"],
+      "msg": "Deletes all commands related to the bot"
+    },
+    "kill": {
+      "usages": [""],
+      "msg": "Kills the process"
+    },
+    "restart": {
+      "usages": [""],
+      "msg": "Restarts the bot"
+    },
+    "setchannel": {
+      "usages": [""],
+      "msg": "Change the channel for announcements from the bot"
     }
   },
   "ping": {
