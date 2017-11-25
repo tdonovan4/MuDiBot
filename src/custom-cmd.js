@@ -5,7 +5,9 @@ const mustache = require('mustache');
 var lang = require('./localization.js').getLocalization();
 
 function addCmd(msg, args) {
-  sql.run('INSERT INTO customCmds (serverId, userId, name, action, arg) VALUES (?, ?, ?, ?, ?)', [msg.guild.id, msg.author.id, args[0], args[1], args.slice(2).join(' ')])
+  sql.run('INSERT INTO customCmds (serverId, userId, name, action, arg) VALUES (?, ?, ?, ?, ?)', [
+      msg.guild.id, msg.author.id, args[0], args[1], args.slice(2).join(' ')
+    ])
     .catch(error => {
       console.log(error);
     });
@@ -47,10 +49,10 @@ module.exports = {
   },
   removeCmd: function(msg, args) {
     sql.open('./storage/data.db').then(() => {
-      sql.all(`SELECT * FROM customCmds WHERE serverId = ${msg.guild.id} AND name = "${args[0]}"`)
+      sql.all("SELECT * FROM customCmds WHERE serverId = ? AND name = ?", [msg.guild.id, args[0]])
         .then(row => {
           if (row.length > 0) {
-            sql.all(`DELETE FROM customCmds WHERE serverId = ${msg.guild.id} AND name = "${args[0]}"`)
+            sql.all("DELETE FROM customCmds WHERE serverId = ? AND name = ?", [msg.guild.id, args[0]])
               .then(() => {
                 bot.printMsg(msg, lang.custcmdremove.cmdRemoved)
               }).catch(error => {
@@ -75,7 +77,7 @@ module.exports = {
   getCmds: function(msg) {
     return new Promise((resolve, reject) => {
       sql.open('./storage/data.db').then(() => {
-        sql.all(`SELECT * FROM customCmds WHERE serverId = ${msg.guild.id}`)
+        sql.all('SELECT * FROM customCmds WHERE serverId = ?', msg.guild.id)
           .then(row => {
             resolve(row);
           }).catch(error => {

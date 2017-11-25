@@ -10,7 +10,7 @@ function insertUser(msg, userId) {
       });
 
     //Try to get user after he was created
-    sql.get(`SELECT * FROM users WHERE serverId = ${msg.guild.id} AND userId = ${userId}`)
+    sql.get('SELECT * FROM users WHERE serverId = ? AND userId = ?', [msg.guild.id, userId])
       .then(row => {
         resolve(row);
       }).catch(error => {
@@ -20,41 +20,10 @@ function insertUser(msg, userId) {
 }
 
 module.exports = {
-  modifyUsers: function(msg, row, value) {
-    sql.open('./storage/data.db').then(() => {
-      sql.run(checkTable)
-        .then(() => {
-          sql.run(`UPDATE users SET ${row} = ${value} WHERE serverId = ${msg.guild.id}`).catch(error => {
-            console.log(error);
-          });
-        }).catch(error => {
-          console.log(error);
-        });
-      sql.close();
-    }).catch(error => {
-      console.log(error);
-    });
-  },
-  modifyUser: function(msg, userId, row, value) {
-    sql.open('./storage/data.db').then(() => {
-      sql.run(checkTable)
-        .then(() => {
-          sql.run(`UPDATE users SET ${row} = ${value} WHERE serverId = ${msg.guild.id} AND userId = ${userId}`)
-            .catch(error => {
-              console.log(error);
-            });
-        }).catch(error => {
-          console.log(error);
-        });
-      sql.close();
-    }).catch(error => {
-      console.log(error);
-    });
-  },
   getUsers: function(msg) {
     return new Promise((resolve, reject) => {
       sql.open('./storage/data.db').then(() => {
-        sql.all(`SELECT * FROM users WHERE serverId = ${msg.guild.id}`)
+        sql.all('SELECT * FROM users WHERE serverId = ?', msg.guild.id)
           .then(row => {
             resolve(row);
           }).catch(error => {
@@ -77,7 +46,7 @@ module.exports = {
   getUser: function(msg, userId) {
     return new Promise((resolve, reject) => {
       sql.open('./storage/data.db').then(() => {
-        sql.get(`SELECT * FROM users WHERE serverId = ${msg.guild.id} AND userId = ${userId}`)
+        sql.get('SELECT * FROM users WHERE serverId = ? AND userId = ?', [msg.guild.id, userId])
           .then(row => {
             if (!row) {
               //User is not defined

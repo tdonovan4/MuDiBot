@@ -1,7 +1,25 @@
 const storage = require('./storage.js');
 const bot = require('./bot.js');
 const mustache = require('mustache');
+const sql = require('sqlite');
 var lang = require('./localization.js').getLocalization();
+
+function modifyUserXp (msg, userId, value) {
+  sql.open('./storage/data.db').then(() => {
+    sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER)')
+      .then(() => {
+        sql.run('UPDATE users SET xp = ? WHERE serverId = ? AND userId = ?', [value, msg.guild.id, userId])
+          .catch(error => {
+            console.log(error);
+          });
+      }).catch(error => {
+        console.log(error);
+      });
+    sql.close();
+  }).catch(error => {
+    console.log(error);
+  });
+}
 
 module.exports = {
   getXpForLevel: function(level) {
@@ -23,7 +41,7 @@ module.exports = {
       var extraXp = Math.trunc(msg.content.replace(/\s/g, "").length / 3);
       //Get a random number from 1 to 3 and add extra xp (max is 20);
       xpGained = Math.min(20, (Math.floor(Math.random() * 3) + 1) + extraXp);
-      storage.modifyUser(msg, msg.author.id, 'xp', xp + xpGained);
+      modifyUserXp(msg, msg.author.id, xp + xpGained);
 
       let progression = this.getProgression(xp);
       let xpForNextLevel = this.getXpForLevel(progression[0]) - progression[1];
