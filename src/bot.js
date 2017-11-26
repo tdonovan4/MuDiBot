@@ -93,7 +93,7 @@ var commands = {
         **${info.general.version}:** ${pjson.version}
         **${info.general.uptime}:** ${time()}`.replace(/^( *)/gm, ''), inline = false)
       embed.addField(name = `**${info.config.title}**`, value = `
-        **${info.config.language}:** ${config.language}
+        **${info.config.language}:** ${config.locale}
         **${info.config.roleMember}:** ${config.roleMember}
         **${info.config.roleModo}:** ${config.roleModo}`.replace(/^( *)/gm, ''), inline = false)
       embed.setFooter(text = `${info.footer.clientId}: ${client.user.id}`)
@@ -213,24 +213,6 @@ var commands = {
       if (url != undefined) {
         msg.channel.send(url);
       }
-    }
-  },
-  hello: {
-    //Play a greeting sound and reply hi
-    permLvl: "everyone",
-    category: "Fun",
-    execute: function(msg) {
-      player.play('hello', msg);
-      msg.reply(lang.hello.hi);
-    }
-  },
-  tnt: {
-    //Play a big boom!
-    permLvl: "everyone",
-    category: "Fun",
-    execute: function(msg) {
-      msg.reply(lang.tnt.fuse);
-      player.play('tnt', msg);
     }
   },
   flipcoin: {
@@ -411,33 +393,27 @@ var keys = Object.keys(commands);
 client.on('message', msg => {
   //Ignore bot
   if (msg.author.bot) return;
-  if (config.levels.activated == true) {
-    //Add xp
-    levels.newMessage(msg);
-  }
 
-  //Check if the author is not the bot and if message begins with prefix
+  //Check if the author is not the bot
   if (msg.author != client.user) {
-    if (msg.content.substring(0, config.prefix.length) == config.prefix) {
 
-      let cmd = msg.content.split(config.prefix).slice(1);
-      if (cmd[0] != undefined) {
-        cmd = cmd[0].split(' ');
-      }
+    let cmd = msg.content.split(config.prefix).slice(1);
+    if(cmd[0] != undefined) {
+      cmd = cmd[0].split(' ');
+    }
 
-      var cmdActivated = config[cmd[0]] != undefined ? config[cmd[0]].activated : true;
+    var cmdActivated = config[cmd[0]] != undefined ? config[cmd[0]].activated : true;
 
-      if (cmd[0] in commands && cmdActivated) {
-        console.log(msg.author.username + ' - ' + msg.content);
-        commands[cmd[0]].execute(msg);
-      }
+    if (cmd[0] in commands && cmdActivated) {
+      console.log(msg.author.username + ' - ' + msg.content);
+      commands[cmd[0]].execute(msg);
     } else {
       const customCmd = require('./custom-cmd.js');
 
       customCmd.getCmds(msg).then(custCmds => {
         var cmd = custCmds.find(x => x.name == msg.content);
         if (cmd != undefined) {
-          switch(cmd.action) {
+          switch (cmd.action) {
             case 'say':
               msg.channel.send(cmd.arg);
               break;
@@ -449,6 +425,10 @@ client.on('message', msg => {
           }
         }
       });
+    }
+    if (config.levels.activated == true) {
+      //Add xp
+      levels.newMessage(msg);
     }
   }
 });

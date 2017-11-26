@@ -2,21 +2,60 @@
 const storage = require('./storage.js');
 const bot = require('./bot.js');
 const mustache = require('mustache');
+const sql = require('sqlite');
 var lang = require('./localization.js').getLocalization();
+
+function modifyUsersWarnings(msg, value) {
+  sql.open('./storage/data.db').then(() => {
+    sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER)')
+      .then(() => {
+        sql.run('UPDATE users SET warnings = ? WHERE serverId = ?', [value, msg.guild.id]).catch(error => {
+          console.log(error);
+        });
+      }).catch(error => {
+        console.log(error);
+      });
+    sql.close();
+  }).catch(error => {
+    console.log(error);
+  });
+}
+
+function modifyUserWarnings(msg, userId, value) {
+  sql.open('./storage/data.db').then(() => {
+    sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER)')
+      .then(() => {
+        sql.run('UPDATE users SET warnings = ? WHERE serverId = ? AND userId = ?', [value, msg.guild.id, userId])
+          .catch(error => {
+            console.log(error);
+          });
+      }).catch(error => {
+        console.log(error);
+      });
+    sql.close();
+  }).catch(error => {
+    console.log(error);
+  });
+}
 
 module.exports = {
   warn: async function(msg, num) {
-    var user = await storage.getUser(msg, msg.mentions.users.first().id);
-    var warnings = user.warnings
+    if (msg.mentions.users.first() != undefined) {
+      //There is a mention
+      var user = await storage.getUser(msg, msg.mentions.users.first().id);
+      var warnings = user.warnings
 
-    if (warnings != undefined) {
-      //User warnings found!
-      warnings = warnings + num;
-      storage.modifyUser(msg, user.userId, 'warnings', warnings);
-      user.warnings = warnings;
-      bot.printMsg(msg, mustache.render(lang.warn.list, user));
+      if (warnings != undefined) {
+        //User warnings found!
+        warnings = warnings + num;
+        modifyUserWarnings(msg, user.userId, warnings);
+        user.warnings = warnings;
+        bot.printMsg(msg, mustache.render(lang.warn.list, user));
+      } else {
+        bot.printMsg(msg, lang.error.invalidArg.user);
+      }
     } else {
-      bot.printMsg(msg, lang.error.invalidArg.user);
+      bot.printMsg(msg, lang.error.usage);
     }
   },
   list: async function(msg) {
@@ -56,14 +95,14 @@ module.exports = {
 
     if (args == 'all') {
       //Purge all users
-      storage.modifyUsers(msg, 'warnings', 0)
+      modifyUsersWarnings(msg, 0)
       bot.printMsg(msg, lang.warn.usersCleared);
     } else if (msg.mentions.users.first() != undefined) {
       //Purge the user
       var user = await storage.getUser(msg, msg.mentions.users.first().id);
 
       if (user != undefined) {
-        storage.modifyUser(msg, user.userId, 'warnings', 0)
+        modifyUserWarnings(msg, user.userId, 0)
         bot.printMsg(msg, lang.warn.userCleared);
       } else {
         bot.printMsg(msg, lang.error.invalidArg.user);
