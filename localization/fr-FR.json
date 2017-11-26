@@ -40,145 +40,109 @@
     "desc": "Description:",
     "permLvl": "Niveau de permission:",
     "usage": "Usage",
-    "ping": {
-      "name": "ping",
-      "args": [""],
-      "msg": "Pong!"
-    },
-    "gif": {
-      "name": "gif",
-      "args": ["", "<quoi chercher>"],
-      "msg": "Cherche un GIF ou envoie un GIF populaire"
-    },
-    "gifrandom": {
-      "name": "gifrandom",
-      "args": ["", "<tag>"],
-      "msg": "Envoie un GIF aléatoire"
-    },
-    "clearlog": {
-      "name": "clearlog",
-      "args": ["<messages à regarder>"],
-      "msg": "Supprime les commandes dans le salon"
-    },
-    "hello": {
-      "name": "hello",
-      "args": [""],
-      "msg": "Salut!"
-    },
-    "stop": {
-      "name": "stop",
-      "args": [""],
-      "msg": "Fait quitter l'agent du salon vocal"
-    },
     "help": {
-      "name": "help",
-      "args": ["","<commande>"],
+      "usages": ["","<commande>"],
       "msg": "Affiche toutes les commandes ou l'aide pour une commande"
     },
-    "restart": {
-      "name": "restart",
-      "args": [""],
-      "msg": "Redémarre l'agent"
+    "ping": {
+      "usages": [""],
+      "msg": "Pong!"
     },
     "info": {
-      "name": "info",
-      "args": [""],
+      "usages": [""],
       "msg": "Affiche des informations sur l'agent"
     },
-    "tnt": {
-      "name": "tnt",
-      "args": [""],
-      "msg": "TNT < 3"
-    },
-    "kill": {
-      "name": "kill",
-      "args": [""],
-      "msg": "Ferme l'agent"
-    },
-    "warn": {
-      "name": "warn",
-      "args": ["<utilisateur>"],
-      "msg": "Met un avertissement sur l'utilisateur"
-    },
-    "unwarn": {
-      "name": "unwarn",
-      "args": ["<utilisateur>"],
-      "msg": "Enlève un avertissement de l'utilisateur"
-    },
-    "warnlist": {
-      "name": "warnlist",
-      "args": ["<utilisateur>", "all"],
-      "msg": "Liste les avertissements d'un utilisateur ou de tous les utilisateurs"
-    },
-    "warnpurge": {
-      "name": "warnpurge",
-      "args": ["<utilisateur>"],
-      "msg": "Enlève tous les avertissements d'un utilisateur ou de tous les utilisateurs"
-    },
-    "play": {
-      "name": "play",
-      "args": ["<song url or tags>"],
-      "msg": "Enlève un avertissement de l'utilisateur"
-    },
-    "skip": {
-      "name": "skip",
-      "args": [""],
-      "msg": "Saute la chanson qui joue"
-    },
-    "queue": {
-      "name": "queue",
-      "args": [""],
-      "msg": "Liste les chansons en attente"
-    },
-    "flipcoin": {
-      "name": "flipcoin",
-      "args": [""],
-      "msg": "Pile ou face"
-    },
-    "roll": {
-      "name": "roll",
-      "args": ["<Nombre de dés>d<Nombre de faces><modificateur>"],
-      "msg": "Lance des dés"
-    },
     "status": {
-      "name": "status",
-      "args": ["<nouveau statut>"],
+      "usages": ["<nouveau statut>"],
       "msg": "Change le status"
     },
+    "say": {
+      "usages": ["<salon> <message>"],
+      "msg": "Envoie un message dans le salon"
+    },
     "avatar": {
-      "name": "avatar",
-      "args": ["<user>"],
+      "usages": ["<user>"],
       "msg": "Donne l'avatar d'un utilisateur"
     },
     "profile": {
-      "name": "profile",
-      "args": ["<user>"],
+      "usages": ["<user>"],
       "msg": "Donne le profile d'un joueur"
     },
-    "say": {
-      "name": "say",
-      "args": ["<salon> <message>"],
-      "msg": "Envoie un message dans le salon"
+    "gif": {
+      "usages": ["", "<quoi chercher>"],
+      "msg": "Cherche un GIF ou envoie un GIF populaire"
     },
-    "setchannel": {
-      "name": "setchannel",
-      "args": [""],
-      "msg": "Change le salon pour les annonces de l'agent"
+    "gifrandom": {
+      "usages": ["", "<tag>"],
+      "msg": "Envoie un GIF aléatoire"
+    },
+    "flipcoin": {
+      "usages": [""],
+      "msg": "Pile ou face"
+    },
+    "roll": {
+      "usages": ["<Nombre de dés>d<Nombre de faces><modificateur>"],
+      "msg": "Lance des dés"
     },
     "custcmd": {
-      "name": "custcmd",
-      "args": ["<nom> <action> <arg>"],
+      "usages": ["<nom> <action> <arg>"],
       "msg": "Ajoute une commande personnalisée. <action> peut être `say` ou `play`, <arg> est l'argument de l'action."
     },
     "custcmdlist": {
-      "name": "custcmdlist",
-      "args": ["", "<utilisateur>", "<cmd>"],
+      "usages": ["", "<utilisateur>", "<cmd>"],
       "msg": "Par défaut, liste toutes les commandes personnalisée. Vous pouvez ajouter un utilisateur pour trouver ses commandes ou une commande pour plus d'information sur celle-ci."
     },
     "custcmdremove": {
-      "name": "custcmdremove",
-      "args": ["<commande>"],
+      "usages": ["<commande>"],
       "msg": "Supprime une commande personnalisée"
+    },
+    "play": {
+      "usages": ["<song url or tags>"],
+      "msg": "Enlève un avertissement de l'utilisateur"
+    },
+    "stop": {
+      "usages": [""],
+      "msg": "Fait quitter l'agent du salon vocal"
+    },
+    "skip": {
+      "usages": [""],
+      "msg": "Saute la chanson qui joue"
+    },
+    "queue": {
+      "usages": [""],
+      "msg": "Liste les chansons en attente"
+    },
+    "warn": {
+      "usages": ["<utilisateur>"],
+      "msg": "Met un avertissement sur l'utilisateur"
+    },
+    "unwarn": {
+      "usages": ["<utilisateur>"],
+      "msg": "Enlève un avertissement de l'utilisateur"
+    },
+    "warnlist": {
+      "usages": ["<utilisateur>", "all"],
+      "msg": "Liste les avertissements d'un utilisateur ou de tous les utilisateurs"
+    },
+    "warnpurge": {
+      "usages": ["<utilisateur>", "all"],
+      "msg": "Enlève tous les avertissements d'un utilisateur ou de tous les utilisateurs"
+    },
+    "clearlog": {
+      "usages": ["<messages à regarder>"],
+      "msg": "Supprime les commandes dans le salon"
+    },
+    "kill": {
+      "usages": [""],
+      "msg": "Ferme l'agent"
+    },
+    "restart": {
+      "usages": [""],
+      "msg": "Redémarre l'agent"
+    },
+    "setchannel": {
+      "usages": [""],
+      "msg": "Change le salon pour les annonces de l'agent"
     }
   },
   "ping": {
@@ -210,13 +174,6 @@
     "warnings": "Avertissements:",
     "xp": "XP total:",
     "footer": "ID du client: {{id}}"
-  },
-  "hello": {
-    "hi": "Bonjour!"
-  },
-  "tnt": {
-    "fuse": "ssSSSsss...",
-    "boom": "Boom!"
   },
   "flipcoin": {
     "heads": "face",
