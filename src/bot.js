@@ -398,7 +398,9 @@ client.on('message', msg => {
   if (msg.author != client.user) {
 
     let cmd = msg.content.split(config.prefix).slice(1);
-    cmd = cmd[0].split(' ');
+    if(cmd[0] != undefined) {
+      cmd = cmd[0].split(' ');
+    }
 
     var cmdActivated = config[cmd[0]] != undefined ? config[cmd[0]].activated : true;
 
