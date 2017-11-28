@@ -32,7 +32,7 @@ Then, fill `config.js`. More information will be found inside.
 **You will also need to create a bot user and invite it to your guild! A guide is on the way.**
 
 ## Usage
-Start the bot by running `run.sh`
+Start the bot by running `run.sh` or `run.bat`.
 
 You can then write `$help` (by default) to display all the available commands.
 
