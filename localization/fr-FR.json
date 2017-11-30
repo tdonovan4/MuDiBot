@@ -37,9 +37,10 @@
   },
   "help": {
     "msg": "Pour plus d'information sur une commande et son utilisation, tapez `{{config.prefix}}help nomDeLaCommande`.",
+    "alias": "Alias:",
     "desc": "Description:",
     "permLvl": "Niveau de permission:",
-    "usage": "Usage",
+    "usage": "Usage:",
     "help": {
       "usages": ["","<commande>"],
       "msg": "Affiche toutes les commandes ou l'aide pour une commande"

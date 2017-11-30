@@ -56,7 +56,7 @@ var commands = {
         //Check if args is a valid command
         if (args[0] in commands) {
           //Valid command
-          help.printCmd(msg, commands[args[0]]);
+          help.printCmd(msg, commands);
         } else {
           printMsg(msg, lang.error.invalidArg.cmd);
         }
@@ -66,6 +66,7 @@ var commands = {
       }
     }
   },
+
   ping: {
     //Reply "Pong!"
     permLvl: "everyone",
@@ -75,6 +76,7 @@ var commands = {
       console.log(lang.ping.pong);
     }
   },
+
   info: {
     //Display info about the client
     permLvl: "everyone",
@@ -103,6 +105,7 @@ var commands = {
       });
     }
   },
+
   status: {
     permLvl: "roleModo",
     category: "General",
@@ -114,6 +117,7 @@ var commands = {
       config.status = newStatus[0];
     }
   },
+
   say: {
     permLvl: "roleModo",
     category: "General",
@@ -147,6 +151,7 @@ var commands = {
       channel.send(messageToSay);
     }
   },
+
   avatar: {
     permLvl: "everyone",
     category: "User",
@@ -159,6 +164,7 @@ var commands = {
       }
     }
   },
+
   profile: {
     permLvl: "everyone",
     category: "User",
@@ -187,8 +193,8 @@ var commands = {
       });
     }
   },
+
   gif: {
-    //A GIF of a robot, just a funny little feature
     permLvl: "roleMember",
     category: "Fun",
     execute: async function(msg) {
@@ -201,8 +207,8 @@ var commands = {
       }
     }
   },
+
   gifrandom: {
-    //A GIF of a robot, just a funny little feature
     permLvl: "roleMember",
     category: "Fun",
     execute: async function(msg) {
@@ -215,6 +221,12 @@ var commands = {
       }
     }
   },
+  get gifr () {
+    var cmd = Object.assign({}, this.gifrandom);
+    cmd.aliasOf = 'gifrandom';
+    return cmd;
+  },
+
   flipcoin: {
     //Flip a coin
     permLvl: "everyone",
@@ -223,6 +235,7 @@ var commands = {
       msg.reply(Math.floor(Math.random() * 2) == 0 ? lang.flipcoin.heads : lang.flipcoin.tails);
     }
   },
+
   roll: {
     //Flip a coin
     permLvl: "everyone",
@@ -236,6 +249,7 @@ var commands = {
       msg.reply(num);
     }
   },
+
   custcmd: {
     permLvl: "roleMember",
     category: "Fun",
@@ -245,6 +259,12 @@ var commands = {
       customCmd.addCmd(msg, args);
     }
   },
+  get cc () {
+    var cmd = Object.assign({}, this.custcmd);
+    cmd.aliasOf = 'custcmd';
+    return cmd;
+  },
+
   custcmdlist: {
     permLvl: "roleMember",
     category: "Fun",
@@ -254,6 +274,12 @@ var commands = {
       customCmd.printCmds(msg, args);
     }
   },
+  get cclist () {
+    var cmd = Object.assign({}, this.custcmdlist);
+    cmd.aliasOf = 'custcmdlist';
+    return cmd;
+  },
+
   custcmdremove: {
     permLvl: "roleModo",
     category: "Fun",
@@ -263,6 +289,12 @@ var commands = {
       customCmd.removeCmd(msg, args);
     }
   },
+  get ccrem () {
+    var cmd = Object.assign({}, this.custcmdremove);
+    cmd.aliasOf = 'custcmdremove';
+    return cmd;
+  },
+
   play: {
     //Play a song on YouTube
     permLvl: "everyone",
@@ -271,6 +303,7 @@ var commands = {
       player.playYoutube(msg, msg.content.split(" ").slice(1));
     }
   },
+
   stop: {
     //Stop the voice connection and leave voice channel
     permLvl: "everyone",
@@ -279,6 +312,7 @@ var commands = {
       player.stop(msg);
     }
   },
+
   skip: {
     //Skip to next song in queue
     permLvl: "roleMember",
@@ -287,6 +321,7 @@ var commands = {
       player.skip(msg);
     }
   },
+
   queue: {
     //Skip to next song in queue
     permLvl: "everyone",
@@ -295,6 +330,7 @@ var commands = {
       player.listQueue(msg);
     }
   },
+
   warn: {
     permLvl: "roleModo",
     category: "Warnings",
@@ -302,6 +338,7 @@ var commands = {
       warnings.warn(msg, 1);
     }
   },
+
   unwarn: {
     permLvl: "roleModo",
     category: "Warnings",
@@ -309,6 +346,7 @@ var commands = {
       warnings.warn(msg, -1);
     }
   },
+
   warnlist: {
     permLvl: "roleModo",
     category: "Warnings",
@@ -316,6 +354,7 @@ var commands = {
       warnings.list(msg);
     }
   },
+
   warnpurge: {
     //Handle warnings
     permLvl: "roleModo",
@@ -324,6 +363,7 @@ var commands = {
       warnings.purge(msg);
     }
   },
+
   clearlog: {
     //Clear listed commands
     permLvl: "roleModo",
@@ -340,6 +380,7 @@ var commands = {
       clear(msg, numToDel);
     }
   },
+
   kill: {
     //Kill the process
     permLvl: "roleModo",
@@ -350,6 +391,7 @@ var commands = {
       process.exit();
     }
   },
+
   restart: {
     //Restart the client
     permLvl: "roleModo",
@@ -372,6 +414,7 @@ var commands = {
       process.exit();
     }
   },
+
   setchannel: {
     permLvl: "roleModo",
     category: "Moderation",

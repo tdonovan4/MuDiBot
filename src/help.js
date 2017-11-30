@@ -19,11 +19,15 @@ module.exports = {
 
     //Add commands to categories
     for (var i = 0; i < cmds.length; i++) {
-      var category = cmds[i][1].category;
-      if (category in categories) {
-        categories[category].push(cmds[i][0]);
-      } else {
-        console.log(mustache.render(lang.error.invalidArg.category, {cmds : cmds[i][0]}));
+      if (cmds[i][1].aliasOf == undefined) {
+        var category = cmds[i][1].category;
+        if (category in categories) {
+          categories[category].push(cmds[i][0]);
+        } else {
+          console.log(mustache.render(lang.error.invalidArg.category, {
+            cmds: cmds[i][0]
+          }));
+        }
       }
     }
 
@@ -69,10 +73,13 @@ module.exports = {
     msg.channel.send([rows], {
       code: 'css'
     });
-    msg.channel.send(mustache.render(lang.help.msg, {config}));
+    msg.channel.send(mustache.render(lang.help.msg, {
+      config
+    }));
   },
-  printCmd: function(msg, cmd) {
+  printCmd: function(msg, cmds) {
     var args = msg.content.split(" ").slice(1);
+    var cmd = cmds[args[0]];
     var help = lang.help[args[0]];
 
     if (help != undefined) {
@@ -87,6 +94,12 @@ module.exports = {
       var embed = new Discord.RichEmbed();
       embed.title = config.prefix + args[0];
       embed.color = 0x00ff00;
+
+      var aliases = Object.entries(cmds).filter(x => x[1].aliasOf == args[0]);
+      //Check for aliases
+      if (aliases.length > 0) {
+        embed.setDescription(`${lang.help.alias} ${aliases.map(x => `\`$${x[0]}\``).join(' ')}`)
+      }
       embed.addField(name = lang.help.desc, value = help.msg, inline = false)
       embed.addField(name = lang.help.permLvl, value = cmd.permLvl, inline = true)
       embed.addField(name = lang.help.usage, value = usages, inline = true);
