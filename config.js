@@ -26,6 +26,7 @@ module.exports = {
   /*===============
   	-Roles-
   ===============*/
+  //Will soon be deprecated
   //Role name for "botMember"
   roleMember: '',
   //Role name for "botModo"
