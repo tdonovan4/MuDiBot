@@ -23,7 +23,7 @@ function modifyUserXp (msg, userId, value) {
 
 module.exports = {
   getXpForLevel: function(level) {
-    return level ** 1.5 - (level ** 2) % 1.5 + 100
+    return level ** 1.5 - (level ** 1.5) % 5 + 100
   },
   getProgression: function(remainingXp) {
     level = 1;
