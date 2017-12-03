@@ -22,7 +22,7 @@ client.on('ready', () => {
   console.log(mustache.render(lang.general.logged, client));
   console.log(lang.general.language);
   //Set status
-  client.user.setGame(config.status);
+  client.user.setGame(config.currentStatus);
   //Display startup time
   var time = Date.now() - startTime; +
   console.log(mustache.render(lang.general.startupTime, {
@@ -113,8 +113,8 @@ var commands = {
       var newStatus = msg.content.split(`${config.prefix}status `).slice(1);
       client.user.setGame(newStatus[0]);
 
-      modifyText('./config.js', 'status: \'' + config.status, 'status: \'' + newStatus[0]);
-      config.status = newStatus[0];
+      modifyText('./config.js', 'status: \'' + config.currentStatus, 'status: \'' + newStatus[0]);
+      config.currentStatus = newStatus[0];
     }
   },
 
