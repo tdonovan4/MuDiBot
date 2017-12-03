@@ -27,7 +27,7 @@ module.exports = {
   },
   getProgression: function(remainingXp) {
     level = 1;
-    while (remainingXp > this.getXpForLevel(level)) {
+    while (remainingXp >= this.getXpForLevel(level)) {
       remainingXp -= this.getXpForLevel(level);
       level++;
     }
