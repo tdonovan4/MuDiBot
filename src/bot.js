@@ -458,7 +458,7 @@ function modifyText(file, text, value) {
 
 //Function that fetch, check and delete messages
 function clear(msg, num) {
-  var clearList = config.commandsToClear.concat(config.usersToClear);
+  var clearList = config.clearlog.commandsToClear.concat(config.clearlog.usersToClear);
   for (i = 0; i < keys.length; i++) {
     clearList.push(config.prefix + keys[i]);
   }
