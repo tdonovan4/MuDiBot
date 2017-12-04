@@ -101,7 +101,6 @@ module.exports = {
     return [realLevel, remainingXp, totalLevel];
   },
   getRank: function(level) {
-    console.log(level);
     var prestige = Math.floor(level / 100);
     //Remove prestige from the total level
     level -= prestige * 100
