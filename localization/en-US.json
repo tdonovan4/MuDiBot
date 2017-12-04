@@ -8,7 +8,8 @@
     "member": {
       "joined": "Welcome to the server, <@{{member.user.id}}>!",
       "left": "<@{{member.user.id}}> ({{member.user.username}}) left the server :slight_frown:",
-      "leveled": "<@{{msg.author.id}}> just leveled up to level {{progression}}!"
+      "leveled": "<@{{msg.author.id}}> just leveled up to level {{progression}}!",
+      "rankUp": "This user is now a {{rank}}!"
     }
   },
   "error": {
@@ -23,10 +24,12 @@
       "user": "Invalid user"
     },
     "notLocalized": {
-      "cmd": "Error: this command is not localized!"
+      "cmd": "Error: this command is not localized!",
+      "rank": "Error: this rank is not localized!"
     },
     "notFound": {
-      "cmd": "Command not found"
+      "cmd": "Command not found",
+      "rank": "Rank not found"
     },
     "tooMuch": {
       "cmds": "There is too much custom commands!",
@@ -34,6 +37,19 @@
     },
     "cmdAlreadyExists": "This command already exists!",
     "notEnoughPermissions": "Not enough permissions"
+  },
+  "ranks": {
+    "vagabond": "Vagabond",
+    "farmer": "Farmer",
+    "warrior": "Warrior",
+    "lord": "Lord",
+    "king": "King",
+    "emperor": "Emperor",
+    "xpMaster": "XP Master",
+    "spamMaster": "Spam Master",
+    "xpGod": "XP God",
+    "spamGod": "Spam God",
+    "lastRank": "No life"
   },
   "help": {
     "msg": "For more information about a command and its usage, type '{{config.prefix}}help CommandName'.",
@@ -171,6 +187,7 @@
   },
   "profile": {
     "title": "{{username}}'s profile",
+    "rank": "Rank:",
     "level": "Level:",
     "warnings": "Warnings:",
     "xp": "Total XP:",

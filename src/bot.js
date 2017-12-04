@@ -180,10 +180,15 @@ var commands = {
       let progression = levels.getProgression(userData.xp);
       let level = progression[0];
       let xpToNextLevel = `${progression[1]}/${levels.getXpForLevel(level)}`;
+      let rank = levels.getRank(progression[2]);
 
       var embed = new Discord.RichEmbed();
       embed.title = mustache.render(lang.profile.title, user);
+      embed.color = rank[2];
       embed.setThumbnail(url = user.avatarURL)
+      embed.addField(name = lang.profile.rank,
+        value = `${rank[0]} ${(rank[1] > 0) ? `(${rank[1]}:star:)` : ''}`,
+        inline = false)
       embed.addField(name = lang.profile.level, value = `${level} (${xpToNextLevel})`, inline = true)
       embed.addField(name = lang.profile.warnings, value = userData.warnings, inline = true)
       embed.addField(name = lang.profile.xp, value = userData.xp, inline = true)
