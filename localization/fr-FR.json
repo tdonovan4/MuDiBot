@@ -8,7 +8,8 @@
     "member": {
       "joined": "Bienvenue sur le serveur, <@{{member.user.id}}>!",
       "left": "<@{{member.user.id}}> ({{member.user.username}}) a quitté le serveur :slight_frown:",
-      "leveled": "<@{{msg.author.id}}> vient juste de monté au niveau {{progression}}!"
+      "leveled": "<@{{msg.author.id}}> vient juste de monté au niveau {{progression}}!",
+      "rankUp": "Cet utilisateur est maintenant un {{rank}}!"
     }
   },
   "error": {
@@ -23,10 +24,12 @@
       "user": "Utilisateur non valide"
     },
     "notLocalized": {
-      "cmd": "Erreur: cette commande n'est pas traduite!"
+      "cmd": "Erreur: cette commande n'est pas traduite!",
+      "rank": "Erreur: Ce rang n'est pas traduit!"
     },
     "notFound": {
-      "cmd": "Commande non trouvée"
+      "cmd": "Commande non trouvée",
+      "rank": "Rang non trouvé"
     },
     "tooMuch": {
       "cmds": "Il y a trop de commandes personnalisée!",
@@ -34,6 +37,19 @@
     },
     "cmdAlreadyExists": "Cette commande existe déjà!",
     "notEnoughPermissions": "Permissions insuffisantes"
+  },
+  "ranks": {
+    "vagabond": "Vagabond",
+    "farmer": "Paysan",
+    "warrior": "Guerrier",
+    "lord": "Seigneur",
+    "king": "Roi",
+    "emperor": "Empereur",
+    "xpMaster": "Maître de l'XP",
+    "spamMaster": "Maître du Spam",
+    "xpGod": "Dieu de l'XP",
+    "spamGod": "Dieu du Spam",
+    "lastRank": "Pas de vie"
   },
   "help": {
     "msg": "Pour plus d'information sur une commande et son utilisation, tapez `{{config.prefix}}help nomDeLaCommande`.",
@@ -171,6 +187,7 @@
   },
   "profile": {
     "title": "Profit de {{username}}",
+    "rank": "Rang:",
     "level": "Niveau:",
     "warnings": "Avertissements:",
     "xp": "XP total:",
