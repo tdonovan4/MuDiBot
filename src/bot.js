@@ -372,7 +372,7 @@ var commands = {
   clearlog: {
     //Clear listed commands
     permLvl: "roleModo",
-    category: "Moderation",
+    category: "Administration",
     execute: function(msg) {
       //Split the message to get only the argument
       let args = msg.content.split(" ").slice(1);
@@ -389,7 +389,7 @@ var commands = {
   kill: {
     //Kill the process
     permLvl: "roleModo",
-    category: "Moderation",
+    category: "Administration",
     execute: function(msg) {
       console.log(lang.general.stopping);
       process.exitCode = 0;
@@ -400,7 +400,7 @@ var commands = {
   restart: {
     //Restart the client
     permLvl: "roleModo",
-    category: "Moderation",
+    category: "Administration",
     execute: function() {
       //Spawn new process
       var spawn = require('child_process').spawn;
@@ -422,7 +422,7 @@ var commands = {
 
   setchannel: {
     permLvl: "roleModo",
-    category: "Moderation",
+    category: "Administration",
     execute: function(msg) {
       var botChannel = msg.channel;
       //Modify default channel in database

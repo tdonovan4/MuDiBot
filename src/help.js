@@ -14,7 +14,7 @@ module.exports = {
       Fun: [],
       Music: [],
       Warnings: [],
-      Moderation: []
+      Administration: []
     };
 
     //Add commands to categories
@@ -34,7 +34,7 @@ module.exports = {
 
     categories = Object.entries(categories)
 
-    var numSpace = 15;
+    var numSpace = 18;
     var rows = '';
     var rowNum = 0;
     var columnsFinished = 0;
