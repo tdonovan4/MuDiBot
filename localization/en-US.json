@@ -9,19 +9,25 @@
       "joined": "Welcome to the server, <@{{member.user.id}}>!",
       "left": "<@{{member.user.id}}> ({{member.user.username}}) left the server :slight_frown:",
       "leveled": "<@{{msg.author.id}}> just leveled up to level {{progression}}!",
-      "rankUp": "This user is now a {{rank}}!"
+      "rankUp": "This user is now a {{rank}}",
+      "reward": "and receives the role {{role}} as a reward",
+      "addReward": "Reward for rank up",
+      "removeOldReward": "Removal of old reward"
     }
   },
   "error": {
     "usage": "Wrong usage",
     "missingArg": {
       "channel": "Missing argument: channel",
-      "message": "Missing argument: message"
+      "message": "Missing argument: message",
+      "rank": "Missing argument: rank",
+      "role": "Missing argument: role"
     },
     "invalidArg": {
       "cmd": "This is not a valid command",
       "category": "Warning: {{cmds}} doesn't have a valid category",
-      "user": "Invalid user"
+      "user": "Invalid user",
+      "role": "Invalid role"
     },
     "notLocalized": {
       "cmd": "Error: this command is not localized!",
@@ -29,7 +35,8 @@
     },
     "notFound": {
       "cmd": "Command not found",
-      "rank": "Rank not found"
+      "rank": "Rank not found",
+      "rankReward": "No reward found for this rank"
     },
     "tooMuch": {
       "cmds": "There is too much custom commands!",
@@ -160,6 +167,14 @@
     "setchannel": {
       "usages": [""],
       "msg": "Change the channel for announcements from the bot"
+    },
+    "setreward": {
+      "usages": ["<rank> <role>"],
+      "msg": "Set a role as a reward for the rank"
+    },
+    "unsetreward": {
+      "usages": ["<rank>"],
+      "msg": "Unset the reward of a rank"
     }
   },
   "ping": {
@@ -233,5 +248,11 @@
   },
   "setchannel": {
     "newDefaultChannel": "New default channel set!"
+  },
+  "setreward": {
+    "newReward": "New reward set!"
+  },
+  "unsetreward": {
+    "rewardUnset": "The reward has been unset"
   }
 }

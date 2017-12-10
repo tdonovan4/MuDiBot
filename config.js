@@ -41,7 +41,9 @@ module.exports = {
   ---------------*/
   levels: {
     //Is this module activated? Set to false to disable the module
-    activated: true
+    activated: true,
+    //Remove the role given by the last rank (if exists) after a rank up
+    removeOldRole: true
   },
 
   /*---------------
@@ -208,6 +210,16 @@ module.exports = {
   },
 
   setchannel: {
+    //Is the command activated? Set to false to disable a command
+    activated: true
+  },
+
+  setreward: {
+    //Is the command activated? Set to false to disable a command
+    activated: true
+  },
+
+  unsetreward: {
     //Is the command activated? Set to false to disable a command
     activated: true
   }
