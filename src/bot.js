@@ -233,7 +233,6 @@ var commands = {
   },
 
   flipcoin: {
-    //Flip a coin
     permLvl: "everyone",
     category: "Fun",
     execute: function(msg) {
@@ -242,7 +241,6 @@ var commands = {
   },
 
   roll: {
-    //Flip a coin
     permLvl: "everyone",
     category: "Fun",
     execute: function(msg) {
@@ -428,6 +426,22 @@ var commands = {
       //Modify default channel in database
       defaultChannel.setChannel(msg, botChannel);
       botChannel.send(lang.setchannel.newDefaultChannel);
+    }
+  },
+
+  setreward: {
+    permLvl: "roleModo",
+    category: "Administration",
+    execute: function(msg) {
+      levels.setReward(msg, msg.content.split(" ").slice(1));
+    }
+  },
+
+  unsetreward: {
+    permLvl: "roleModo",
+    category: "Administration",
+    execute: function(msg) {
+      levels.unsetReward(msg, msg.content.split(" ").slice(1));
     }
   }
 }

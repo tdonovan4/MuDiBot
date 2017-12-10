@@ -9,19 +9,25 @@
       "joined": "Bienvenue sur le serveur, <@{{member.user.id}}>!",
       "left": "<@{{member.user.id}}> ({{member.user.username}}) a quitté le serveur :slight_frown:",
       "leveled": "<@{{msg.author.id}}> vient juste de monté au niveau {{progression}}!",
-      "rankUp": "Cet utilisateur est maintenant un {{rank}}!"
+      "rankUp": "Cet utilisateur est maintenant un {{rank}}!",
+      "reward": "et reçoit le role {{role}} comme récompense",
+      "addReward": "Récompense pour promotion",
+      "removeOldReward": "Ancienne récompense enlevée"
     }
   },
   "error": {
     "usage": "Utilisation incorrecte",
     "missingArg": {
       "channel": "Argument manquant: salon",
-      "message": "Argument manquant: message"
+      "message": "Argument manquant: message",
+      "rank": "Argument manquant: rang",
+      "role": "Argument manquant: role"
     },
     "invalidArg": {
       "cmd": "Cette commande n'est pas valide",
       "category": "Attention: {{cmds}} n'a pas de catégorie valide",
-      "user": "Utilisateur non valide"
+      "user": "Utilisateur non valide",
+      "role": "Role non valide"
     },
     "notLocalized": {
       "cmd": "Erreur: cette commande n'est pas traduite!",
@@ -29,7 +35,8 @@
     },
     "notFound": {
       "cmd": "Commande non trouvée",
-      "rank": "Rang non trouvé"
+      "rank": "Rang non trouvé",
+      "rankReward": "Aucune récompense trouvée pour ce rang"
     },
     "tooMuch": {
       "cmds": "Il y a trop de commandes personnalisée!",
@@ -160,6 +167,14 @@
     "setchannel": {
       "usages": [""],
       "msg": "Change le salon pour les annonces de l'agent"
+    },
+    "setreward": {
+      "usages": ["<rang> <role>"],
+      "msg": "Ajoute une récompense à un rang"
+    },
+    "unsetreward": {
+      "usages": ["<rang>"],
+      "msg": "Enlève la récompense d'un rang"
     }
   },
   "ping": {
@@ -233,5 +248,11 @@
   },
   "setchannel": {
     "newDefaultChannel": "Nouveu salon par défaut sélectionné!"
+  },
+  "setreward": {
+    "newReward": "Nouvelle récompense ajoutée"
+  },
+  "unsetreward": {
+    "rewardUnset": "La récompense a été enlevée"
   }
 }
