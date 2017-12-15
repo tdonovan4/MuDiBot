@@ -88,15 +88,15 @@
       "msg": "Envoie un message dans le salon"
     },
     "avatar": {
-      "usages": ["<user>"],
+      "usages": ["<utilisateur>"],
       "msg": "Donne l'avatar d'un utilisateur"
     },
     "profile": {
-      "usages": ["<user>"],
+      "usages": ["<utilisateur>"],
       "msg": "Donne le profile d'un joueur"
     },
     "setgroup": {
-      "usages": ["<user> <groupe>"],
+      "usages": ["<utilisateur> <groupe>"],
       "msg": "Ajoute un groupe à l'utilisateur"
     },
     "unsetgroup": {
@@ -136,7 +136,7 @@
       "msg": "Supprime une commande personnalisée"
     },
     "play": {
-      "usages": ["<song url or tags>"],
+      "usages": ["<url de la vidéo>", "<tags>"],
       "msg": "Enlève un avertissement de l'utilisateur"
     },
     "stop": {
