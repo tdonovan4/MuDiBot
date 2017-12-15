@@ -10,10 +10,6 @@ module.exports = {
     var groups = config.groups;
     var user = msg.mentions.users.first();
 
-
-    //Put first character of group in uppercase
-    group = group.charAt(0).toUpperCase() + group.slice(1);
-
     //Check if there is a user in msg
     if (user == undefined) {
       //Invalid argument: user
@@ -26,6 +22,9 @@ module.exports = {
       bot.printMsg(msg, lang.error.missingArg.group);
       return;
     }
+
+    //Put first character of group in uppercase
+    group = group.charAt(0).toUpperCase() + group.slice(1);
 
     //Check if group exists
     if (groups.find(x => x.name == group) != undefined) {
@@ -72,10 +71,6 @@ module.exports = {
     var groups = config.groups;
     var user = msg.mentions.users.first();
 
-
-    //Put first character of group in uppercase
-    group = group.charAt(0).toUpperCase() + group.slice(1);
-
     //Check if there is a user in msg
     if (user == undefined) {
       //Invalid argument: user
@@ -88,6 +83,9 @@ module.exports = {
       bot.printMsg(msg, lang.error.missingArg.group);
       return;
     }
+
+    //Put first character of group in uppercase
+    group = group.charAt(0).toUpperCase() + group.slice(1);
 
     //Check if group exists
     if (groups.find(x => x.name == group) != undefined) {
