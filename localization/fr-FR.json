@@ -218,6 +218,7 @@
   "profile": {
     "title": "Profit de {{username}}",
     "rank": "Rang:",
+    "groups": "Groupes de permission",
     "level": "Niveau:",
     "warnings": "Avertissements:",
     "xp": "XP total:",

@@ -182,6 +182,20 @@ var commands = {
       let level = progression[0];
       let xpToNextLevel = `${progression[1]}/${levels.getXpForLevel(level)}`;
       let rank = levels.getRank(progression[2]);
+      let groups = userData.groups.split(',').sort(function(a, b) {
+        return config.groups.find(x => x.name == a).permLvl <
+          config.groups.find(x => x.name == b).permLvl;
+      });
+
+      //If user is a superuser, add that to groups
+      if(config.superusers.find(x => x == msg.author.id) != null) {
+        groups.unshift('Superuser')
+      }
+
+      //Put newline at every 4 groups
+      for(let i = 3; i < groups.length; i += 3) {
+        groups[i] = '\n' + groups[i];
+      }
 
       var embed = new Discord.RichEmbed();
       embed.title = mustache.render(lang.profile.title, user);
@@ -189,10 +203,11 @@ var commands = {
       embed.setThumbnail(url = user.avatarURL)
       embed.addField(name = lang.profile.rank,
         value = `${rank[0]} ${(rank[1] > 0) ? `(${rank[1]}:star:)` : ''}`,
-        inline = false)
-      embed.addField(name = lang.profile.level, value = `${level} (${xpToNextLevel})`, inline = true)
-      embed.addField(name = lang.profile.warnings, value = userData.warnings, inline = true)
+        inline = true)
+      embed.addField(name = lang.profile.groups, value = groups.join(', '), inline = true)
+      embed.addField(name = lang.profile.level, value = `${level} (${xpToNextLevel})`, inline = false)
       embed.addField(name = lang.profile.xp, value = userData.xp, inline = true)
+      embed.addField(name = lang.profile.warnings, value = userData.warnings, inline = true)
       embed.setFooter(text = mustache.render(lang.profile.footer, user))
       msg.channel.send({
         embed
