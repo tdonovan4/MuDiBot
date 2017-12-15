@@ -1,10 +1,11 @@
 //Handle SQL
 const sql = require('sqlite');
-const checkTable = 'CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER)';
+const config = require('./args.js').getConfig();
+const checkTable = 'CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)';
 
 function insertUser(msg, userId) {
   return new Promise((resolve, reject) => {
-    sql.run('INSERT INTO users (serverId, userId, xp, warnings) VALUES (?, ?, ?, ?)', [msg.guild.id, userId, 0, 0])
+    sql.run('INSERT INTO users (serverId, userId, xp, warnings, groups) VALUES (?, ?, ?, ?, ?)', [msg.guild.id, userId, 0, 0, config.groups[0]])
       .catch(error => {
         console.log(error);
       });

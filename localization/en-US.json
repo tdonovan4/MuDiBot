@@ -21,7 +21,8 @@
       "channel": "Missing argument: channel",
       "message": "Missing argument: message",
       "rank": "Missing argument: rank",
-      "role": "Missing argument: role"
+      "role": "Missing argument: role",
+      "group": "Missing argument: group"
     },
     "invalidArg": {
       "cmd": "This is not a valid command",
@@ -36,6 +37,7 @@
     "notFound": {
       "cmd": "Command not found",
       "rank": "Rank not found",
+      "group": "Group not found",
       "rankReward": "No reward found for this rank"
     },
     "tooMuch": {
@@ -43,6 +45,7 @@
       "cmdsUser": "You have too many custom commands!"
     },
     "cmdAlreadyExists": "This command already exists!",
+    "groupDuplicate": "This user already is in this group!",
     "notEnoughPermissions": "Not enough permissions"
   },
   "ranks": {
@@ -91,6 +94,18 @@
     "profile": {
       "usages": ["<user>"],
       "msg": "Get an user profile"
+    },
+    "setgroup": {
+      "usages": ["<user> <group>"],
+      "msg": "Add a group to user"
+    },
+    "unsetgroup": {
+      "usages": ["<user> <group>"],
+      "msg": "Remove a group from user"
+    },
+    "purgegroups": {
+      "usages": ["<user>"],
+      "msg": "Purge groups of a user"
     },
     "gif": {
       "usages": ["", "<what to search>"],
@@ -207,6 +222,16 @@
     "warnings": "Warnings:",
     "xp": "Total XP:",
     "footer": "Client id: {{id}}"
+  },
+  "setgroup": {
+    "newGroup": "Group added!"
+  },
+  "unsetgroup": {
+    "removed": "Group removed",
+    "notInGroup": "This user is not in this group"
+  },
+  "purgegroups": {
+    "purged": "Groups purged"
   },
   "flipcoin": {
     "heads": "heads",

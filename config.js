@@ -24,14 +24,36 @@ module.exports = {
   superusers: [''],
 
   /*===============
-  	-Roles-
+  	-Permission groups-
   ===============*/
-  //Will soon be deprecated
+  //Deprecated
   //Role name for "botMember"
   roleMember: '',
   //Role name for "botModo"
   roleModo: '',
 
+  /*
+  The groups used for permission
+  Here are the permission levels:
+  0: Default level, basic commands
+  1: Still safe commands, but some can become a bit spammy
+  (Entering danger zone)
+  2: Commands for moderation
+  3: Commands for administrating the bot or the guild/server
+  */
+  groups: [{
+    name: "User",
+    permLvl: 0
+  }, {
+    name: "Member",
+    permLvl: 1
+  }, {
+    name: "Mod",
+    permLvl: 2
+  }, {
+    name: "Admin",
+    permLvl: 3
+  }],
   /*===============
   	-Modules-
   ===============*/
@@ -103,6 +125,21 @@ module.exports = {
   },
 
   profile: {
+    //Is the command activated? Set to false to disable a command
+    activated: true
+  },
+
+  setgroup: {
+    //Is the command activated? Set to false to disable a command
+    activated: true
+  },
+
+  unsetgroup: {
+    //Is the command activated? Set to false to disable a command
+    activated: true
+  },
+
+  purgegroups: {
     //Is the command activated? Set to false to disable a command
     activated: true
   },
