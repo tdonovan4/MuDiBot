@@ -218,6 +218,7 @@
   "profile": {
     "title": "{{username}}'s profile",
     "rank": "Rank:",
+    "groups": "Permission groups",
     "level": "Level:",
     "warnings": "Warnings:",
     "xp": "Total XP:",
