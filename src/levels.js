@@ -66,7 +66,7 @@ var lastRank = {
 
 function modifyUserXp(msg, userId, value) {
   sql.open('./storage/data.db').then(() => {
-    sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER)')
+    sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
       .then(() => {
         sql.run('UPDATE users SET xp = ? WHERE serverId = ? AND userId = ?', [value, msg.guild.id, userId])
           .catch(error => {

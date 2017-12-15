@@ -5,6 +5,7 @@ const warnings = require('./warnings.js');
 const player = require('./audio-player.js');
 const levels = require('./levels.js');
 const defaultChannel = require('./default-channel.js');
+const permGroup = require('./permission-group.js');
 const fs = require('fs');
 const mustache = require('mustache');
 var config = require('./args.js').getConfig();
@@ -197,6 +198,42 @@ var commands = {
         embed
       });
     }
+  },
+
+  setgroup: {
+    permLvl: "roleModo",
+    category: "User",
+    execute: function(msg) {
+      var args = msg.content.split(" ").slice(1);
+      permGroup.setGroup(msg, args);
+    }
+  },
+
+  unsetgroup: {
+    permLvl: "roleModo",
+    category: "User",
+    execute: function(msg) {
+      var args = msg.content.split(" ").slice(1);
+      permGroup.unsetGroup(msg, args);
+    }
+  },
+  get ungroup () {
+    var cmd = Object.assign({}, this.unsetgroup);
+    cmd.aliasOf = 'unsetgroup';
+    return cmd;
+  },
+
+  purgegroups: {
+    permLvl: "roleModo",
+    category: "User",
+    execute: function(msg) {
+      permGroup.purgeGroups(msg);
+    }
+  },
+  get gpurge () {
+    var cmd = Object.assign({}, this.purgegroups);
+    cmd.aliasOf = 'purgegroups';
+    return cmd;
   },
 
   gif: {

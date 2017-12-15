@@ -21,7 +21,8 @@
       "channel": "Argument manquant: salon",
       "message": "Argument manquant: message",
       "rank": "Argument manquant: rang",
-      "role": "Argument manquant: role"
+      "role": "Argument manquant: role",
+      "group": "Argument manquant: groupe"
     },
     "invalidArg": {
       "cmd": "Cette commande n'est pas valide",
@@ -36,6 +37,7 @@
     "notFound": {
       "cmd": "Commande non trouvée",
       "rank": "Rang non trouvé",
+      "group": "Groupe non trouvé",
       "rankReward": "Aucune récompense trouvée pour ce rang"
     },
     "tooMuch": {
@@ -43,6 +45,7 @@
       "cmdsUser:": "Vous avez trop de commandes personnalisée!"
     },
     "cmdAlreadyExists": "Cette commande existe déjà!",
+    "groupDuplicate": "Cette utilisateur est déjà dans ce groupe!",
     "notEnoughPermissions": "Permissions insuffisantes"
   },
   "ranks": {
@@ -91,6 +94,18 @@
     "profile": {
       "usages": ["<user>"],
       "msg": "Donne le profile d'un joueur"
+    },
+    "setgroup": {
+      "usages": ["<user> <groupe>"],
+      "msg": "Ajoute un groupe à l'utilisateur"
+    },
+    "unsetgroup": {
+      "usages": ["<utilisateur> <groupe>"],
+      "msg": "Enlève un groupe de l'utilisateur"
+    },
+    "purgegroups": {
+      "usages": ["<utilisateur>"],
+      "msg": "Purge les groupes d'un utilisateur"
     },
     "gif": {
       "usages": ["", "<quoi chercher>"],
@@ -207,6 +222,16 @@
     "warnings": "Avertissements:",
     "xp": "XP total:",
     "footer": "ID du client: {{id}}"
+  },
+  "setgroup": {
+    "newGroup": "Groupe ajouté!"
+  },
+  "unsetgroup": {
+    "removed": "Groupe enlevé",
+    "notInGroup": "This user is not in this group"
+  },
+  "purgegroups": {
+    "purged": "Groupes purgés"
   },
   "flipcoin": {
     "heads": "face",
