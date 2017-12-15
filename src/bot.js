@@ -510,15 +510,15 @@ client.on('message', msg => {
 
   //Check if the author is not the bot
   if (msg.author != client.user) {
-
-    let cmd = msg.content.split(config.prefix).slice(1);
-    if(cmd[0] != undefined) {
-      cmd = cmd[0].split(' ');
+    let cmd = msg.content.slice(config.prefix.length);
+    if(cmd != undefined) {
+      cmd = cmd.split(' ');
     }
 
     var cmdActivated = config[cmd[0]] != undefined ? config[cmd[0]].activated : true;
 
-    if (cmd[0] in commands && cmdActivated) {
+    //Check if message begins with prefix, if cmd is a valid command and is it's activated
+    if (msg.content.indexOf(config.prefix) == 0 && cmd[0] in commands && cmdActivated) {
       console.log(msg.author.username + ' - ' + msg.content);
       commands[cmd[0]].execute(msg);
     } else {
