@@ -47,7 +47,7 @@ function printMsg(msg, text) {
 var commands = {
   help: {
     //Display a list of commands and their usage
-    permLvl: "everyone",
+    permLvl: 0,
     category: "General",
     execute: function(msg) {
       const help = require('./help.js');
@@ -70,7 +70,7 @@ var commands = {
 
   ping: {
     //Reply "Pong!"
-    permLvl: "everyone",
+    permLvl: 0,
     category: "General",
     execute: function(msg) {
       msg.reply(lang.ping.pong);
@@ -80,7 +80,7 @@ var commands = {
 
   info: {
     //Display info about the client
-    permLvl: "everyone",
+    permLvl: 0,
     category: "General",
     execute: function(msg) {
       var pjson = require('../package.json');
@@ -108,7 +108,7 @@ var commands = {
   },
 
   status: {
-    permLvl: "roleModo",
+    permLvl: 3,
     category: "General",
     execute: function(msg) {
       var newStatus = msg.content.split(`${config.prefix}status `).slice(1);
@@ -120,7 +120,7 @@ var commands = {
   },
 
   say: {
-    permLvl: "roleModo",
+    permLvl: 3,
     category: "General",
     execute: function(msg) {
       let messageToSay = msg.content.split(' ').slice(1);
@@ -154,7 +154,7 @@ var commands = {
   },
 
   avatar: {
-    permLvl: "everyone",
+    permLvl: 0,
     category: "User",
     execute: function(msg) {
       var user = msg.mentions.users.first()
@@ -167,7 +167,7 @@ var commands = {
   },
 
   profile: {
-    permLvl: "everyone",
+    permLvl: 0,
     category: "User",
     execute: async function(msg) {
       const storage = require('./storage.js');
@@ -216,7 +216,7 @@ var commands = {
   },
 
   setgroup: {
-    permLvl: "roleModo",
+    permLvl: 3,
     category: "User",
     execute: function(msg) {
       var args = msg.content.split(" ").slice(1);
@@ -225,7 +225,7 @@ var commands = {
   },
 
   unsetgroup: {
-    permLvl: "roleModo",
+    permLvl: 3,
     category: "User",
     execute: function(msg) {
       var args = msg.content.split(" ").slice(1);
@@ -239,7 +239,7 @@ var commands = {
   },
 
   purgegroups: {
-    permLvl: "roleModo",
+    permLvl: 3,
     category: "User",
     execute: function(msg) {
       permGroup.purgeGroups(msg);
@@ -285,7 +285,7 @@ var commands = {
   },
 
   flipcoin: {
-    permLvl: "everyone",
+    permLvl: 0,
     category: "Fun",
     execute: function(msg) {
       msg.reply(Math.floor(Math.random() * 2) == 0 ? lang.flipcoin.heads : lang.flipcoin.tails);
@@ -293,7 +293,7 @@ var commands = {
   },
 
   roll: {
-    permLvl: "everyone",
+    permLvl: 0,
     category: "Fun",
     execute: function(msg) {
       args = msg.content.split(/[ d+]|(?=-)/g).slice(1);
@@ -336,7 +336,7 @@ var commands = {
   },
 
   custcmdremove: {
-    permLvl: "roleModo",
+    permLvl: 3,
     category: "Fun",
     execute: function(msg) {
       const customCmd = require('./custom-cmd.js');
@@ -352,7 +352,7 @@ var commands = {
 
   play: {
     //Play a song on YouTube
-    permLvl: "everyone",
+    permLvl: 0,
     category: "Music",
     execute: function(msg) {
       player.playYoutube(msg, msg.content.split(" ").slice(1));
@@ -361,7 +361,7 @@ var commands = {
 
   stop: {
     //Stop the voice connection and leave voice channel
-    permLvl: "everyone",
+    permLvl: 0,
     category: "Music",
     execute: function(msg) {
       player.stop(msg);
@@ -379,7 +379,7 @@ var commands = {
 
   queue: {
     //Skip to next song in queue
-    permLvl: "everyone",
+    permLvl: 0,
     category: "Music",
     execute: function(msg) {
       player.listQueue(msg);
@@ -387,7 +387,7 @@ var commands = {
   },
 
   warn: {
-    permLvl: "roleModo",
+    permLvl: 2,
     category: "Warnings",
     execute: function(msg) {
       warnings.warn(msg, 1);
@@ -395,7 +395,7 @@ var commands = {
   },
 
   unwarn: {
-    permLvl: "roleModo",
+    permLvl: 2,
     category: "Warnings",
     execute: function(msg) {
       warnings.warn(msg, -1);
@@ -403,7 +403,7 @@ var commands = {
   },
 
   warnlist: {
-    permLvl: "roleModo",
+    permLvl: 2,
     category: "Warnings",
     execute: function(msg) {
       warnings.list(msg);
@@ -412,7 +412,7 @@ var commands = {
 
   warnpurge: {
     //Handle warnings
-    permLvl: "roleModo",
+    permLvl: 2,
     category: "Warnings",
     execute: function(msg) {
       warnings.purge(msg);
@@ -421,7 +421,7 @@ var commands = {
 
   clearlog: {
     //Clear listed commands
-    permLvl: "roleModo",
+    permLvl: 3,
     category: "Administration",
     execute: function(msg) {
       //Split the message to get only the argument
@@ -438,7 +438,7 @@ var commands = {
 
   kill: {
     //Kill the process
-    permLvl: "roleModo",
+    permLvl: 3,
     category: "Administration",
     execute: function(msg) {
       console.log(lang.general.stopping);
@@ -449,7 +449,7 @@ var commands = {
 
   restart: {
     //Restart the client
-    permLvl: "roleModo",
+    permLvl: 3,
     category: "Administration",
     execute: function() {
       //Spawn new process
@@ -471,7 +471,7 @@ var commands = {
   },
 
   setchannel: {
-    permLvl: "roleModo",
+    permLvl: 3,
     category: "Administration",
     execute: function(msg) {
       var botChannel = msg.channel;
@@ -482,7 +482,7 @@ var commands = {
   },
 
   setreward: {
-    permLvl: "roleModo",
+    permLvl: 3,
     category: "Administration",
     execute: function(msg) {
       levels.setReward(msg, msg.content.split(" ").slice(1));
@@ -490,7 +490,7 @@ var commands = {
   },
 
   unsetreward: {
-    permLvl: "roleModo",
+    permLvl: 3,
     category: "Administration",
     execute: function(msg) {
       levels.unsetReward(msg, msg.content.split(" ").slice(1));
@@ -520,7 +520,11 @@ client.on('message', msg => {
     //Check if message begins with prefix, if cmd is a valid command and is it's activated
     if (msg.content.indexOf(config.prefix) == 0 && cmd[0] in commands && cmdActivated) {
       console.log(msg.author.username + ' - ' + msg.content);
-      commands[cmd[0]].execute(msg);
+
+      //Check if user has permission
+      checkPerm(msg, commands[cmd[0]].permLvl).then(result => {
+        if(result) commands[cmd[0]].execute(msg);
+      });
     } else {
       const customCmd = require('./custom-cmd.js');
 
@@ -572,7 +576,7 @@ function modifyText(file, text, value) {
 
 //Function that fetch, check and delete messages
 function clear(msg, num) {
-  var clearList = config.commandsToClear.concat(config.usersToClear);
+  var clearList = config.clearlog.commandsToClear.concat(config.clearlog.usersToClear);
   for (i = 0; i < keys.length; i++) {
     clearList.push(config.prefix + keys[i]);
   }
@@ -626,11 +630,9 @@ function mention(roles, role) {
  *Check if the message author has permission
  *to do the command, return true or false
  */
-function checkRole(msg, role) {
-  var permLevel = 0;
-  var currentPermLevel = 0;
-
-  //Debug only, check if user is superuser
+async function checkPerm(msg, permLevel) {
+  //Exceptions
+  //Check if user is superuser
   for (i = 0; i < config.superusers.length; i++) {
     if (msg.author.id === config.superusers[i]) {
       return true;
@@ -639,35 +641,26 @@ function checkRole(msg, role) {
 
   //Check if user is an administrator
   var permissions = msg.member.permissions;
-  if (permissions.hasPermission('ADMINISTRATOR') || permissions.hasPermission('MANAGE_CHANNELS')) {
+  if (permissions.has('ADMINISTRATOR')) {
     return true;
   }
 
-  //Set the required level of permission
-  if (role === roleMember) {
-    permLevel = 1;
-  } else if (role === roleModo) {
-    permLevel = 2;
-  }
+  const storage = require('./storage.js');
+  let user = await storage.getUser(msg, msg.author.id);
 
-  //Set the user permission level
-  for (i = 0; i < msg.member.roles.array().length; i++) {
-    if (msg.member.roles.array()[i].name === config.roleModo) {
-      currentPermLevel = 2;
-      break;
-    }
-    if (msg.member.roles.array()[i].name === config.roleMember) {
-      currentPermLevel = 1;
-    }
-  }
+  var userGroup = user.groups.split(',').sort(function(a, b) {
+    return config.groups.find(x => x.name == a).permLvl <
+      config.groups.find(x => x.name == b).permLvl;
+  })[0];
+  var userPermLevel = config.groups.find(x => x.name == userGroup).permLvl;
 
   //Compare user and needed permission level
-  if (currentPermLevel < permLevel) {
-    console.log(lang.error.notEnoughPermissions);
-    return false;
-  } else {
+  console.log([userPermLevel, permLevel]);
+  if (userPermLevel >= permLevel) {
     return true;
   }
+  printMsg(msg, lang.error.notEnoughPermissions);
+  return false;
 }
 
 async function sendDefaultChannel(member, text) {
