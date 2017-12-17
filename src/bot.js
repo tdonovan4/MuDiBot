@@ -182,19 +182,19 @@ var commands = {
       let level = progression[0];
       let xpToNextLevel = `${progression[1]}/${levels.getXpForLevel(level)}`;
       let rank = levels.getRank(progression[2]);
-      let groups = [''];
+      let groups = ['Ø'];
 
       //Get groups
       if(userData.groups != null) {
-        userData.groups.split(',').sort(function(a, b) {
+        groups = userData.groups.split(',').sort(function(a, b) {
           return config.groups.find(x => x.name == a).permLvl <
             config.groups.find(x => x.name == b).permLvl;
         });
       }
 
       //If user is a superuser, add that to groups
-      if(config.superusers.find(x => x == msg.author.id) != null) {
-        groups.unshift('Superuser')
+      if(config.superusers.find(x => x == user.id) != null) {
+        groups.unshift('Superuser');
       }
 
       //Put newline at every 4 groups
