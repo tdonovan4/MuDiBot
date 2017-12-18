@@ -3,6 +3,7 @@ const bot = require('./bot.js');
 const mustache = require('mustache');
 const sql = require('sqlite');
 const config = require('./args.js').getConfig();
+const lastMessages = [];
 var lang = require('./localization.js').getLocalization();
 var maxValue = 1000;
 
@@ -138,6 +139,34 @@ module.exports = {
     return [rank.name, prestige, rank.color]
   },
   newMessage: async function(msg) {
+    var userLastMessage = lastMessages.find(x => x.author == msg.author.id);
+    var currentTime = Date.now();
+
+    if(userLastMessage == undefined) {
+      userLastMessage = {time: 0};
+      //Add user
+      lastMessages.push({
+        author: msg.author.id,
+        time: currentTime
+      })
+    }
+
+    //Check if user is spamming
+    if(currentTime - userLastMessage.time < config.levels.cooldown) {
+      console.log('Spam');
+      return;
+    }
+
+    if(lastMessages.indexOf(userLastMessage) > -1) {
+      //Remove old message
+      lastMessages.splice(lastMessages.indexOf(userLastMessage), 1)
+      //Reset time last message
+      lastMessages.push({
+        author: msg.author.id,
+        time: currentTime
+      })
+    }
+
     var xp = await storage.getUser(msg, msg.author.id);
     xp = xp.xp;
     if (xp != undefined) {

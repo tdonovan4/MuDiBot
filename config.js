@@ -64,6 +64,8 @@ module.exports = {
   levels: {
     //Is this module activated? Set to false to disable the module
     activated: true,
+    //How much time between messages to be counted (in ms)
+    cooldown: 3000,
     //Remove the role given by the last rank (if exists) after a rank up
     removeOldRole: true
   },
