@@ -82,14 +82,36 @@ function modifyUserXp(msg, userId, value) {
   });
 }
 
+function getRewardInMsg(msg, args) {
+  var role = msg.mentions.roles.first();
+  var group = args[1].charAt(0).toUpperCase() + args[1].slice(1);
+
+  //Check if reward is a role
+  if (role != null ) {
+    if(msg.guild.roles.has(role.id)) {
+      //Reward is a role
+      return role.id;
+    }
+  } else if(group == null) {  //Check if reward is a group
+    //No reward
+    bot.printMsg(msg, lang.error.missingArg.reward);
+    return;
+  } else if (config.groups.find(x => x.name == group) != undefined) {
+    //Reward is group;
+    return group;
+  }
+  bot.printMsg(msg, lang.error.invalidArg.reward);
+  return;
+}
+
 function getReward(msg, rank) {
   return new Promise((resolve, reject) => {
     sql.open('./storage/data.db').then(() => {
       sql.get("SELECT * FROM rewards WHERE serverId = ? AND rank = ?", [msg.guild.id, rank[0]]).then(row => {
-        resolve(row.roleId);
+        resolve(row.reward);
       }).catch(() => {
         resolve(undefined);
-        sql.run("CREATE TABLE IF NOT EXISTS rewards (serverId TEXT, rank TEXT, roleId TEXT)")
+        sql.run("CREATE TABLE IF NOT EXISTS rewards (serverId TEXT, rank TEXT, reward TEXT)")
           .catch(error => {
             console.log(error);
           });
@@ -142,8 +164,10 @@ module.exports = {
     var userLastMessage = lastMessages.find(x => x.author == msg.author.id);
     var currentTime = Date.now();
 
-    if(userLastMessage == undefined) {
-      userLastMessage = {time: 0};
+    if (userLastMessage == undefined) {
+      userLastMessage = {
+        time: 0
+      };
       //Add user
       lastMessages.push({
         author: msg.author.id,
@@ -152,12 +176,12 @@ module.exports = {
     }
 
     //Check if user is spamming
-    if(currentTime - userLastMessage.time < config.levels.cooldown) {
+    if (currentTime - userLastMessage.time < config.levels.cooldown) {
       console.log('Spam');
       return;
     }
 
-    if(lastMessages.indexOf(userLastMessage) > -1) {
+    if (lastMessages.indexOf(userLastMessage) > -1) {
       //Remove old message
       lastMessages.splice(lastMessages.indexOf(userLastMessage), 1)
       //Reset time last message
@@ -203,10 +227,10 @@ module.exports = {
               role: msg.guild.roles.get(reward).name
             });
             //Check if the removal of the old role is enable
-            if(config.levels.removeOldRole == true) {
+            if (config.levels.removeOldRole == true) {
               var oldRole = await getReward(msg, this.getRank(progression[2]));
               console.log(oldRole);
-              if(oldRole != undefined) {
+              if (oldRole != undefined) {
                 msg.member.removeRole(oldRole, lang.general.member.removeOldReward).catch(error => {
                   console.log(error);
                 });
@@ -224,17 +248,15 @@ module.exports = {
   },
   setReward: function(msg, args) {
     var rank = args[0];
-    var role = msg.mentions.roles.first();
+    var reward = getRewardInMsg(msg, args);
     //Check if there is a rank in msg
     if (rank == undefined) {
       //Missing argument: rank
       bot.printMsg(msg, lang.error.missingArg.rank);
       return;
     }
-    //Check if there is a role in msg
-    if (role == undefined) {
-      //Missing argument: rank
-      bot.printMsg(msg, lang.error.missingArg.role);
+    //Check if there is a reward in msg
+    if (reward == undefined) {
       return;
     }
 
@@ -243,34 +265,28 @@ module.exports = {
 
     //Check if rank exists
     if (ranks.find(x => x.name == rank) != undefined) {
-      //Check if role exists
-      if (role != undefined && msg.guild.roles.has(role.id)) {
-        sql.open('./storage/data.db').then(() => {
-          sql.get('SELECT * FROM rewards WHERE serverId = ? AND rank = ?', [msg.guild.id, rank]).then(row => {
-            if (!row) {
-              //Table exist but not row
-              sql.run("INSERT INTO rewards (serverId, rank, roleId) VALUES (?, ?, ?)", [msg.guild.id, rank, role.id]);
-            } else {
-              sql.run("UPDATE rewards SET rank = ?, roleId = ? WHERE serverId = ?", [rank, role.id, msg.guild.id]);
-            }
+      sql.open('./storage/data.db').then(() => {
+        sql.get('SELECT * FROM rewards WHERE serverId = ? AND rank = ?', [msg.guild.id, rank]).then(row => {
+          if (!row) {
+            //Table exist but not row
+            sql.run("INSERT INTO rewards (serverId, rank, reward) VALUES (?, ?, ?)", [msg.guild.id, rank, reward]);
+          } else {
+            sql.run("UPDATE rewards SET rank = ?, reward = ? WHERE serverId = ?", [rank, reward, msg.guild.id]);
+          }
+          msg.channel.send(lang.setreward.newReward);
+        }).catch(() => {
+          sql.run("CREATE TABLE IF NOT EXISTS rewards (serverId TEXT, rank TEXT, reward TEXT)").then(() => {
+            //Table don't exist
+            sql.run("INSERT INTO rewards (serverId, rank, reward) VALUES (?, ?, ?)", [msg.guild.id, rank, reward]);
             msg.channel.send(lang.setreward.newReward);
-          }).catch(() => {
-            sql.run("CREATE TABLE IF NOT EXISTS rewards (serverId TEXT, rank TEXT, roleId TEXT)").then(() => {
-              //Table don't exist
-              sql.run("INSERT INTO rewards (serverId, rank, roleId) VALUES (?, ?, ?)", [msg.guild.id, rank, role.id]);
-              msg.channel.send(lang.setreward.newReward);
-            }).catch(error => {
-              console.log(error);
-            });
+          }).catch(error => {
+            console.log(error);
           });
-          sql.close();
-        }).catch(error => {
-          console.log(error);
         });
-      } else {
-        //Role don't exists
-        bot.printMsg(msg, lang.error.invalidArg.role);
-      }
+        sql.close();
+      }).catch(error => {
+        console.log(error);
+      });
     } else {
       //Rank don't exists
       bot.printMsg(msg, lang.error.notFound.rank);
@@ -308,7 +324,7 @@ module.exports = {
           }
         }).catch(error => {
           //Check if table exist
-          sql.run("CREATE TABLE IF NOT EXISTS rewards (serverId TEXT, rank TEXT, roleId TEXT)")
+          sql.run("CREATE TABLE IF NOT EXISTS rewards (serverId TEXT, rank TEXT, reward TEXT)")
             .catch(error => {
               console.log(error);
             });

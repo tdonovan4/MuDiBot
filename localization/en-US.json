@@ -21,6 +21,7 @@
       "channel": "Missing argument: channel",
       "message": "Missing argument: message",
       "rank": "Missing argument: rank",
+      "reward": "Missing argument: reward",
       "role": "Missing argument: role",
       "group": "Missing argument: group"
     },
@@ -28,7 +29,8 @@
       "cmd": "This is not a valid command",
       "category": "Warning: {{cmds}} doesn't have a valid category",
       "user": "Invalid user",
-      "role": "Invalid role"
+      "role": "Invalid role",
+      "reward": "Invalid reward"
     },
     "notLocalized": {
       "cmd": "Error: this command is not localized!",
@@ -184,8 +186,8 @@
       "msg": "Change the channel for announcements from the bot"
     },
     "setreward": {
-      "usages": ["<rank> <role>"],
-      "msg": "Set a role as a reward for the rank"
+      "usages": ["<rank> <role>", "<rank> <group>"],
+      "msg": "Set a role or a group as a reward for the rank"
     },
     "unsetreward": {
       "usages": ["<rank>"],

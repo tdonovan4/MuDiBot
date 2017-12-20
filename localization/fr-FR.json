@@ -20,7 +20,8 @@
     "missingArg": {
       "channel": "Argument manquant: salon",
       "message": "Argument manquant: message",
-      "rank": "Argument manquant: rang",
+      "rank": "Argument manquant: rang",,
+      "reward": "Argument manquant: récompense",
       "role": "Argument manquant: role",
       "group": "Argument manquant: groupe"
     },
@@ -28,7 +29,8 @@
       "cmd": "Cette commande n'est pas valide",
       "category": "Attention: {{cmds}} n'a pas de catégorie valide",
       "user": "Utilisateur non valide",
-      "role": "Role non valide"
+      "role": "Role non valide",
+      "reward": "Récompense non valide"
     },
     "notLocalized": {
       "cmd": "Erreur: cette commande n'est pas traduite!",
@@ -184,7 +186,7 @@
       "msg": "Change le salon pour les annonces de l'agent"
     },
     "setreward": {
-      "usages": ["<rang> <role>"],
+      "usages": ["<rang> <role>", "<rang> <group>"],
       "msg": "Ajoute une récompense à un rang"
     },
     "unsetreward": {
