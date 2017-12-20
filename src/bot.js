@@ -225,7 +225,7 @@ var commands = {
     category: "User",
     execute: function(msg) {
       var args = msg.content.split(" ").slice(1);
-      permGroup.setGroup(msg, args);
+      permGroup.setGroup(msg, msg.mentions.users.first(), args[1]);
     }
   },
 
@@ -234,7 +234,7 @@ var commands = {
     category: "User",
     execute: function(msg) {
       var args = msg.content.split(" ").slice(1);
-      permGroup.unsetGroup(msg, args);
+      permGroup.unsetGroup(msg, msg.mentions.users.first(), args[1]);
     }
   },
   get ungroup () {
