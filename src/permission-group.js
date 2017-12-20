@@ -5,10 +5,8 @@ const config = require('./args.js').getConfig();
 var lang = require('./localization.js').getLocalization();
 
 module.exports = {
-  setGroup: function(msg, args) {
-    var group = args[1];
+  setGroup: function(msg, user, group) {
     var groups = config.groups;
-    var user = msg.mentions.users.first();
 
     //Check if there is a user in msg
     if (user == undefined) {
@@ -66,10 +64,8 @@ module.exports = {
       bot.printMsg(msg, lang.error.notFound.group);
     }
   },
-  unsetGroup: function(msg, args) {
-    var group = args[1];
+  unsetGroup: function(msg, user, group) {
     var groups = config.groups;
-    var user = msg.mentions.users.first();
 
     //Check if there is a user in msg
     if (user == undefined) {
