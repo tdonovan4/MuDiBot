@@ -104,6 +104,20 @@ function getRewardInMsg(msg, args) {
   return;
 }
 
+function addReward(msg, reward) {
+  if(config.groups.find(x => x.name == reward) != undefined){
+    //Reward is a group
+    require('./permission-group.js').setGroup(msg, msg.author, reward);
+    return reward;
+  } else {
+    //Add role
+    msg.member.addRole(reward, lang.general.member.addReward).catch(error => {
+      console.log(error);
+    });
+    return msg.guild.roles.get(reward).name;
+  }
+}
+
 function getReward(msg, rank) {
   return new Promise((resolve, reject) => {
     sql.open('./storage/data.db').then(() => {
@@ -219,12 +233,10 @@ module.exports = {
           });
           var reward = await getReward(msg, rank);
           if (reward != undefined) {
-            //Reward found for this rank, add role
-            msg.member.addRole(reward, lang.general.member.addReward).catch(error => {
-              console.log(error);
-            });
+            //Reward found for this rank
+            let name = addReward(msg, reward);
             message += ' ' + mustache.render(lang.general.member.reward, {
-              role: msg.guild.roles.get(reward).name
+              role: name
             });
             //Check if the removal of the old role is enable
             if (config.levels.removeOldRole == true) {
