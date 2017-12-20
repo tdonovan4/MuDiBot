@@ -26,12 +26,6 @@ module.exports = {
   /*===============
   	-Permission groups-
   ===============*/
-  //Deprecated
-  //Role name for "botMember"
-  roleMember: '',
-  //Role name for "botModo"
-  roleModo: '',
-
   /*
   The groups used for permission
   Here are the permission levels:
