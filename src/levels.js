@@ -217,7 +217,7 @@ module.exports = {
       let xpForNextLevel = this.getXpForLevel(progression[0]) - progression[1];
 
       //Check if user has level up
-      if (xpGained > xpForNextLevel) {
+      if (xpGained >= xpForNextLevel) {
         //Level up!
         var message = mustache.render(lang.general.member.leveled, {
           msg,
