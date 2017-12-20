@@ -191,7 +191,6 @@ module.exports = {
 
     //Check if user is spamming
     if (currentTime - userLastMessage.time < config.levels.cooldown) {
-      console.log('Spam');
       return;
     }
 
