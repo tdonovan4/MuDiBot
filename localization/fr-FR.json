@@ -20,7 +20,7 @@
     "missingArg": {
       "channel": "Argument manquant: salon",
       "message": "Argument manquant: message",
-      "rank": "Argument manquant: rang",,
+      "rank": "Argument manquant: rang",
       "reward": "Argument manquant: récompense",
       "role": "Argument manquant: role",
       "group": "Argument manquant: groupe"
@@ -40,7 +40,8 @@
       "cmd": "Commande non trouvée",
       "rank": "Rang non trouvé",
       "group": "Groupe non trouvé",
-      "rankReward": "Aucune récompense trouvée pour ce rang"
+      "rankReward": "Aucune récompense trouvée pour ce rang",
+      "voiceChannel": "Vous n'êtes pas dans un salon vocal"
     },
     "tooMuch": {
       "cmds": "Il y a trop de commandes personnalisée!",
