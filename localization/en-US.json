@@ -40,7 +40,8 @@
       "cmd": "Command not found",
       "rank": "Rank not found",
       "group": "Group not found",
-      "rankReward": "No reward found for this rank"
+      "rankReward": "No reward found for this rank",
+      "voiceChannel": "You are not in a voice channel!"
     },
     "tooMuch": {
       "cmds": "There is too much custom commands!",

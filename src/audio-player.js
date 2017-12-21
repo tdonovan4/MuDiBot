@@ -121,6 +121,12 @@ function playVideo(connection, msg) {
 module.exports = {
   //Get YouTube video
   playYoutube: function(msg, link) {
+    //Check if user is an a channel
+    if(msg.member.voiceChannel == null) {
+      //Not in a channel
+      bot.printMsg(msg, lang.error.notFound.voiceChannel);
+      return;
+    }
     var regex = /^(http(s)??\:\/\/)?(www\.)?((youtube\.com\/watch\?v=)|(youtu.be\/))([a-zA-Z0-9\-_])+/
     if (regex.test(link[0])) {
       //Direct link to video
