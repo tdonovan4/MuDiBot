@@ -666,7 +666,6 @@ async function checkPerm(msg, permLevel) {
   var userPermLevel = config.groups.find(x => x.name == userGroup).permLvl;
 
   //Compare user and needed permission level
-  console.log([userPermLevel, permLevel]);
   if (userPermLevel >= permLevel) {
     return true;
   }
