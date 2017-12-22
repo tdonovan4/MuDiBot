@@ -653,10 +653,16 @@ async function checkPerm(msg, permLevel) {
   const storage = require('./storage.js');
   let user = await storage.getUser(msg, msg.author.id);
 
-  var userGroup = user.groups.split(',').sort(function(a, b) {
-    return config.groups.find(x => x.name == a).permLvl <
-      config.groups.find(x => x.name == b).permLvl;
-  })[0];
+  var userGroup = user.groups
+  if(userGroup != null) {
+    userGroup.split(',').sort(function(a, b) {
+      return config.groups.find(x => x.name == a).permLvl <
+        config.groups.find(x => x.name == b).permLvl;
+    })[0];
+  } else {
+    //Default if no group
+    userGroup = config.groups[0].name;
+  }
   var userPermLevel = config.groups.find(x => x.name == userGroup).permLvl;
 
   //Compare user and needed permission level
