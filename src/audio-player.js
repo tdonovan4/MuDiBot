@@ -44,14 +44,17 @@ function addToQueue(msg, url) {
   } else {
     //Url is a video
     checkIfAvailable(url).then(values => {
-      let text = (values != null) ? mustache.render(lang.play.added.video, {
-        values
-      }) : lang.play.unavailable;
       if (values != null) {
         queue.push(values);
       }
-      bot.printMsg(msg, text);
-      if (msg.member.voiceChannel.connection == null && queue.length != 0) {
+      if (queue.length > 1) {
+        //Add message to say video was added to the queue
+        let text = (values != null) ? mustache.render(lang.play.added.video, {
+          values
+        }) : lang.play.unavailable;
+        bot.printMsg(msg, text);
+      }
+      if (msg.member.voiceChannel.connection == null) {
         joinChannel(msg);
       }
     });
