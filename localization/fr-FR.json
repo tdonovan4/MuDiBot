@@ -8,38 +8,68 @@
     "member": {
       "joined": "Bienvenue sur le serveur, <@{{member.user.id}}>!",
       "left": "<@{{member.user.id}}> ({{member.user.username}}) a quitté le serveur :slight_frown:",
-      "leveled": "<@{{msg.author.id}}> vient juste de monté au niveau {{progression}}!"
+      "leveled": "<@{{msg.author.id}}> vient juste de monté au niveau {{progression}}!",
+      "rankUp": "Cet utilisateur est maintenant un {{rank}}!",
+      "reward": "et reçoit le role {{role}} comme récompense",
+      "addReward": "Récompense pour promotion",
+      "removeOldReward": "Ancienne récompense enlevée"
     }
   },
   "error": {
     "usage": "Utilisation incorrecte",
     "missingArg": {
       "channel": "Argument manquant: salon",
-      "message": "Argument manquant: message"
+      "message": "Argument manquant: message",
+      "rank": "Argument manquant: rang",
+      "reward": "Argument manquant: récompense",
+      "role": "Argument manquant: role",
+      "group": "Argument manquant: groupe"
     },
     "invalidArg": {
       "cmd": "Cette commande n'est pas valide",
       "category": "Attention: {{cmds}} n'a pas de catégorie valide",
-      "user": "Utilisateur non valide"
+      "user": "Utilisateur non valide",
+      "role": "Role non valide",
+      "reward": "Récompense non valide"
     },
     "notLocalized": {
-      "cmd": "Erreur: cette commande n'est pas traduite!"
+      "cmd": "Erreur: cette commande n'est pas traduite!",
+      "rank": "Erreur: Ce rang n'est pas traduit!"
     },
     "notFound": {
-      "cmd": "Commande non trouvée"
+      "cmd": "Commande non trouvée",
+      "rank": "Rang non trouvé",
+      "group": "Groupe non trouvé",
+      "rankReward": "Aucune récompense trouvée pour ce rang",
+      "voiceChannel": "Vous n'êtes pas dans un salon vocal"
     },
     "tooMuch": {
       "cmds": "Il y a trop de commandes personnalisée!",
       "cmdsUser:": "Vous avez trop de commandes personnalisée!"
     },
     "cmdAlreadyExists": "Cette commande existe déjà!",
+    "groupDuplicate": "Cette utilisateur est déjà dans ce groupe!",
     "notEnoughPermissions": "Permissions insuffisantes"
+  },
+  "ranks": {
+    "vagabond": "Vagabond",
+    "farmer": "Paysan",
+    "warrior": "Guerrier",
+    "lord": "Seigneur",
+    "king": "Roi",
+    "emperor": "Empereur",
+    "xpMaster": "Maître de l'XP",
+    "spamMaster": "Maître du Spam",
+    "xpGod": "Dieu de l'XP",
+    "spamGod": "Dieu du Spam",
+    "lastRank": "Pas de vie"
   },
   "help": {
     "msg": "Pour plus d'information sur une commande et son utilisation, tapez `{{config.prefix}}help nomDeLaCommande`.",
+    "alias": "Alias:",
     "desc": "Description:",
     "permLvl": "Niveau de permission:",
-    "usage": "Usage",
+    "usage": "Usage:",
     "help": {
       "usages": ["","<commande>"],
       "msg": "Affiche toutes les commandes ou l'aide pour une commande"
@@ -61,12 +91,24 @@
       "msg": "Envoie un message dans le salon"
     },
     "avatar": {
-      "usages": ["<user>"],
+      "usages": ["<utilisateur>"],
       "msg": "Donne l'avatar d'un utilisateur"
     },
     "profile": {
-      "usages": ["<user>"],
+      "usages": ["<utilisateur>"],
       "msg": "Donne le profile d'un joueur"
+    },
+    "setgroup": {
+      "usages": ["<utilisateur> <groupe>"],
+      "msg": "Ajoute un groupe à l'utilisateur"
+    },
+    "unsetgroup": {
+      "usages": ["<utilisateur> <groupe>"],
+      "msg": "Enlève un groupe de l'utilisateur"
+    },
+    "purgegroups": {
+      "usages": ["<utilisateur>"],
+      "msg": "Purge les groupes d'un utilisateur"
     },
     "gif": {
       "usages": ["", "<quoi chercher>"],
@@ -97,7 +139,7 @@
       "msg": "Supprime une commande personnalisée"
     },
     "play": {
-      "usages": ["<song url or tags>"],
+      "usages": ["<url de la vidéo>", "<tags>"],
       "msg": "Enlève un avertissement de l'utilisateur"
     },
     "stop": {
@@ -143,6 +185,14 @@
     "setchannel": {
       "usages": [""],
       "msg": "Change le salon pour les annonces de l'agent"
+    },
+    "setreward": {
+      "usages": ["<rang> <role>", "<rang> <group>"],
+      "msg": "Ajoute une récompense à un rang"
+    },
+    "unsetreward": {
+      "usages": ["<rang>"],
+      "msg": "Enlève la récompense d'un rang"
     }
   },
   "ping": {
@@ -170,10 +220,22 @@
   },
   "profile": {
     "title": "Profit de {{username}}",
+    "rank": "Rang:",
+    "groups": "Groupes de permission",
     "level": "Niveau:",
     "warnings": "Avertissements:",
     "xp": "XP total:",
     "footer": "ID du client: {{id}}"
+  },
+  "setgroup": {
+    "newGroup": "Groupe ajouté!"
+  },
+  "unsetgroup": {
+    "removed": "Groupe enlevé",
+    "notInGroup": "This user is not in this group"
+  },
+  "purgegroups": {
+    "purged": "Groupes purgés"
   },
   "flipcoin": {
     "heads": "face",
@@ -194,11 +256,11 @@
   },
   "play": {
     "added": {
-      "video": "\"{{values.1}}\" a été ajouté à la file d'attente",
+      "video": "`{{values.1}}` a été ajouté à la file d'attente",
       "playlist": "La liste de lecture a été ajouté à la file d'attente"
     },
     "skipped": "Vidéo passé!",
-    "playing": "Joue: \"{{queue.0.1}}\" ({{queue.0.2}})",
+    "playing": "Joue: `{{queue.0.1}}` ({{queue.0.2}})",
     "queue": "**Liste de vidéos dans la file d'attente:**",
     "disconnected": "Déconnecté!",
     "unavailable": "Cette vidéo n'est pas disponible"
@@ -215,5 +277,11 @@
   },
   "setchannel": {
     "newDefaultChannel": "Nouveu salon par défaut sélectionné!"
+  },
+  "setreward": {
+    "newReward": "Nouvelle récompense ajoutée"
+  },
+  "unsetreward": {
+    "rewardUnset": "La récompense a été enlevée"
   }
 }

@@ -8,38 +8,68 @@
     "member": {
       "joined": "Welcome to the server, <@{{member.user.id}}>!",
       "left": "<@{{member.user.id}}> ({{member.user.username}}) left the server :slight_frown:",
-      "leveled": "<@{{msg.author.id}}> just leveled up to level {{progression}}!"
+      "leveled": "<@{{msg.author.id}}> just leveled up to level {{progression}}!",
+      "rankUp": "This user is now a {{rank}}",
+      "reward": "and receives the role {{role}} as a reward",
+      "addReward": "Reward for rank up",
+      "removeOldReward": "Removal of old reward"
     }
   },
   "error": {
     "usage": "Wrong usage",
     "missingArg": {
       "channel": "Missing argument: channel",
-      "message": "Missing argument: message"
+      "message": "Missing argument: message",
+      "rank": "Missing argument: rank",
+      "reward": "Missing argument: reward",
+      "role": "Missing argument: role",
+      "group": "Missing argument: group"
     },
     "invalidArg": {
       "cmd": "This is not a valid command",
       "category": "Warning: {{cmds}} doesn't have a valid category",
-      "user": "Invalid user"
+      "user": "Invalid user",
+      "role": "Invalid role",
+      "reward": "Invalid reward"
     },
     "notLocalized": {
-      "cmd": "Error: this command is not localized!"
+      "cmd": "Error: this command is not localized!",
+      "rank": "Error: this rank is not localized!"
     },
     "notFound": {
-      "cmd": "Command not found"
+      "cmd": "Command not found",
+      "rank": "Rank not found",
+      "group": "Group not found",
+      "rankReward": "No reward found for this rank",
+      "voiceChannel": "You are not in a voice channel!"
     },
     "tooMuch": {
       "cmds": "There is too much custom commands!",
       "cmdsUser": "You have too many custom commands!"
     },
     "cmdAlreadyExists": "This command already exists!",
+    "groupDuplicate": "This user already is in this group!",
     "notEnoughPermissions": "Not enough permissions"
+  },
+  "ranks": {
+    "vagabond": "Vagabond",
+    "farmer": "Farmer",
+    "warrior": "Warrior",
+    "lord": "Lord",
+    "king": "King",
+    "emperor": "Emperor",
+    "xpMaster": "XP Master",
+    "spamMaster": "Spam Master",
+    "xpGod": "XP God",
+    "spamGod": "Spam God",
+    "lastRank": "No life"
   },
   "help": {
     "msg": "For more information about a command and its usage, type '{{config.prefix}}help CommandName'.",
+    "alias": "Alias:",
     "desc": "Description:",
     "permLvl": "Permission level:",
-    "usage": "Usage",
+    "usage": "Usage:",
     "help": {
       "usages": ["", "<command>"],
       "msg": "Displays all commands or help for a specific command"
@@ -67,6 +97,18 @@
     "profile": {
       "usages": ["<user>"],
       "msg": "Get an user profile"
+    },
+    "setgroup": {
+      "usages": ["<user> <group>"],
+      "msg": "Add a group to user"
+    },
+    "unsetgroup": {
+      "usages": ["<user> <group>"],
+      "msg": "Remove a group from user"
+    },
+    "purgegroups": {
+      "usages": ["<user>"],
+      "msg": "Purge groups of a user"
     },
     "gif": {
       "usages": ["", "<what to search>"],
@@ -143,6 +185,14 @@
     "setchannel": {
       "usages": [""],
       "msg": "Change the channel for announcements from the bot"
+    },
+    "setreward": {
+      "usages": ["<rank> <role>", "<rank> <group>"],
+      "msg": "Set a role or a group as a reward for the rank"
+    },
+    "unsetreward": {
+      "usages": ["<rank>"],
+      "msg": "Unset the reward of a rank"
     }
   },
   "ping": {
@@ -170,10 +220,22 @@
   },
   "profile": {
     "title": "{{username}}'s profile",
+    "rank": "Rank:",
+    "groups": "Permission groups",
     "level": "Level:",
     "warnings": "Warnings:",
     "xp": "Total XP:",
     "footer": "Client id: {{id}}"
+  },
+  "setgroup": {
+    "newGroup": "Group added!"
+  },
+  "unsetgroup": {
+    "removed": "Group removed",
+    "notInGroup": "This user is not in this group"
+  },
+  "purgegroups": {
+    "purged": "Groups purged"
   },
   "flipcoin": {
     "heads": "heads",
@@ -194,11 +256,11 @@
   },
   "play": {
     "added": {
-      "video": "\"{{values.1}}\" added to the queue",
+      "video": "`{{values.1}}` added to the queue",
       "playlist": "Playlist added to the queue"
     },
     "skipped": "Video skipped!",
-    "playing": "Playing: \"{{queue.0.1}}\" ({{queue.0.2}})",
+    "playing": "Playing: `{{queue.0.1}}` ({{queue.0.2}})",
     "queue": "**List of videos in queue:**",
     "disconnected": "Disconnected!",
     "unavailable": "This video is unavailable"
@@ -215,5 +277,11 @@
   },
   "setchannel": {
     "newDefaultChannel": "New default channel set!"
+  },
+  "setreward": {
+    "newReward": "New reward set!"
+  },
+  "unsetreward": {
+    "rewardUnset": "The reward has been unset"
   }
 }

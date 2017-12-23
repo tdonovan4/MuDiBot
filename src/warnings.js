@@ -7,7 +7,7 @@ var lang = require('./localization.js').getLocalization();
 
 function modifyUsersWarnings(msg, value) {
   sql.open('./storage/data.db').then(() => {
-    sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER)')
+    sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
       .then(() => {
         sql.run('UPDATE users SET warnings = ? WHERE serverId = ?', [value, msg.guild.id]).catch(error => {
           console.log(error);
@@ -23,7 +23,7 @@ function modifyUsersWarnings(msg, value) {
 
 function modifyUserWarnings(msg, userId, value) {
   sql.open('./storage/data.db').then(() => {
-    sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER)')
+    sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
       .then(() => {
         sql.run('UPDATE users SET warnings = ? WHERE serverId = ? AND userId = ?', [value, msg.guild.id, userId])
           .catch(error => {
