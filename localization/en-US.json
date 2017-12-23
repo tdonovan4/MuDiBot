@@ -256,11 +256,11 @@
   },
   "play": {
     "added": {
-      "video": "\"{{values.1}}\" added to the queue",
+      "video": "`{{values.1}}` added to the queue",
       "playlist": "Playlist added to the queue"
     },
     "skipped": "Video skipped!",
-    "playing": "Playing: \"{{queue.0.1}}\" ({{queue.0.2}})",
+    "playing": "Playing: `{{queue.0.1}}` ({{queue.0.2}})",
     "queue": "**List of videos in queue:**",
     "disconnected": "Disconnected!",
     "unavailable": "This video is unavailable"
