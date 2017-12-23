@@ -102,7 +102,9 @@ function checkIfAvailable(url) {
 //Play YouTube video (audio only)
 function playVideo(connection, msg) {
   voiceConnection = connection;
-  bot.printMsg(msg, mustache.render(lang.play.playing, {queue}));
+  bot.printMsg(msg, mustache.render(lang.play.playing, {
+    queue
+  }));
   //Downloading
   var stream = ytdl(queue[0][0], {
     filter: 'audioonly'
@@ -122,13 +124,13 @@ module.exports = {
   //Get YouTube video
   playYoutube: function(msg, link) {
     //Check if there is a link;
-    if(link != null) {
+    if (link.length == 0) {
       //Missing argument;
       msg.channel.send(lang.error.usage);
       return;
     }
     //Check if user is an a channel
-    if(msg.member.voiceChannel == null) {
+    if (msg.member.voiceChannel == null) {
       //Not in a channel
       bot.printMsg(msg, lang.error.notFound.voiceChannel);
       return;
