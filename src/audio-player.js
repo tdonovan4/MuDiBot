@@ -8,10 +8,10 @@ var lang = require('./localization.js').getLocalization();
 var queue = [];
 var voiceConnection;
 
-function joinChannel(message) {
-  var channel = message.member.voiceChannel;
+function joinChannel(msg) {
+  var channel = msg.member.voiceChannel;
   if (typeof channel !== "undefined") {
-    channel.join().then(connection => playVideo(connection, message));
+    channel.join().then(connection => playVideo(connection, msg));
   }
 }
 
@@ -26,12 +26,12 @@ function get(url) {
         resolve(JSON.parse(body));
       });
     }).on('error', function(e) {
-      console.log(e.message);
+      console.log(e.msg);
     });
   });
 }
 
-function addToQueue(message, url) {
+function addToQueue(msg, url) {
   if (url.indexOf('list=') !== -1) {
     //Url is a playlist
     var regExpPlaylist = new RegExp("list=([a-zA-Z0-9\-\_]+)&?", "i");
@@ -39,26 +39,29 @@ function addToQueue(message, url) {
     var api = 'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=' + id[1] + '&maxResults=50&key=' + config.youtubeAPIKey;
 
     get(api).then(function(response) {
-      getPlaylistVideos(0, response, message);
+      getPlaylistVideos(0, response, msg);
     });
   } else {
     //Url is a video
     checkIfAvailable(url).then(values => {
-      let text = (values != null) ? mustache.render(lang.play.added.video, {
-        values
-      }) : lang.play.unavailable;
       if (values != null) {
         queue.push(values);
       }
-      bot.printMsg(message, text);
-      if (message.member.voiceChannel.connection == null && queue.length != 0) {
-        joinChannel(message);
+      if (queue.length > 1) {
+        //Add message to say video was added to the queue
+        let text = (values != null) ? mustache.render(lang.play.added.video, {
+          values
+        }) : lang.play.unavailable;
+        bot.printMsg(msg, text);
+      }
+      if (msg.member.voiceChannel.connection == null) {
+        joinChannel(msg);
       }
     });
   }
 }
 
-function getPlaylistVideos(i, response, message) {
+function getPlaylistVideos(i, response, msg) {
   var promises = [];
   for (i = 0; i < response.items.length; i++) {
     var video = 'https://www.youtube.com/watch?v=' + response.items[i].snippet.resourceId.videoId
@@ -72,9 +75,9 @@ function getPlaylistVideos(i, response, message) {
         queue.push(values[n]);
       }
     }
-    bot.printMsg(message, lang.play.added.playlist);
-    if (message.member.voiceChannel.connection == null && queue.length != 0) {
-      joinChannel(message);
+    bot.printMsg(msg, lang.play.added.playlist);
+    if (msg.member.voiceChannel.connection == null && queue.length != 0) {
+      joinChannel(msg);
     }
   });
 }
@@ -100,9 +103,11 @@ function checkIfAvailable(url) {
 }
 
 //Play YouTube video (audio only)
-function playVideo(connection, message) {
+function playVideo(connection, msg) {
   voiceConnection = connection;
-  bot.printMsg(message, mustache.render(lang.play.playing, {queue}));
+  bot.printMsg(msg, mustache.render(lang.play.playing, {
+    queue
+  }));
   //Downloading
   var stream = ytdl(queue[0][0], {
     filter: 'audioonly'
@@ -112,7 +117,7 @@ function playVideo(connection, message) {
   dispatcher.on('end', () => {
     queue.splice(0, 1)
     if (queue.length > 0) {
-      playVideo(connection, message)
+      playVideo(connection, msg)
     } else {
       connection.disconnect();
     }
@@ -120,44 +125,57 @@ function playVideo(connection, message) {
 }
 module.exports = {
   //Get YouTube video
-  playYoutube: function(message, link) {
+  playYoutube: function(msg, link) {
+    //Check if there is a link;
+    if (link.length == 0) {
+      //Missing argument;
+      msg.channel.send(lang.error.usage);
+      return;
+    }
+    //Check if user is an a channel
+    if (msg.member.voiceChannel == null) {
+      //Not in a channel
+      bot.printMsg(msg, lang.error.notFound.voiceChannel);
+      return;
+    }
+    //Check if url to video
     var regex = /^(http(s)??\:\/\/)?(www\.)?((youtube\.com\/watch\?v=)|(youtu.be\/))([a-zA-Z0-9\-_])+/
     if (regex.test(link[0])) {
       //Direct link to video
-      addToQueue(message, link[0]);
+      addToQueue(msg, link[0]);
     } else {
       //Search the video with the YouTube API
       var video = 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=[' + link + ']&maxResults=1&type=video&key=' + config.youtubeAPIKey;
       get(video).then(function(response) {
         var url = 'https://www.youtube.com/watch?v=' + response.items[0].id.videoId
-        addToQueue(message, url);
+        addToQueue(msg, url);
       });
     }
   },
   //Stop playing the audio and leave channel
-  stop: function(message) {
+  stop: function(msg) {
     if (voiceConnection != null) {
       voiceConnection.disconnect();
       queue = [];
-      bot.printMsg(message, lang.play.disconnected);
+      bot.printMsg(msg, lang.play.disconnected);
     }
   },
   //Skip song
-  skip: function(message) {
+  skip: function(msg) {
     //Ugly solution, but it's the only one
     try {
-      var dispatcherStream = message.member.voiceChannel.connection.player.dispatcher.stream;
+      var dispatcherStream = msg.member.voiceChannel.connection.player.dispatcher.stream;
       dispatcherStream.destroy();
-      bot.printMsg(message, lang.play.skipped);
+      bot.printMsg(msg, lang.play.skipped);
     } catch (stream) {}
   },
-  listQueue: function(message) {
+  listQueue: function(msg) {
     var list = lang.play.queue;
     //Get video titles
     for (i = 0; i < queue.length; i++) {
       list += '\n "' + queue[i][1] + '"';
     }
     //Write titles
-    message.channel.send(list);
+    msg.channel.send(list);
   }
 }

@@ -19,18 +19,35 @@ module.exports = {
   //The locales for the localization (by default en-US or fr-FR)
   locale: '',
   //The 'game' the bot is playing (more like a status)
-  status: 'Type $help',
+  currentStatus: 'Type $help',
   //List of users (id) with all permissions
   superusers: [''],
 
   /*===============
-  	-Roles-
+  	-Permission groups-
   ===============*/
-  //Role name for "botMember"
-  roleMember: '',
-  //Role name for "botModo"
-  roleModo: '',
-
+  /*
+  The groups used for permission
+  Here are the permission levels:
+  0: Default level, basic commands
+  1: Still safe commands, but some can become a bit spammy
+  (Entering danger zone)
+  2: Commands for moderation
+  3: Commands for administrating the bot or the guild/server
+  */
+  groups: [{
+    name: "User",
+    permLvl: 0
+  }, {
+    name: "Member",
+    permLvl: 1
+  }, {
+    name: "Mod",
+    permLvl: 2
+  }, {
+    name: "Admin",
+    permLvl: 3
+  }],
   /*===============
   	-Modules-
   ===============*/
@@ -40,7 +57,11 @@ module.exports = {
   ---------------*/
   levels: {
     //Is this module activated? Set to false to disable the module
-    activated: true
+    activated: true,
+    //How much time between messages to be counted (in ms)
+    cooldown: 3000,
+    //Remove the role given by the last rank (if exists) after a rank up
+    removeOldRole: true
   },
 
   /*---------------
@@ -100,6 +121,21 @@ module.exports = {
   },
 
   profile: {
+    //Is the command activated? Set to false to disable a command
+    activated: true
+  },
+
+  setgroup: {
+    //Is the command activated? Set to false to disable a command
+    activated: true
+  },
+
+  unsetgroup: {
+    //Is the command activated? Set to false to disable a command
+    activated: true
+  },
+
+  purgegroups: {
     //Is the command activated? Set to false to disable a command
     activated: true
   },
@@ -207,6 +243,16 @@ module.exports = {
   },
 
   setchannel: {
+    //Is the command activated? Set to false to disable a command
+    activated: true
+  },
+
+  setreward: {
+    //Is the command activated? Set to false to disable a command
+    activated: true
+  },
+
+  unsetreward: {
     //Is the command activated? Set to false to disable a command
     activated: true
   }
