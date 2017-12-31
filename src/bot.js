@@ -581,10 +581,13 @@ function modifyText(file, text, value) {
 
 //Function that fetch, check and delete messages
 function clear(msg, num) {
-  var clearList = config.clearlog.commandsToClear.concat(config.clearlog.usersToClear);
-  for (i = 0; i < keys.length; i++) {
-    clearList.push(config.prefix + keys[i]);
-  }
+  //Add command and users to clear to list
+  var clearList = config.clearlog.commandsToClear.concat(config.clearlog.usersToClear, );
+  //Add bot commands to list
+  clearList = clearList.concat(keys.map(x => config.prefix + x));
+  //Remove empty string from list
+  clearList = clearList.filter(x => x != '');
+  console.log(clearList);
 
   //Fetch
   msg.channel.fetchMessages({
