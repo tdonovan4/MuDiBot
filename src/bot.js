@@ -582,7 +582,7 @@ function modifyText(file, text, value) {
 //Function that fetch, check and delete messages
 function clear(msg, num) {
   //Add command and users to clear to list
-  var clearList = config.clearlog.commandsToClear.concat(config.clearlog.usersToClear, );
+  var clearList = config.clearlog.commandsToClear.concat(config.clearlog.usersToClear);
   //Add bot commands to list
   clearList = clearList.concat(keys.map(x => config.prefix + x));
   //Remove empty string from list
