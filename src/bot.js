@@ -257,7 +257,7 @@ var commands = {
   },
 
   gif: {
-    permLvl: "roleMember",
+    permLvl: 1,
     category: "Fun",
     execute: async function(msg) {
       const giphy = require('./giphy-api.js');
@@ -271,7 +271,7 @@ var commands = {
   },
 
   gifrandom: {
-    permLvl: "roleMember",
+    permLvl: 1,
     category: "Fun",
     execute: async function(msg) {
       const giphy = require('./giphy-api.js');
@@ -311,7 +311,7 @@ var commands = {
   },
 
   custcmd: {
-    permLvl: "roleMember",
+    permLvl: 1,
     category: "Fun",
     execute: function(msg) {
       const customCmd = require('./custom-cmd.js');
@@ -326,7 +326,7 @@ var commands = {
   },
 
   custcmdlist: {
-    permLvl: "roleMember",
+    permLvl: 1,
     category: "Fun",
     execute: function(msg) {
       const customCmd = require('./custom-cmd.js');
