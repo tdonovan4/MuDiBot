@@ -23,7 +23,7 @@ client.on('ready', () => {
   console.log(mustache.render(lang.general.logged, client));
   console.log(lang.general.language);
   //Set status
-  client.user.setGame(config.currentStatus);
+  client.user.setActivity(config.currentStatus);
   //Display startup time
   var time = Date.now() - startTime; +
   console.log(mustache.render(lang.general.startupTime, {
