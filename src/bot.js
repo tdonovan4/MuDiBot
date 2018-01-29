@@ -10,16 +10,19 @@ const fs = require('fs');
 const mustache = require('mustache');
 var config = require('./args.js').getConfig();
 //For localization
-var lang;
+var lang = require('./localization.js').getLocalization();
 
 //Log to the discord user  with the token
 var startTime;
-client.login(config.botToken).then(startTime = Date.now());
+client.login(config.botToken)
+  .then(startTime = Date.now()).catch(() => {
+    console.log(lang.error.invalidArg.token);
+    process.exitCode = 1;
+    process.exit();
+  });
 
 //Start the bot
 client.on('ready', () => {
-  //Set language
-  lang = require('./localization.js').getLocalization();
   console.log(mustache.render(lang.general.logged, client));
   console.log(lang.general.language);
   //Set status
