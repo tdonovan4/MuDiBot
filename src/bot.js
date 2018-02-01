@@ -34,15 +34,6 @@ client.on('ready', () => {
   }));
 });
 
-module.exports.printMsg = function(msg, text) {
-  printMsg(msg, text);
-}
-
-function printMsg(msg, text) {
-  console.log(text);
-  msg.channel.send(text);
-}
-
 /*
  *Use an object containing command objects to get
  *the permission needed and execute the command
@@ -505,6 +496,38 @@ var commands = {
 
 var keys = Object.keys(commands);
 
+function printMsg(msg, text) {
+  console.log(text);
+  msg.channel.send(text);
+}
+
+function executeCmd(msg, cmd) {
+  var cmdActivated = config[cmd[0]] != undefined ? config[cmd[0]].activated : true;
+
+  //Check if message begins with prefix, if cmd is a valid command and is it's activated
+  if (msg.content.indexOf(config.prefix) == 0 && cmd[0] in commands && cmdActivated) {
+    console.log(msg.author.username + ' - ' + msg.content);
+
+    //Check if user has permission
+    checkPerm(msg, commands[cmd[0]].permLvl).then(result => {
+      if(result) commands[cmd[0]].execute(msg);
+      //Command executed
+      return true
+    });
+  }
+  //The command was not found or didn't execute
+  return false
+}
+
+module.exports= {
+  printMsg: function(msg, text) {
+    printMsg(msg, text);
+  },
+  executeCmd: function(msg) {
+    executeCmd(msg);
+  }
+}
+
 /*
  *Function fired when a message is posted
  *to check if the message is calling a command
@@ -520,17 +543,11 @@ client.on('message', msg => {
       cmd = cmd.split(' ');
     }
 
-    var cmdActivated = config[cmd[0]] != undefined ? config[cmd[0]].activated : true;
+    //Try to execute the message as a commmand
+    var cmdWasExecuted = executeCmd(msg, cmd);
 
-    //Check if message begins with prefix, if cmd is a valid command and is it's activated
-    if (msg.content.indexOf(config.prefix) == 0 && cmd[0] in commands && cmdActivated) {
-      console.log(msg.author.username + ' - ' + msg.content);
-
-      //Check if user has permission
-      checkPerm(msg, commands[cmd[0]].permLvl).then(result => {
-        if(result) commands[cmd[0]].execute(msg);
-      });
-    } else {
+    if(!cmdWasExecuted) {
+      //Check if message is a custom command
       const customCmd = require('./custom-cmd.js');
 
       customCmd.getCmds(msg).then(custCmds => {
