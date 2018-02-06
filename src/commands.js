@@ -549,10 +549,11 @@ module.exports = {
 
       //Check if user has permission
       checkPerm(msg, commands[cmd[0]].permLvl).then(result => {
-        if(result) commands[cmd[0]].execute(msg);
-        //Command executed
-        var util = require('util');
-        return true
+        if(result) {
+          commands[cmd[0]].execute(msg) 
+          //Command executed
+          return true
+        };
       });
     }
     //The command was not found or didn't execute
