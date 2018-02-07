@@ -1,8 +1,6 @@
 //Main class
 const Discord = require("discord.js");
 const client = new Discord.Client();
-const player = require('./audio-player.js');
-const levels = require('./levels.js');
 const defaultChannel = require('./default-channel.js');
 const mustache = require('mustache');
 var config = require('./args.js').getConfig();
@@ -36,14 +34,15 @@ function printMsg(msg, text) {
   msg.channel.send(text);
 }
 
-module.exports= {
+module.exports = {
   printMsg: function(msg, text) {
     printMsg(msg, text);
-  },
-  client
+  }
 }
 
 const commands = require('./commands.js')
+const player = require('./audio-player.js');
+const levels = require('./levels.js');
 
 /*
  *Function fired when a message is posted
