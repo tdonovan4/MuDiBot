@@ -8,6 +8,7 @@ const permGroup = require('./permission-group.js');
 const fs = require('fs');
 const mustache = require('mustache');
 const client = bot.client;
+const storage = require('./storage.js');
 var config = require('./args.js').getConfig();
 var lang = require('./localization.js').getLocalization();
 
@@ -162,7 +163,6 @@ var commands = {
     permLvl: 0,
     category: "User",
     execute: async function(msg) {
-      const storage = require('./storage.js');
       let user = msg.mentions.users.first();
       if (user == undefined) {
         //There is no mentions
@@ -516,7 +516,6 @@ async function checkPerm(msg, permLevel) {
     return true;
   }
 
-  const storage = require('./storage.js');
   let user = await storage.getUser(msg, msg.author.id);
 
   var userGroup = user.groups
@@ -540,7 +539,7 @@ async function checkPerm(msg, permLevel) {
 }
 
 module.exports = {
-  executeCmd: function(msg, cmd) {
+  checkIfValidCmd: function(msg, cmd) {
     var cmdActivated = config[cmd[0]] != undefined ? config[cmd[0]].activated : true;
 
     //Check if message begins with prefix, if cmd is a valid command and is it's activated
@@ -550,13 +549,16 @@ module.exports = {
       //Check if user has permission
       checkPerm(msg, commands[cmd[0]].permLvl).then(result => {
         if(result) {
-          commands[cmd[0]].execute(msg) 
-          //Command executed
+          //Valid command that can be used by the user
           return true
         };
       });
     }
     //The command was not found or didn't execute
     return false
+  },
+  executeCmd: function(msg, cmd) {
+    //Execute the commandd
+    commands[cmd[0]].execute(msg)
   }
 }
