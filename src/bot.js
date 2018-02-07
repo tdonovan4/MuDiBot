@@ -59,10 +59,12 @@ client.on('message', msg => {
       cmd = cmd.split(' ');
     }
 
-    //Try to execute the message as a commmand
-    var cmdWasExecuted = commands.executeCmd(msg, cmd);
+    //Check if message is a command that can be executed
+    var msgValidCmd = commands.checkIfValidCmd(msg, cmd);
 
-    if(!cmdWasExecuted) {
+    if(msgValidCmd) {
+      commands.executeCmd(msg, cmd);
+    } else {
       //Check if message is a custom command
       const customCmd = require('./custom-cmd.js');
 
