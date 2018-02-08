@@ -497,48 +497,49 @@ var commands = {
 
 var keys = Object.keys(commands);
 
-/*
- *Check if the message author has permission
- *to do the command, return true or false
- */
-async function checkPerm(msg, permLevel) {
-  //Exceptions
-  //Check if user is superuser
-  for (i = 0; i < config.superusers.length; i++) {
-    if (msg.author.id === config.superusers[i]) {
-      return true;
-    }
-  }
 
-  //Check if user is an administrator
-  var permissions = msg.member.permissions;
-  if (permissions.has('ADMINISTRATOR')) {
-    return true;
-  }
-
-  let user = await storage.getUser(msg, msg.author.id);
-
-  var userGroup = user.groups
-  if(userGroup != null) {
-    userGroup.split(',').sort(function(a, b) {
-      return config.groups.find(x => x.name == a).permLvl <
-        config.groups.find(x => x.name == b).permLvl;
-    })[0];
-  } else {
-    //Default if no group
-    userGroup = config.groups[0].name;
-  }
-  var userPermLevel = config.groups.find(x => x.name == userGroup).permLvl;
-
-  //Compare user and needed permission level
-  if (userPermLevel >= permLevel) {
-    return true;
-  }
-  bot.printMsg(msg, lang.error.notEnoughPermissions);
-  return false;
-}
 
 module.exports = {
+  /*
+   *Check if the message author has permission
+   *to do the command, return true or false
+   */
+  checkPerm: async function (msg, permLevel) {
+    //Exceptions
+    //Check if user is superuser
+    for (i = 0; i < config.superusers.length; i++) {
+      if (msg.author.id === config.superusers[i]) {
+        return true;
+      }
+    }
+
+    //Check if user is an administrator
+    var permissions = msg.member.permissions;
+    if (permissions.has('ADMINISTRATOR')) {
+      return true;
+    }
+
+    let user = await storage.getUser(msg, msg.author.id);
+
+    var userGroup = user.groups
+    if(userGroup != null) {
+      userGroup.split(',').sort(function(a, b) {
+        return config.groups.find(x => x.name == a).permLvl <
+          config.groups.find(x => x.name == b).permLvl;
+      })[0];
+    } else {
+      //Default if no group
+      userGroup = config.groups[0].name;
+    }
+    var userPermLevel = config.groups.find(x => x.name == userGroup).permLvl;
+
+    //Compare user and needed permission level
+    if (userPermLevel >= permLevel) {
+      return true;
+    }
+    bot.printMsg(msg, lang.error.notEnoughPermissions);
+    return false;
+  },
   checkIfValidCmd: function(msg, cmd) {
     var cmdActivated = config[cmd[0]] != undefined ? config[cmd[0]].activated : true;
 
@@ -547,7 +548,7 @@ module.exports = {
       console.log(msg.author.username + ' - ' + msg.content);
 
       //Check if user has permission
-      checkPerm(msg, commands[cmd[0]].permLvl).then(result => {
+      this.checkPerm(msg, commands[cmd[0]].permLvl).then(result => {
         if(result) {
           //Valid command that can be used by the user
           return true
