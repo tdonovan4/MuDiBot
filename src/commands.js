@@ -540,7 +540,7 @@ module.exports = {
     bot.printMsg(msg, lang.error.notEnoughPermissions);
     return false;
   },
-  checkIfValidCmd: function(msg, cmd) {
+  checkIfValidCmd: async function(msg, cmd) {
     var cmdActivated = config[cmd[0]] != undefined ? config[cmd[0]].activated : true;
 
     //Check if message begins with prefix, if cmd is a valid command and is it's activated
@@ -548,12 +548,11 @@ module.exports = {
       console.log(msg.author.username + ' - ' + msg.content);
 
       //Check if user has permission
-      this.checkPerm(msg, commands[cmd[0]].permLvl).then(result => {
-        if(result) {
-          //Valid command that can be used by the user
-          return true
-        };
-      });
+      result = await this.checkPerm(msg, commands[cmd[0]].permLvl)
+      if(result) {
+        //Valid command that can be used by the user
+        return true
+      };
     }
     //The command was not found or didn't execute
     return false
