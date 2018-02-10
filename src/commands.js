@@ -497,8 +497,6 @@ var commands = {
 
 var keys = Object.keys(commands);
 
-
-
 module.exports = {
   /*
    *Check if the message author has permission

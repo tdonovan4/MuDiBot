@@ -4,6 +4,7 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const bot = require('../src/bot.js');
 const commands = require('../src/commands.js');
+const lang = require('../localization/en-US.json');
 var config = require('../src/args.js').getConfig();
 var msg = require('./test-messages/test-message1.json');
 
@@ -22,8 +23,16 @@ describe('Test commands', function() {
     it('Should return true when using a real command', async function() {
       msg.content = '$help';
       var response = await commands.checkIfValidCmd(msg, ['help']);
-      console.log(response);
       expect(response).to.equal(true);
     })
+  });
+  describe('Ping', function() {
+    it('Should return "Pong!"', function() {
+      msg.reply = function(text) { return text; }
+      var reply = sinon.spy(msg, 'reply')
+      
+      commands.executeCmd(msg, ['ping']);
+      expect(reply.firstCall.returnValue).to.equal(lang.ping.pong)
+    });
   });
 });
