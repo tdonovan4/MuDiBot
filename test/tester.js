@@ -6,7 +6,7 @@ const bot = require('../src/bot.js');
 const commands = require('../src/commands.js');
 const lang = require('../localization/en-US.json');
 var config = require('../src/args.js').getConfig();
-var msg = require('./test-messages/test-message1.json');
+var msg = require('./test-messages.js').msg1
 
 describe('Test commands', function() {
   describe('Execute command', function() {
@@ -28,9 +28,8 @@ describe('Test commands', function() {
   });
   describe('Ping', function() {
     it('Should return "Pong!"', function() {
-      msg.reply = function(text) { return text; }
       var reply = sinon.spy(msg, 'reply')
-      
+
       commands.executeCmd(msg, ['ping']);
       expect(reply.firstCall.returnValue).to.equal(lang.ping.pong)
     });
