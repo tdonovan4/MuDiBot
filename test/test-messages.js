@@ -6,4 +6,9 @@ exports.msg1 = {
   reply: function(text) {
     return text;
   },
+  channel: {
+    send: function(text) {
+      return text;
+    }
+  }
 }

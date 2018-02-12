@@ -5,8 +5,6 @@ var lang = require('./localization.js').getLocalization();
 module.exports = {
   //Create the help message
   printCmds: function(msg, cmds) {
-    //const help = localization.help;
-    var roles = msg.channel.guild.roles;
 
     var categories = {
       General: [],
