@@ -81,7 +81,7 @@ module.exports = {
   ===============*/
 
   /*Configuration for individual command.
-  They also can be activated or desactivated.
+  They also can be activated or deactivated.
   All commands are activated by default.*/
 
   /*---------------
