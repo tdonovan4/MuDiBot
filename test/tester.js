@@ -10,25 +10,39 @@ var config = require('../src/args.js').getConfig();
 var msg = require('./test-messages.js').msg1
 
 var send = sinon.spy(msg.channel, 'send')
+var checkPerm = sinon.stub(commands, 'checkPerm');
 
-describe('Test commands', function() {
-  describe('Execute command', function() {
-    it('Should return false when using a false command', async function() {
-      //Change content of message
-      msg.content = 'randomString';
-      var response = await commands.checkIfValidCmd(msg, ['randomString']);
-      expect(response).to.equal(false);
-    });
-    before(function() {
-      var stub = sinon.stub(commands, 'checkPerm');
-      stub.resolves(true);
-    });
-    it('Should return true when using a real command', async function() {
-      msg.content = '$help';
-      var response = await commands.checkIfValidCmd(msg, ['help']);
-      expect(response).to.equal(true);
-    })
+describe('Validate if message is a command', function() {
+  it('Should return false when using a false command', async function() {
+    //Change content of message
+    msg.content = 'randomString';
+    var response = await commands.checkIfValidCmd(msg, ['randomString']);
+    expect(response).to.equal(false);
   });
+  before(function() {
+    checkPerm.resolves(true);
+  });
+  it('Should return true when using a real command', async function() {
+    msg.content = '$help';
+    var response = await commands.checkIfValidCmd(msg, ['help']);
+    expect(response).to.equal(true);
+  })
+  it('Should return false if command is deactivated', async function() {
+    config.help.activated = false
+    var response = await commands.checkIfValidCmd(msg, ['help']);
+    expect(response).to.equal(false);
+  });
+  it('Should return false when user doesn\'t have permission to execute', async function() {
+    config.help.activated = true
+    checkPerm.resolves(false);
+    var response = await commands.checkIfValidCmd(msg, ['help']);
+    expect(response).to.equal(false);
+  });
+  after(function() {
+    checkPerm.resolves(true);
+  })
+});
+describe('Test commands', function() {
   describe('Help', function() {
     it('Should return all commands', function() {
       commands.executeCmd(msg, ['help']);
