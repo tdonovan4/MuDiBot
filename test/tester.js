@@ -10,6 +10,7 @@ var config = require('../src/args.js').getConfig();
 var msg = require('./test-messages.js').msg1
 
 var send = sinon.spy(msg.channel, 'send')
+var reply = sinon.spy(msg, 'reply')
 var checkPerm = sinon.stub(commands, 'checkPerm');
 
 describe('Validate if message is a command', function() {
@@ -75,9 +76,35 @@ describe('Test commands', function() {
   });
   describe('Ping', function() {
     it('Should return "Pong!"', function() {
-      var reply = sinon.spy(msg, 'reply')
       commands.executeCmd(msg, ['ping']);
-      expect(reply.firstCall.returnValue).to.equal(lang.ping.pong)
+      expect(reply.lastCall.returnValue).to.equal(lang.ping.pong)
+    });
+  });
+  describe('Roll', function() {
+    it('Should return the result of one six faced die', function() {
+      msg.content = '$roll 1d6';
+      commands.executeCmd(msg, ['roll', '1d6']);
+      result = parseInt(reply.lastCall.returnValue);
+      expect(result).to.be.above(0);
+      expect(result).to.be.below(7);
+    });
+    it('Should return the result of two 20 faced dice', function() {
+      msg.content = '$roll 2d20';
+      commands.executeCmd(msg, ['roll', '2d20']);
+      result = parseInt(reply.lastCall.returnValue);
+      expect(result).to.be.above(0);
+      expect(result).to.be.below(41);
+    });
+    it('Should return the result of three 12 faced dice + 5', function() {
+      result = parseInt(reply.lastCall.returnValue);
+      expect(result).to.be.above(4);
+      expect(result).to.be.below(42);
+    })
+    it('Should return 0 when using wrong input', function() {
+      msg.content = '$roll randomString';
+      commands.executeCmd(msg, ['roll', 'randomString']);
+      result = parseInt(reply.lastCall.returnValue);
+      expect(result).to.equal(0);
     });
   });
 });
