@@ -37,7 +37,8 @@ function printMsg(msg, text) {
 module.exports = {
   printMsg: function(msg, text) {
     printMsg(msg, text);
-  }
+  },
+  client: client
 }
 
 const commands = require('./commands.js')
