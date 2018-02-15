@@ -1,7 +1,6 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const Discord = require('discord.js');
-const client = new Discord.Client();
 const bot = require('../src/bot.js');
 const commands = require('../src/commands.js');
 const lang = require('../localization/en-US.json');
@@ -96,6 +95,8 @@ describe('Test commands', function() {
       expect(result).to.be.below(41);
     });
     it('Should return the result of three 12 faced dice + 5', function() {
+      msg.content = '$roll 3d12+5';
+      commands.executeCmd(msg, ['roll', '3d12+5']);
       result = parseInt(reply.lastCall.returnValue);
       expect(result).to.be.above(4);
       expect(result).to.be.below(42);
