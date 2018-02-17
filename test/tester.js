@@ -1,12 +1,16 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const Discord = require('discord.js');
-const bot = require('../src/bot.js');
-const commands = require('../src/commands.js');
 const lang = require('../localization/en-US.json');
 const mustache = require('mustache');
 var config = require('../src/args.js').getConfig();
 var msg = require('./test-messages.js').msg1
+
+var client = sinon.stub(Discord, 'Client');
+client.returns(require('./test-client.js').client);
+
+const bot = require('../src/bot.js');
+const commands = require('../src/commands.js');
 
 var send = sinon.spy(msg.channel, 'send')
 var reply = sinon.spy(msg, 'reply')
@@ -77,6 +81,20 @@ describe('Test commands', function() {
     it('Should return "Pong!"', function() {
       commands.executeCmd(msg, ['ping']);
       expect(reply.lastCall.returnValue).to.equal(lang.ping.pong)
+    });
+  });
+  describe('Info', function() {
+    it('Should return infos', function() {
+      commands.executeCmd(msg, ['info']);
+      var embed = send.lastCall.returnValue.embed;
+      var pjson = require('../package.json');
+      //Test embed
+      expect(embed.fields[0].value).to.have.string(pjson.name);
+      expect(embed.fields[0].value).to.have.string(pjson.description);
+      expect(embed.fields[0].value).to.have.string(pjson.author);
+      expect(embed.fields[0].value).to.have.string(pjson.version);
+      expect(embed.fields[1].value).to.have.string(config.locale);
+      expect(embed.footer.text).to.have.string('testID');
     });
   });
   describe('Roll', function() {
