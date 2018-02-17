@@ -7,8 +7,8 @@ const defaultChannel = require('./default-channel.js');
 const permGroup = require('./permission-group.js');
 const fs = require('fs');
 const mustache = require('mustache');
-const client = bot.client;
 const storage = require('./storage.js');
+var client = bot.client();
 var config = require('./args.js').getConfig();
 var lang = require('./localization.js').getLocalization();
 
@@ -34,7 +34,6 @@ function modifyText(file, text, value) {
     });
   });
 }
-
 
 /*
  *Use an object containing command objects to get
