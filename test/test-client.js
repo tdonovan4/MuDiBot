@@ -1,4 +1,4 @@
-exports.client = {
+module.exports = {
   login: function(token) {
     return new Promise(function(resolve) {
       resolve(token != null);
