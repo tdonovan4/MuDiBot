@@ -1,7 +1,7 @@
 const bot = require('./bot.js');
 const storage = require('./storage.js');
 const sql = require('sqlite');
-const config = require('./args.js').getConfig();
+const config = require('./args.js').getConfig()[1];
 var lang = require('./localization.js').getLocalization();
 
 module.exports = {

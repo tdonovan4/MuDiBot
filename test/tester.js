@@ -3,17 +3,23 @@ const sinon = require('sinon');
 const Discord = require('discord.js');
 const lang = require('../localization/en-US.json');
 const mustache = require('mustache');
-var config = require('../src/args.js').getConfig();
 var msg = require('./test-messages.js').msg1
 
+//Add test values to config
+require('./set-config.js').setTestConfig();
+var config = require('../src/args.js').getConfig()[1];
+
 var client = sinon.stub(Discord, 'Client');
-client.returns(require('./test-client.js').client);
-
-const bot = require('../src/bot.js');
-const commands = require('../src/commands.js');
-
+client.returns(require('./test-client.js'));
 var send = sinon.spy(msg.channel, 'send')
 var reply = sinon.spy(msg, 'reply')
+
+//Init bot
+const bot = require('../src/bot.js');
+var setGame = sinon.spy(bot.client().user, 'setGame');
+
+//Init commands
+const commands = require('../src/commands.js');
 var checkPerm = sinon.stub(commands, 'checkPerm');
 
 describe('Validate if message is a command', function() {
@@ -95,6 +101,19 @@ describe('Test commands', function() {
       expect(embed.fields[0].value).to.have.string(pjson.version);
       expect(embed.fields[1].value).to.have.string(config.locale);
       expect(embed.footer.text).to.have.string('testID');
+    });
+  });
+  describe('Status', function() {
+    it('Should change the status in config', function() {
+      var modifyText = sinon.stub(commands, 'modifyText');
+
+      msg.content = '$status New status!';
+      commands.executeCmd(msg, ['status', 'New status!']);
+      //Check the API has been called with right argument
+      expect(setGame.lastCall.returnValue).to.equal('New status!');
+      //Check if config was "modified" (stub) with righ argument
+      //TODO: Better expect here
+      expect(modifyText.lastCall.args[2]).to.equal("currentStatus: 'New status!");
     });
   });
   describe('Roll', function() {

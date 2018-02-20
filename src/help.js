@@ -1,4 +1,4 @@
-const config = require('./args.js').getConfig();
+const config = require('./args.js').getConfig()[1];
 const mustache = require('mustache');
 var lang = require('./localization.js').getLocalization();
 

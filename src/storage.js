@@ -1,6 +1,6 @@
 //Handle SQL
 const sql = require('sqlite');
-const config = require('./args.js').getConfig();
+const config = require('./args.js').getConfig()[1];
 const checkTable = 'CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)';
 
 function insertUser(msg, userId) {

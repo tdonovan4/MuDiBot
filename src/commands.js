@@ -9,7 +9,8 @@ const fs = require('fs');
 const mustache = require('mustache');
 const storage = require('./storage.js');
 var client = bot.client();
-var config = require('./args.js').getConfig();
+var args = require('./args.js');
+var config = args.getConfig()[1];
 var lang = require('./localization.js').getLocalization();
 
 //Format time
@@ -20,19 +21,6 @@ function time() {
   var mins = ~~((time % 3600) / 60);
   var secs = ~~(time % 60);
   return days + 'd:' + hrs + 'h:' + mins + 'm:' + secs + 's'
-}
-
-function modifyText(file, text, value) {
-  fs.readFile(file, 'utf8', function(err, data) {
-    if (err) {
-      return console.log(err);
-    }
-    var result = data.replace(text, value);
-
-    fs.writeFile(file, result, 'utf8', function(err) {
-      if (err) return console.log(err);
-    });
-  });
 }
 
 /*
@@ -105,8 +93,9 @@ var commands = {
     execute: function(msg) {
       var newStatus = msg.content.split(`${config.prefix}status `).slice(1);
       client.user.setGame(newStatus[0]);
+      var file = args.getConfig()[0].slice(1);
 
-      modifyText('./config.js', 'status: \'' + config.currentStatus, 'status: \'' + newStatus[0]);
+      module.exports.modifyText(file, 'currentStatus: \'' + config.currentStatus, 'currentStatus: \'' + newStatus[0]);
       config.currentStatus = newStatus[0];
     }
   },
@@ -557,5 +546,18 @@ module.exports = {
   executeCmd: function(msg, cmd) {
     //Execute the commandd
     commands[cmd[0]].execute(msg)
+  },
+
+  modifyText: function(file, text, value) {
+    fs.readFile(file, 'utf8', function(err, data) {
+      if (err) {
+        return console.log(err);
+      }
+      var result = data.replace(text, value);
+
+      fs.writeFile(file, result, 'utf8', function(err) {
+        if (err) return console.log(err);
+      });
+    });
   }
 }

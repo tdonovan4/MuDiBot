@@ -11,6 +11,9 @@ module.exports = {
     });
   },
   user: {
-    id: 'testID'
+    id: 'testID',
+    setGame: function(game) {
+      return(game)
+    }
   }
 }

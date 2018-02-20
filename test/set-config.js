@@ -5,8 +5,8 @@ exports.setTestConfig = function() {
   newConfig = args.getConfig();
 
   //Add some test values
-  newConfig.locale = 'en-US';
+  newConfig[1].locale = 'en-US';
 
   stubConfig = sinon.stub(args, 'getConfig');
-  stubConfig.returns(newConfig);
+  stubConfig.returns([newConfig[0], newConfig[1]]);
 }
