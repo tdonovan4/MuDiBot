@@ -3,7 +3,7 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 const defaultChannel = require('./default-channel.js');
 const mustache = require('mustache');
-var config = require('./args.js').getConfig();
+var config = require('./args.js').getConfig()[1];
 //For localization
 var lang = require('./localization.js').getLocalization();
 

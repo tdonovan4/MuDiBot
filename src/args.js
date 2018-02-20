@@ -4,6 +4,6 @@ module.exports = {
     var customConfig = process.env.CONFIG
 
     var config = customConfig == undefined ? '../config.js': customConfig;
-    return require(config);
+    return [config, require(config)];
   }
 }
