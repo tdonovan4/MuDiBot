@@ -11,12 +11,13 @@ var config = require('../src/args.js').getConfig()[1];
 
 var client = sinon.stub(Discord, 'Client');
 client.returns(require('./test-client.js'));
-var send = sinon.spy(msg.channel, 'send')
+var msgSend = sinon.spy(msg.channel, 'send')
 var reply = sinon.spy(msg, 'reply')
 
 //Init bot
 const bot = require('../src/bot.js');
 var setGame = sinon.spy(bot.client().user, 'setGame');
+var channelSend = sinon.spy(bot.client().channels.get('42'), 'send')
 
 //Init commands
 const commands = require('../src/commands.js');
@@ -60,12 +61,12 @@ describe('Test commands', function() {
       var expectedString = mustache.render(lang.help.msg, {
         config
       });
-      expect(send.lastCall.returnValue).to.equal(expectedString);
+      expect(msgSend.lastCall.returnValue).to.equal(expectedString);
     });
     it('Should return help for ping', function() {
       msg.content = '$help ping'
       commands.executeCmd(msg, ['help', 'ping']);
-      var embed = send.lastCall.returnValue.embed;
+      var embed = msgSend.lastCall.returnValue.embed;
       /*Test embed
        *TODO stop using hard coded values
        *Title */
@@ -80,7 +81,7 @@ describe('Test commands', function() {
     it('Should return error message when using a wrong command as an argument', function() {
       msg.content = '$help aWrongCmd';
       commands.executeCmd(msg, ['help', 'aWrongCmd']);
-      expect(send.lastCall.returnValue).to.equal(lang.error.invalidArg.cmd);
+      expect(msgSend.lastCall.returnValue).to.equal(lang.error.invalidArg.cmd);
     })
   });
   describe('Ping', function() {
@@ -92,7 +93,7 @@ describe('Test commands', function() {
   describe('Info', function() {
     it('Should return infos', function() {
       commands.executeCmd(msg, ['info']);
-      var embed = send.lastCall.returnValue.embed;
+      var embed = msgSend.lastCall.returnValue.embed;
       var pjson = require('../package.json');
       //Test embed
       expect(embed.fields[0].value).to.have.string(pjson.name);
@@ -115,6 +116,33 @@ describe('Test commands', function() {
       //TODO: Better expect here
       expect(modifyText.lastCall.args[2]).to.equal("currentStatus: 'New status!");
     });
+  });
+  describe('Say', function() {
+    it('Should return the message', function() {
+      msg.content = '$say here test';
+      commands.executeCmd(msg, ['say', 'here', 'test']);
+      expect(msgSend.lastCall.returnValue).to.equal('test');
+    });
+    it('Should return missing argument: channel', function() {
+      msg.content = '$say test';
+      commands.executeCmd(msg, ['say', 'test']);
+      expect(msgSend.lastCall.returnValue).to.equal(lang.error.missingArg.channel);
+    });
+    it('Should return the message in the channel with ID 42', function() {
+      msg.content = '$say <#42> test';
+      commands.executeCmd(msg, ['say', '<#42>', 'test']);
+      expect(channelSend.lastCall.returnValue).to.equal('test');
+    });
+    it('Should return missing argument: channel when using wrong channel', function() {
+      msg.content = '$say badString test';
+      commands.executeCmd(msg, ['say', 'badString', 'test']);
+      expect(msgSend.lastCall.returnValue).to.equal(lang.error.missingArg.channel);
+    });
+    it('Should return missing argument: message', function() {
+      msg.content = '$say here';
+      commands.executeCmd(msg, ['say', 'here']);
+      expect(msgSend.lastCall.returnValue).to.equal(lang.error.missingArg.message);
+    })
   });
   describe('Roll', function() {
     it('Should return the result of one six faced die', function() {
