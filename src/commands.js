@@ -112,7 +112,7 @@ var commands = {
         channel = msg.channel;
       } else {
         let id = messageToSay[0].match(/<#(.*?)>/);
-        if (id != undefined) {
+        if (id != null) {
           channel = client.channels.get(id[1]);
         }
       }

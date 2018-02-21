@@ -1,3 +1,5 @@
+const Discord = require("discord.js");
+
 module.exports = {
   login: function(token) {
     return new Promise(function(resolve) {
@@ -10,6 +12,7 @@ module.exports = {
       resolve(true);
     });
   },
+  channels: new Discord.Collection(),
   user: {
     id: 'testID',
     setGame: function(game) {
@@ -17,3 +20,9 @@ module.exports = {
     }
   }
 }
+
+module.exports.channels.set('42', {
+  send: function(text) {
+    return text;
+  }
+});
