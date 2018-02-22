@@ -17,7 +17,9 @@ var reply = sinon.spy(msg, 'reply')
 //Init bot
 const bot = require('../src/bot.js');
 var setGame = sinon.spy(bot.client().user, 'setGame');
-var channelSend = sinon.spy(bot.client().channels.get('42'), 'send')
+var channelSend = sinon.spy(bot.client().channels.get('42'), 'send');
+var printMsg = sinon.stub(bot, 'printMsg');
+printMsg.returnsArg(1);
 
 //Init commands
 const commands = require('../src/commands.js');
@@ -81,7 +83,7 @@ describe('Test commands', function() {
     it('Should return error message when using a wrong command as an argument', function() {
       msg.content = '$help aWrongCmd';
       commands.executeCmd(msg, ['help', 'aWrongCmd']);
-      expect(msgSend.lastCall.returnValue).to.equal(lang.error.invalidArg.cmd);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.invalidArg.cmd);
     })
   });
   describe('Ping', function() {
@@ -143,6 +145,25 @@ describe('Test commands', function() {
       commands.executeCmd(msg, ['say', 'here']);
       expect(msgSend.lastCall.returnValue).to.equal(lang.error.missingArg.message);
     })
+  });
+  describe('Avatar', function() {
+    it('Should return TestUser\'s avatar', function() {
+      var id = '041025599435591424';
+      var url = 'https://cdn.discordapp.com/avatars/041025599435591424/';
+      //Add mention
+      msg.mentions.users.set(id, {
+        avatarURL: url
+      });
+      msg.content = `$avatar <#${id}>`;
+      commands.executeCmd(msg, ['avatar', `<#${id}>`]);
+      expect(printMsg.lastCall.returnValue).to.equal(url);
+      msg.mentions.users.delete(id);
+    });
+    it('Should return invalid user when there is no mention of a user', function() {
+      msg.content = '$avatar';
+      commands.executeCmd(msg, ['avatar']);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.invalidArg.user);
+    });
   });
   describe('Roll', function() {
     it('Should return the result of one six faced die', function() {
