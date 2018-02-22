@@ -29,14 +29,10 @@ client.on('ready', () => {
   }));
 });
 
-function printMsg(msg, text) {
-  console.log(text);
-  msg.channel.send(text);
-}
-
 module.exports = {
   printMsg: function(msg, text) {
-    printMsg(msg, text);
+    console.log(text);
+    msg.channel.send(text);
   },
   client: function() {
     return client;
