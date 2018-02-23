@@ -3,14 +3,15 @@ const sinon = require('sinon');
 const Discord = require('discord.js');
 const lang = require('../localization/en-US.json');
 const mustache = require('mustache');
-var msg = require('./test-messages.js').msg1
+var msg = require('./test-resources/test-messages.js').msg1
 
 //Add test values to config
 require('./set-config.js').setTestConfig();
 var config = require('../src/args.js').getConfig()[1];
 
+//Set some stubs and spies
 var client = sinon.stub(Discord, 'Client');
-client.returns(require('./test-client.js'));
+client.returns(require('./test-resources/test-client.js'));
 var msgSend = sinon.spy(msg.channel, 'send')
 var reply = sinon.spy(msg, 'reply')
 
@@ -169,6 +170,7 @@ describe('Test commands', function() {
     it('Should return the result of one six faced die', function() {
       msg.content = '$roll 1d6';
       commands.executeCmd(msg, ['roll', '1d6']);
+
       result = parseInt(reply.lastCall.returnValue);
       expect(result).to.be.above(0);
       expect(result).to.be.below(7);
