@@ -66,7 +66,7 @@ var lastRank = {
 }
 
 function modifyUserXp(msg, userId, value) {
-  sql.open('./storage/data.db').then(() => {
+  sql.open(config.pathDatabase).then(() => {
     sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
       .then(() => {
         sql.run('UPDATE users SET xp = ? WHERE serverId = ? AND userId = ?', [value, msg.guild.id, userId])
@@ -120,7 +120,7 @@ function addReward(msg, reward) {
 
 function getReward(msg, rank) {
   return new Promise((resolve, reject) => {
-    sql.open('./storage/data.db').then(() => {
+    sql.open(config.pathDatabase).then(() => {
       sql.get("SELECT * FROM rewards WHERE serverId = ? AND rank = ?", [msg.guild.id, rank[0]]).then(row => {
         resolve(row.reward);
       }).catch(() => {
@@ -276,7 +276,7 @@ module.exports = {
 
     //Check if rank exists
     if (ranks.find(x => x.name == rank) != undefined) {
-      sql.open('./storage/data.db').then(() => {
+      sql.open(config.pathDatabase).then(() => {
         sql.get('SELECT * FROM rewards WHERE serverId = ? AND rank = ?', [msg.guild.id, rank]).then(row => {
           if (!row) {
             //Table exist but not row
@@ -314,7 +314,7 @@ module.exports = {
     //Put first character of rank in uppercase
     rank = rank.charAt(0).toUpperCase() + rank.slice(1);
 
-    sql.open('./storage/data.db').then(() => {
+    sql.open(config.pathDatabase).then(() => {
       sql.all("SELECT * FROM rewards WHERE serverId = ? AND rank = ?", [msg.guild.id, rank])
         .then(row => {
           if (row.length > 0) {

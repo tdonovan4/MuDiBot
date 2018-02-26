@@ -35,7 +35,7 @@ module.exports = {
           bot.printMsg(msg, lang.error.groupDuplicate);
           return;
         }
-        sql.open('./storage/data.db').then(() => {
+        sql.open(config.pathDatabase).then(() => {
           sql.get('SELECT * FROM users WHERE serverId = ? AND userId = ?', [msg.guild.id, user.id]).then(row => {
             if (!row) {
               //Table exist but not row
@@ -89,7 +89,7 @@ module.exports = {
       storage.getUser(msg, user.id).then(row => {
         existingGroups = (row.groups != null) ? row.groups.split(',') : [];
 
-        sql.open('./storage/data.db').then(() => {
+        sql.open(config.pathDatabase).then(() => {
           sql.get('SELECT * FROM users WHERE serverId = ? AND userId = ?', [msg.guild.id, user.id]).then(row => {
             if (!row) {
               //Table exist but not row
@@ -141,7 +141,7 @@ module.exports = {
       return;
     }
 
-    sql.open('./storage/data.db').then(() => {
+    sql.open(config.pathDatabase).then(() => {
       sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
         .then(() => {
           sql.run('UPDATE users SET groups = null WHERE serverId = ? AND userId = ?', [msg.guild.id, user.id]).then(() => {
