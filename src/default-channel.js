@@ -1,8 +1,9 @@
-let sql = require('sqlite');
+const sql = require('sqlite');
+const config = require('./args.js').getConfig()[1];
 
 module.exports = {
   setChannel: function(msg, channel) {
-    sql.open('./storage/data.db').then(() => {
+    sql.open(config.pathDatabase).then(() => {
 
       sql.get(`SELECT * FROM servers WHERE serverId = "${msg.guild.id}"`).then(row => {
         if (!row) {
@@ -26,7 +27,7 @@ module.exports = {
   },
 
   getChannel: async function(client, member) {
-    await sql.open('./storage/data.db')
+    await sql.open(config.pathDatabase)
 
     var channel = await sql.get("SELECT * FROM servers WHERE serverId = ?", member.guild.id).then(row => {
       if (!row) {

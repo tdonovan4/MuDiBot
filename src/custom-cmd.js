@@ -48,7 +48,7 @@ module.exports = {
     }
   },
   removeCmd: function(msg, args) {
-    sql.open('./storage/data.db').then(() => {
+    sql.open(config.pathDatabase).then(() => {
       sql.all("SELECT * FROM customCmds WHERE serverId = ? AND name = ?", [msg.guild.id, args[0]])
         .then(row => {
           if (row.length > 0) {
@@ -76,7 +76,7 @@ module.exports = {
   },
   getCmds: function(msg) {
     return new Promise((resolve, reject) => {
-      sql.open('./storage/data.db').then(() => {
+      sql.open(config.pathDatabase).then(() => {
         sql.all('SELECT * FROM customCmds WHERE serverId = ?', msg.guild.id)
           .then(row => {
             resolve(row);
