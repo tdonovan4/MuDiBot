@@ -3,6 +3,8 @@ const sinon = require('sinon');
 const Discord = require('discord.js');
 const lang = require('../localization/en-US.json');
 const mustache = require('mustache');
+const sql = require('sqlite');
+const fs = require('fs');
 var msg = require('./test-resources/test-messages.js').msg1
 
 //Add test values to config
@@ -14,6 +16,7 @@ var client = sinon.stub(Discord, 'Client');
 client.returns(require('./test-resources/test-client.js'));
 var msgSend = sinon.spy(msg.channel, 'send')
 var reply = sinon.spy(msg, 'reply')
+const storage = require('../src/storage.js');
 
 //Init bot
 const bot = require('../src/bot.js');
@@ -26,6 +29,34 @@ printMsg.returnsArg(1);
 const commands = require('../src/commands.js');
 var checkPerm = sinon.stub(commands, 'checkPerm');
 
+function deleteDatabase() {
+  //Delete the test database if it exists
+  var path = './test/test-resources/test-database.db';
+  if(fs.existsSync(path)) {
+    fs.unlinkSync(path);
+  }
+}
+
+describe('Test Storage', function() {
+  describe('Test getUser', function() {
+    it('Should insert TestUser in the empty database and return it', async function() {
+      //Should be deleted, but just to be sure
+      deleteDatabase();
+      var response = await storage.getUser(msg, '041025599435591424');
+      expect(response.serverId).to.equal('357156661105365963');
+      expect(response.userId).to.equal('041025599435591424');
+    });
+    it('Should get TestUser from the database and return it', async function() {
+      var response = await storage.getUser(msg, '041025599435591424');
+      expect(response.serverId).to.equal('357156661105365963');
+      expect(response.userId).to.equal('041025599435591424');
+    });
+  });
+  after(function() {
+    //Make sure to delete the database at the end
+    deleteDatabase();
+  })
+});
 describe('Validate if message is a command', function() {
   it('Should return false when using a false command', async function() {
     //Change content of message
