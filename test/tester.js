@@ -52,6 +52,20 @@ describe('Test Storage', function() {
       expect(response.userId).to.equal('041025599435591424');
     });
   });
+  describe('Test getUsers', function() {
+    it('Should returns an array of users in the guild', async function() {
+      //Add another user. TODO: better way to add users
+      storage.getUser(msg, '287350581898558262');
+      var response = await storage.getUsers(msg);
+
+      //Test the array
+      expectedUserId = ['041025599435591424', '287350581898558262'];
+      for(let i = 0; i < response.length; i++) {
+        expect(response[i].serverId).to.equal('357156661105365963');
+        expect(response[i].userId).to.equal(expectedUserId[i]);
+      }
+    });
+  });
   after(function() {
     //Make sure to delete the database at the end
     deleteDatabase();
