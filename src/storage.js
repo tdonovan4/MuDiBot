@@ -58,7 +58,7 @@ module.exports = {
             //Check if table exist
             sql.run(checkTable)
               .then(() => {
-                row = insertUser(msg, userId).then(() => {
+                insertUser(msg, userId).then(row => {
                   resolve(row);
                 });
               }).catch(error => {
