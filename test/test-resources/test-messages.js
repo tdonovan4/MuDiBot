@@ -6,6 +6,9 @@ exports.msg1 = {
     username: 'TestUser',
     id: '041025599435591424'
   },
+  guild: {
+    id: '357156661105365963'
+  },
   reply: function(text) {
     return text;
   },
