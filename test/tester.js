@@ -83,6 +83,24 @@ describe('Test levels', function() {
       expect(response).to.equal(1495);
     });
   });
+  describe('Test getProgression', function() {
+    it('Should returns the result of 115 XP', function() {
+      var response = levels.getProgression(115);
+      expect(response).to.deep.equal([2, 15, 2]);
+    });
+    it('Should returns the result of 420 XP', function() {
+      var response = levels.getProgression(420);
+      expect(response).to.deep.equal([5, 10, 5]);
+    });
+    it('Should returns the result of 123456 XP', function() {
+      var response = levels.getProgression(123456);
+      expect(response).to.deep.equal([72, 681, 272]);
+    });
+    it('Should returns the result of 3141592 XP', function() {
+      var response = levels.getProgression(3141592);
+      expect(response).to.deep.equal([0, 0, 1000]);
+    });
+  });
 });
 describe('Validate if message is a command', function() {
   it('Should return false when using a false command', async function() {

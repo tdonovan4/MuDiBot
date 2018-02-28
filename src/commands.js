@@ -158,7 +158,6 @@ var commands = {
       }
 
       let userData = await storage.getUser(msg, user.id);
-      console.log(userData);
       let progression = levels.getProgression(userData.xp);
       let level = progression[0];
       let xpToNextLevel = `${progression[1]}/${levels.getXpForLevel(level)}`;
