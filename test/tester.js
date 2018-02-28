@@ -17,6 +17,7 @@ client.returns(require('./test-resources/test-client.js'));
 var msgSend = sinon.spy(msg.channel, 'send')
 var reply = sinon.spy(msg, 'reply')
 const storage = require('../src/storage.js');
+const levels = require('../src/levels.js');
 
 //Init bot
 const bot = require('../src/bot.js');
@@ -37,7 +38,7 @@ function deleteDatabase() {
   }
 }
 
-describe('Test Storage', function() {
+describe('Test storage', function() {
   describe('Test getUser', function() {
     it('Should insert TestUser in the empty database and return it', async function() {
       //Should be deleted, but just to be sure
@@ -66,10 +67,22 @@ describe('Test Storage', function() {
       }
     });
   });
-  after(function() {
-    //Make sure to delete the database at the end
-    deleteDatabase();
-  })
+});
+describe('Test levels', function() {
+  describe('Test getXpForLevel', function() {
+    it('Should return 100 XP for level 1', async function() {
+      var response = await levels.getXpForLevel(1);
+      expect(response).to.equal(100);
+    });
+    it('Should return 100 XP for level 15', async function() {
+      var response = await levels.getXpForLevel(15);
+      expect(response).to.equal(155);
+    });
+    it('Should return 100 XP for level 125', async function() {
+      var response = await levels.getXpForLevel(125);
+      expect(response).to.equal(1495);
+    });
+  });
 });
 describe('Validate if message is a command', function() {
   it('Should return false when using a false command', async function() {
@@ -211,6 +224,17 @@ describe('Test commands', function() {
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.invalidArg.user);
     });
   });
+  /*describe('Profile', function() {
+    it('Should return TestUser\'s profile', function() {
+      var id = '041025599435591424';
+      //Add mention
+      msg.mentions.users.set(id, {
+        id: id
+      });
+      msg.content = `$profile <#${id}>`;
+      commands.executeCmd(msg, ['profile', `<#${id}>`]);
+    });
+  });*/
   describe('Roll', function() {
     it('Should return the result of one six faced die', function() {
       msg.content = '$roll 1d6';
@@ -241,4 +265,9 @@ describe('Test commands', function() {
       expect(result).to.equal(0);
     });
   });
+});
+
+process.on('exit', function() {
+  //Make sure to delete the database at the end
+  deleteDatabase();
 });
