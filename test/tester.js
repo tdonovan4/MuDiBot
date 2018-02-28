@@ -101,6 +101,24 @@ describe('Test levels', function() {
       expect(response).to.deep.equal([0, 0, 1000]);
     });
   });
+  describe('Test getRank', function() {
+    it('Should return Warrior, 0 prestige (level 26)', function() {
+      var response = levels.getRank(26);
+      expect(response).to.deep.equal(['Warrior', 0, 16724787]);
+    });
+    it('Should return Vagabond, 1 prestige (level 100)', function() {
+      var response = levels.getRank(100);
+      expect(response).to.deep.equal(['Vagabond', 1, 8421504]);
+    });
+    it('Should return Vagabond, 1 prestige (level 350)', function() {
+      var response = levels.getRank(350);
+      expect(response).to.deep.equal(['Emperor', 3, 9181951]);
+    });
+    it('Should return Vagabond, 1 prestige (level 1000)', function() {
+      var response = levels.getRank(1000);
+      expect(response).to.deep.equal(['Vagabond', 10, 8421504]);
+    });
+  });
 });
 describe('Validate if message is a command', function() {
   it('Should return false when using a false command', async function() {
