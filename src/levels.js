@@ -66,24 +66,34 @@ var lastRank = {
 }
 
 function modifyUserXp(msg, userId, value) {
-  sql.open(config.pathDatabase).then(() => {
-    sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
-      .then(() => {
-        sql.run('UPDATE users SET xp = ? WHERE serverId = ? AND userId = ?', [value, msg.guild.id, userId])
-          .catch(error => {
+  return new Promise((resolve, reject) => {
+    sql.open(config.pathDatabase).then(() => {
+      sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
+        .then(() => {
+          sql.run('UPDATE users SET xp = ? WHERE serverId = ? AND userId = ?', [value, msg.guild.id, userId]).then(() => {
+            resolve();
+          }).catch(error => {
             console.log(error);
+            reject();
           });
-      }).catch(error => {
-        console.log(error);
-      });
-    sql.close();
-  }).catch(error => {
-    console.log(error);
+        }).catch(error => {
+          console.log(error);
+          reject();
+        });
+      sql.close();
+    }).catch(error => {
+      console.log(error);
+      reject();
+    });
   });
 }
 
 function getRewardInMsg(msg, args) {
   var role = msg.mentions.roles.first();
+  if(args[1] == undefined) {
+    bot.printMsg(msg, lang.error.missingArg.reward);
+    return;
+  }
   var group = args[1].charAt(0).toUpperCase() + args[1].slice(1);
 
   //Check if reward is a role
@@ -130,6 +140,7 @@ function getReward(msg, rank) {
             console.log(error);
           });
       });
+      sql.close();
     });
   });
 }
@@ -211,11 +222,10 @@ module.exports = {
       var extraXp = Math.trunc(msg.content.replace(/\s/g, "").length / 3);
       //Get a random number from 1 to 3 and add extra xp (max is 20);
       xpGained = Math.min(20, (Math.floor(Math.random() * 3) + 1) + extraXp);
-      modifyUserXp(msg, msg.author.id, xp + xpGained);
+      await modifyUserXp(msg, msg.author.id, xp + xpGained);
 
       let progression = this.getProgression(xp);
       let xpForNextLevel = this.getXpForLevel(progression[0]) - progression[1];
-
       //Check if user has level up
       if (xpGained >= xpForNextLevel) {
         //Level up!
@@ -223,7 +233,6 @@ module.exports = {
           msg,
           progression: progression[0] + 1
         });
-
         //Check if users has ranked up
         if ((progression[0] + 1) % 10 == 0) {
           rank = this.getRank(progression[2] + 1)
@@ -237,10 +246,9 @@ module.exports = {
             message += ' ' + mustache.render(lang.general.member.reward, {
               role: name
             });
-            //Check if the removal of the old role is enable
+            //Check if the removal of the old role is enabled
             if (config.levels.removeOldRole == true) {
               var oldRole = await getReward(msg, this.getRank(progression[2]));
-              console.log(oldRole);
               if (oldRole != undefined) {
                 msg.member.removeRole(oldRole, lang.general.member.removeOldReward).catch(error => {
                   console.log(error);
@@ -248,6 +256,7 @@ module.exports = {
               }
             }
           } else {
+            //TODO: maybe remove
             bot.printMsg(msg, lang.error.notFound.rankReward);
           }
           //Add exclamation mark at the end
@@ -259,13 +268,13 @@ module.exports = {
   },
   setReward: function(msg, args) {
     var rank = args[0];
-    var reward = getRewardInMsg(msg, args);
     //Check if there is a rank in msg
     if (rank == undefined) {
       //Missing argument: rank
       bot.printMsg(msg, lang.error.missingArg.rank);
       return;
     }
+    var reward = getRewardInMsg(msg, args);
     //Check if there is a reward in msg
     if (reward == undefined) {
       return;
