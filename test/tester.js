@@ -5,6 +5,7 @@ const lang = require('../localization/en-US.json');
 const mustache = require('mustache');
 const sql = require('sqlite');
 const fs = require('fs');
+const rewire = require('rewire');
 var msg = require('./test-resources/test-messages.js').msg1
 
 //Add test values to config
@@ -17,7 +18,7 @@ client.returns(require('./test-resources/test-client.js'));
 var msgSend = sinon.spy(msg.channel, 'send')
 var reply = sinon.spy(msg, 'reply')
 const storage = require('../src/storage.js');
-const levels = require('../src/levels.js');
+const levels = rewire('../src/levels.js');
 
 //Init bot
 const bot = require('../src/bot.js');
@@ -117,6 +118,138 @@ describe('Test levels', function() {
     it('Should return Vagabond, 1 prestige (level 1000)', function() {
       var response = levels.getRank(1000);
       expect(response).to.deep.equal(['Vagabond', 10, 8421504]);
+    });
+  });
+  describe('Test setReward', function() {
+    it('Should return missing argument: rank', function() {
+      levels.setReward(msg, []);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.missingArg.rank);
+    })
+    it('Should return missing argument: reward', function() {
+      levels.setReward(msg, ['farmer']);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.missingArg.reward);
+    });
+    it('Should return invalid reward', function() {
+      levels.setReward(msg, ['test', 'string']);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.invalidArg.reward);
+    });
+    it('Should return rank not found', function() {
+      levels.setReward(msg, ['test', 'Member']);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.notFound.rank);
+    });
+    it('Should set the reward for king (permission group) and create table', async function() {
+      await levels.setReward(msg, ['king', 'Member']);
+      response = await levels.__get__('getReward')(msg, ['King']);
+      expect(response).to.equal('Member');
+    });
+    it('Should set the reward for emperor (role)', async function() {
+      //Add roles
+      msg.guild.roles.set('1', {
+        id: '1'
+      });
+      msg.mentions.roles.set('1', {
+        id: '1'
+      });
+      await levels.setReward(msg, ['emperor', '<#1>']);
+      response = await levels.__get__('getReward')(msg, ['Emperor']);
+      expect(response).to.equal('1');
+    });
+    it('Should update the reward for emperor', async function() {
+      //Clear collections
+      msg.guild.roles.clear();
+      msg.mentions.roles.clear();
+      //Add roles
+      msg.guild.roles.set('2', {
+        id: '2'
+      });
+      msg.mentions.roles.set('2', {
+        id: '2'
+      });
+      await levels.setReward(msg, ['emperor', '<#2>']);
+      response = await levels.__get__('getReward')(msg, ['Emperor']);
+      expect(response).to.equal('2');
+    });
+    after(function() {
+      msg.guild.roles.clear();
+      msg.mentions.roles.clear();
+    });
+  });
+  describe('Test unsetReward', function() {
+    it('Should return missing argument: rank', function() {
+      levels.unsetReward(msg, []);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.missingArg.rank);
+    });
+    it('Should remove the reward for emperor', async function() {
+      await levels.unsetReward(msg, ['king']);
+      response = await levels.__get__('getReward')(msg, ['King']);
+      expect(response).to.equal(undefined);
+    });
+  });
+  describe('Test newMessage', function() {
+    var modifyUserXp = levels.__get__('modifyUserXp');
+    msg.content = 'test';
+    it('User should have more than 0 XP', async function() {
+      //To make sure
+      await modifyUserXp(msg, '041025599435591424', 0);
+      await levels.newMessage(msg);
+      var user = await storage.getUser(msg, '041025599435591424');
+      expect(user.xp).to.be.above(0);
+    });
+    it('XP should not augment if spamming', async function() {
+      /*This should be executed while the XP is still
+        in cooldown because of the test before */
+      await modifyUserXp(msg, '041025599435591424', 0);
+      for(var i = 0; i < 5; i++) {
+        await levels.newMessage(msg);
+      }
+      var user = await storage.getUser(msg, '041025599435591424');
+      expect(user.xp).to.be.equal(0);
+    });
+    it('Should return that the user has leveled up', async function() {
+      await modifyUserXp(msg, '041025599435591424', 99);
+      //Remove cooldown
+      levels.__set__('lastMessages', []);
+      await levels.newMessage(msg);
+      expect(printMsg.lastCall.returnValue).to.equal(mustache.render(lang.general.member.leveled, {
+        msg,
+        progression: 2
+      }));
+    });
+    it('Should return that the user ranked up', async function() {
+      await modifyUserXp(msg, '041025599435591424', 989);
+      //Remove cooldown
+      levels.__set__('lastMessages', []);
+      await levels.newMessage(msg);
+      //Just one big expect to test if the returned value is correct
+      expect(printMsg.lastCall.returnValue).to.equal(mustache.render(lang.general.member.leveled, {
+        msg,
+        progression: 10
+      }) + '\n' +
+      mustache.render(lang.general.member.rankUp, {
+        rank: 'Farmer'
+      }) + '!');
+    });
+    it('Should set the reward for the user (permission group)', async function() {
+      //Set the reward for warrior
+      await levels.setReward(msg, ['warrior', 'Member']);
+      await modifyUserXp(msg, '041025599435591424', 2529);
+      //Remove cooldown
+      levels.__set__('lastMessages', []);
+      await levels.newMessage(msg);
+      var response = await storage.getUser(msg, '041025599435591424');
+      expect(response.groups).to.equal('Member');
+    })
+    it('Should set the reward for the user (role)', async function() {
+      await modifyUserXp(msg, '041025599435591424', 11684);
+      //Add roles
+      msg.guild.roles.set('2', {
+        id: '2',
+        name: 'guildMember'
+      });
+      //Remove cooldown
+      levels.__set__('lastMessages', []);
+      await levels.newMessage(msg);
+      expect(msg.member.roles.has('2')).to.equal(true);
     });
   });
 });

@@ -24,45 +24,55 @@ module.exports = {
     //Put first character of group in uppercase
     group = group.charAt(0).toUpperCase() + group.slice(1);
 
-    //Check if group exists
-    if (groups.find(x => x.name == group) != undefined) {
-      //Get existing groups
-      storage.getUser(msg, user.id).then(row => {
-        existingGroups = (row.groups != null) ? row.groups.split(',') : [];
+    return new Promise((resolve, reject) => {
+      //Check if group exists
+      if (groups.find(x => x.name == group) != undefined) {
+        //Get existing groups
+        storage.getUser(msg, user.id).then(row => {
+          existingGroups = (row.groups != null) ? row.groups.split(',') : [];
 
-        //Check for duplicate
-        if (existingGroups.find(x => x == group)) {
-          bot.printMsg(msg, lang.error.groupDuplicate);
-          return;
-        }
-        sql.open(config.pathDatabase).then(() => {
-          sql.get('SELECT * FROM users WHERE serverId = ? AND userId = ?', [msg.guild.id, user.id]).then(row => {
-            if (!row) {
-              //Table exist but not row
-              sql.run('INSERT INTO users (serverId, userId, xp, warnings, groups) VALUES (?, ?, ?, ?, ?)', [msg.guild.id, user.id, 0, 0, group]);
-            } else {
-              existingGroups.push(group);
-              sql.run("UPDATE users SET groups = ? WHERE serverId = ? AND userId = ?", [existingGroups.toString(), msg.guild.id, user.id]);
-            }
-            bot.printMsg(msg, lang.setgroup.newGroup);
-          }).catch(() => {
-            sql.run("CREATE TABLE IF NOT EXISTS users (serverId TEXT, rank TEXT, roleId TEXT)").then(() => {
-              //Table don't exist
-              sql.run('INSERT INTO users (serverId, userId, xp, warnings, groups) VALUES (?, ?, ?, ?, ?)', [msg.guild.id, user.id, 0, 0, group]);
+          //Check for duplicate
+          if (existingGroups.find(x => x == group)) {
+            bot.printMsg(msg, lang.error.groupDuplicate);
+            return;
+          }
+          sql.open(config.pathDatabase).then(() => {
+            sql.get('SELECT * FROM users WHERE serverId = ? AND userId = ?', [msg.guild.id, user.id]).then(row => {
+              if (!row) {
+                //Table exist but not row
+                sql.run('INSERT INTO users (serverId, userId, xp, warnings, groups) VALUES (?, ?, ?, ?, ?)', [msg.guild.id, user.id, 0, 0, group]).then(() => {
+                  resolve();
+                });
+              } else {
+                existingGroups.push(group);
+                sql.run("UPDATE users SET groups = ? WHERE serverId = ? AND userId = ?", [existingGroups.toString(), msg.guild.id, user.id]).then(() => {
+                  resolve();
+                });
+              }
               bot.printMsg(msg, lang.setgroup.newGroup);
-            }).catch(error => {
-              console.log(error);
+            }).catch(() => {
+              sql.run("CREATE TABLE IF NOT EXISTS users (serverId TEXT, rank TEXT, roleId TEXT)").then(() => {
+                //Table don't exist
+                sql.run('INSERT INTO users (serverId, userId, xp, warnings, groups) VALUES (?, ?, ?, ?, ?)', [msg.guild.id, user.id, 0, 0, group]).then(() => {
+                  bot.printMsg(msg, lang.setgroup.newGroup);
+                  resolve();
+                });
+              }).catch(error => {
+                console.log(error);
+                reject()
+              });
             });
+            sql.close();
+          }).catch(error => {
+            console.log(error);
+            reject()
           });
-          sql.close();
-        }).catch(error => {
-          console.log(error);
         });
-      });
-    } else {
-      //Group don't exists
-      bot.printMsg(msg, lang.error.notFound.group);
-    }
+      } else {
+        //Group don't exists
+        bot.printMsg(msg, lang.error.notFound.group);
+      }
+    });
   },
   unsetGroup: function(msg, user, group) {
     var groups = config.groups;

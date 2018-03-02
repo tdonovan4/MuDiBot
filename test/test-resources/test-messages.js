@@ -6,8 +6,20 @@ exports.msg1 = {
     username: 'TestUser',
     id: '041025599435591424'
   },
+  member: {
+    addRole: function(role, reason) {
+      return new Promise(resolve => {
+        this.roles.set(role, {
+          id: 2
+        })
+        resolve()
+      });
+    },
+    roles: new Discord.Collection
+  },
   guild: {
-    id: '357156661105365963'
+    id: '357156661105365963',
+    roles: new Discord.Collection
   },
   reply: function(text) {
     return text;
@@ -18,6 +30,7 @@ exports.msg1 = {
     }
   },
   mentions: {
-    users: new Discord.Collection
+    users: new Discord.Collection,
+    roles: new Discord.Collection
   }
 }
