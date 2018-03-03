@@ -393,17 +393,43 @@ describe('Test commands', function() {
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.invalidArg.user);
     });
   });
-  /*describe('Profile', function() {
-    it('Should return TestUser\'s profile', function() {
-      var id = '041025599435591424';
+  describe('Profile', function() {
+    it('Should return the message author\'s (TestUser) profile', async function() {
+      msg.content = '$profile';
+      await commands.executeCmd(msg, ['profile'])
+      var embed = msgSend.lastCall.returnValue.embed;
+      expect(embed.title).to.equal('TestUser\'s profile');
+      expect(embed.fields[0].value).to.equal('Emperor ');
+      expect(embed.fields[1].value).to.equal('Member');
+      expect(embed.fields[2].value).to.exist;
+      expect(embed.fields[3].value).to.exist;
+      expect(embed.fields[4].value).to.equal('0');
+    });
+    it('Should add superuser in the groups', async function() {
+      msg.content = '$profile';
+      config.superusers = ['041025599435591424'];
+      await commands.executeCmd(msg, ['profile']);
+      var embed = msgSend.lastCall.returnValue.embed;
+      expect(embed.fields[1].value).to.equal('Superuser, Member');
+    });
+    it('Should return George\'s profile', async function() {
+      var id = '357156661105365963';
       //Add mention
       msg.mentions.users.set(id, {
-        id: id
+        id: id,
+        username: 'George'
       });
       msg.content = `$profile <#${id}>`;
-      commands.executeCmd(msg, ['profile', `<#${id}>`]);
+      await commands.executeCmd(msg, ['profile', `<#${id}>`])
+      var embed = msgSend.lastCall.returnValue.embed;
+      expect(embed.title).to.equal('George\'s profile');
+      expect(embed.fields[0].value).to.equal('Vagabond ');
+      expect(embed.fields[1].value).to.equal('Ø');
+      expect(embed.fields[2].value).to.exist;
+      expect(embed.fields[3].value).to.exist;
+      expect(embed.fields[4].value).to.equal('0');
     });
-  });*/
+  });
   describe('Roll', function() {
     it('Should return the result of one six faced die', function() {
       msg.content = '$roll 1d6';

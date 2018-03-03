@@ -543,9 +543,9 @@ module.exports = {
     //The command was not found or didn't execute
     return false
   },
-  executeCmd: function(msg, cmd) {
+  executeCmd: async function(msg, cmd) {
     //Execute the commandd
-    commands[cmd[0]].execute(msg)
+    await commands[cmd[0]].execute(msg)
   },
 
   modifyText: function(file, text, value) {
