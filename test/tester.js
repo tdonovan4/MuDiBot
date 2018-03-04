@@ -19,6 +19,7 @@ var msgSend = sinon.spy(msg.channel, 'send')
 var reply = sinon.spy(msg, 'reply')
 const storage = require('../src/storage.js');
 const levels = rewire('../src/levels.js');
+const permGroups = require('../src/permission-group.js');
 
 //Init bot
 const bot = require('../src/bot.js');
@@ -67,6 +68,55 @@ describe('Test storage', function() {
         expect(response[i].userId).to.equal(expectedUserId[i]);
       }
     });
+  });
+});
+describe('Test permission groups', function() {
+  describe('Test setGroup', function() {
+    it('Should return invalid user', function() {
+      permGroups.setGroup(msg);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.invalidArg.user);
+    });
+    it('Should return missing argument: group', function() {
+      permGroups.setGroup(msg, '041025599435591424');
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.missingArg.group);
+    });
+    it('Should return group not found', function() {
+      permGroups.setGroup(msg, '041025599435591424', 'qwerty');
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.notFound.group);
+    });
+    it('Should add "User" to the list of groups of TestUser', async function() {
+      await permGroups.setGroup(msg, msg.author, 'User');
+      var response = await storage.getUser(msg, '041025599435591424');
+      expect(response.groups).to.equal('User');
+    });
+    it('Should add "Member" to the list of groups of TestUser', async function() {
+      await permGroups.setGroup(msg, msg.author, 'Member');
+      var response = await storage.getUser(msg, '041025599435591424');
+      expect(response.groups).to.equal('User,Member');
+    });
+  });
+  describe('Test unsetGroup', function() {
+    it('Should return invalid user', function() {
+      permGroups.unsetGroup(msg);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.invalidArg.user);
+    });
+    it('Should return missing argument: group', function() {
+      permGroups.unsetGroup(msg, '041025599435591424');
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.missingArg.group);
+    });
+    it('Should return group not found', function() {
+      permGroups.unsetGroup(msg, '041025599435591424', 'qwerty');
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.notFound.group);
+    });
+    it('Should remove "User" from the list of groups of TestUser', async function() {
+      await permGroups.unsetGroup(msg, msg.author, 'User');
+      var response = await storage.getUser(msg, '041025599435591424');
+      expect(response.groups).to.equal('Member');
+    });
+    it('Should return that the user is not in this group', async function() {
+      await permGroups.unsetGroup(msg, msg.author, 'Admin');
+      expect(printMsg.lastCall.returnValue).to.equal(lang.unsetgroup.notInGroup);
+    })
   });
 });
 describe('Test levels', function() {
