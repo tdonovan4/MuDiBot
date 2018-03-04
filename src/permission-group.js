@@ -164,19 +164,24 @@ module.exports = {
       bot.printMsg(msg, lang.error.invalidArg.user);
       return;
     }
-
-    sql.open(config.pathDatabase).then(() => {
-      sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
-        .then(() => {
-          sql.run('UPDATE users SET groups = null WHERE serverId = ? AND userId = ?', [msg.guild.id, user.id]).then(() => {
-            bot.printMsg(msg, lang.purgegroups.purged);
-          }).catch(error => {
-            console.log(error);
+    
+    return new Promise((resolve, reject) => {
+      sql.open(config.pathDatabase).then(() => {
+        sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
+          .then(() => {
+            sql.run('UPDATE users SET groups = null WHERE serverId = ? AND userId = ?', [msg.guild.id, user.id]).then(() => {
+              bot.printMsg(msg, lang.purgegroups.purged);
+              resolve();
+            }).catch(error => {
+              console.log(error);
+              reject();
+            });
           });
-        });
-      sql.close();
-    }).catch(error => {
-      console.log(error);
+        sql.close();
+      }).catch(error => {
+        console.log(error);
+        reject();
+      });
     });
   }
 }
