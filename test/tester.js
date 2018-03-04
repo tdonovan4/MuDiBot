@@ -118,6 +118,21 @@ describe('Test permission groups', function() {
       expect(printMsg.lastCall.returnValue).to.equal(lang.unsetgroup.notInGroup);
     })
   });
+  describe('Test purgeGroups', function() {
+    it('Should return invalid user', function() {
+      permGroups.purgeGroups(msg);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.invalidArg.user);
+    });
+    it('Should purge TestUser\'s groups', async function() {
+      await permGroups.setGroup(msg, msg.author, 'User');
+      msg.mentions.users.set('041025599435591424', {
+        id: '041025599435591424'
+      });
+      await permGroups.purgeGroups(msg);
+      var response = await storage.getUser(msg, '041025599435591424');
+      expect(response.groups).to.equal(null);
+    })
+  });
 });
 describe('Test levels', function() {
   describe('Test getXpForLevel', function() {
