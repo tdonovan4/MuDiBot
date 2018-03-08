@@ -226,8 +226,8 @@ var commands = {
   purgegroups: {
     permLvl: 3,
     category: "User",
-    execute: function(msg) {
-      permGroup.purgeGroups(msg);
+    execute: async function(msg) {
+      await permGroup.purgeGroups(msg);
     }
   },
   get gpurge () {

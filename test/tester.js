@@ -515,6 +515,14 @@ describe('Test commands', function() {
       expect(response.groups).to.equal('Member');
     });
   });
+  describe('purgegroups', function() {
+    it('Should remove all groups from TestUser', async function() {
+      msg.content = '$purgegroups <#041025599435591424>'
+      await commands.executeCmd(msg, ['purgegroups', '<#041025599435591424>']);
+      var response = await storage.getUser(msg, '041025599435591424');
+      expect(response.groups).to.equal(null);
+    });
+  });
   describe('roll', function() {
     it('Should return the result of one six faced die', function() {
       msg.content = '$roll 1d6';
