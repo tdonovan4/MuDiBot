@@ -349,7 +349,7 @@ describe('Validate if message is a command', function() {
   })
 });
 describe('Test commands', function() {
-  describe('Help', function() {
+  describe('help', function() {
     it('Should return all commands', function() {
       commands.executeCmd(msg, ['help']);
       //Not the best solution because we only check the end of the message
@@ -379,13 +379,13 @@ describe('Test commands', function() {
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.invalidArg.cmd);
     })
   });
-  describe('Ping', function() {
+  describe('ping', function() {
     it('Should return "Pong!"', function() {
       commands.executeCmd(msg, ['ping']);
       expect(reply.lastCall.returnValue).to.equal(lang.ping.pong)
     });
   });
-  describe('Info', function() {
+  describe('info', function() {
     it('Should return infos', function() {
       commands.executeCmd(msg, ['info']);
       var embed = msgSend.lastCall.returnValue.embed;
@@ -399,7 +399,7 @@ describe('Test commands', function() {
       expect(embed.footer.text).to.have.string('testID');
     });
   });
-  describe('Status', function() {
+  describe('status', function() {
     it('Should change the status in config', function() {
       var modifyText = sinon.stub(commands, 'modifyText');
 
@@ -412,7 +412,7 @@ describe('Test commands', function() {
       expect(modifyText.lastCall.args[2]).to.equal("currentStatus: 'New status!");
     });
   });
-  describe('Say', function() {
+  describe('say', function() {
     it('Should return the message', function() {
       msg.content = '$say here test';
       commands.executeCmd(msg, ['say', 'here', 'test']);
@@ -439,7 +439,7 @@ describe('Test commands', function() {
       expect(msgSend.lastCall.returnValue).to.equal(lang.error.missingArg.message);
     })
   });
-  describe('Avatar', function() {
+  describe('avatar', function() {
     it('Should return TestUser\'s avatar', function() {
       var id = '041025599435591424';
       var url = 'https://cdn.discordapp.com/avatars/041025599435591424/';
@@ -458,7 +458,7 @@ describe('Test commands', function() {
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.invalidArg.user);
     });
   });
-  describe('Profile', function() {
+  describe('profile', function() {
     it('Should return the message author\'s (TestUser) profile', async function() {
       msg.content = '$profile';
       await commands.executeCmd(msg, ['profile'])
@@ -495,7 +495,7 @@ describe('Test commands', function() {
       expect(embed.fields[4].value).to.equal('0');
     });
   });
-  describe('Setgroup', function() {
+  describe('setgroup', function() {
     it('Should add "User" to the list of groups of TestUser', async function() {
       msg.mentions.users.clear();
       msg.mentions.users.set('041025599435591424', {
@@ -507,7 +507,15 @@ describe('Test commands', function() {
       expect(response.groups).to.equal('Member,User');
     });
   });
-  describe('Roll', function() {
+  describe('unsetgroup', function() {
+    it('Should remove "User" from the list of groups of TestUser', async function() {
+      msg.content = '$unsetgroup <#041025599435591424> User'
+      await commands.executeCmd(msg, ['unsetgroup', '<#041025599435591424>', 'User']);
+      var response = await storage.getUser(msg, '041025599435591424');
+      expect(response.groups).to.equal('Member');
+    });
+  });
+  describe('roll', function() {
     it('Should return the result of one six faced die', function() {
       msg.content = '$roll 1d6';
       commands.executeCmd(msg, ['roll', '1d6']);
