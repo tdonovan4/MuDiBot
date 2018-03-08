@@ -532,15 +532,21 @@ describe('Test commands', function() {
     it('Should return a gif', async function() {
       msg.content = '$gif dog';
       await commands.executeCmd(msg, ['gif', 'dog']);
-      expect(msgSend.lastCall.returnValue).to.equal('A gif')
+      expect(msgSend.lastCall.returnValue).to.equal('A gif');
     });
   });
   describe('gifrandom', function() {
     it('Should return a random gif', async function() {
       msg.content = '$gifrandom dog';
       await commands.executeCmd(msg, ['gifrandom', 'dog']);
-      expect(msgSend.lastCall.returnValue).to.equal('A random gif')
+      expect(msgSend.lastCall.returnValue).to.equal('A random gif');
     })
+  });
+  describe('flipcoin', function() {
+    it('Should return head or tail', function() {
+      commands.executeCmd(msg, ['flipcoin']);
+      expect(reply.lastCall.returnValue).to.be.oneOf(['heads', 'tails']);
+    });
   });
   describe('roll', function() {
     it('Should return the result of one six faced die', function() {
