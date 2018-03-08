@@ -495,6 +495,18 @@ describe('Test commands', function() {
       expect(embed.fields[4].value).to.equal('0');
     });
   });
+  describe('Setgroup', function() {
+    it('Should add "User" to the list of groups of TestUser', async function() {
+      msg.mentions.users.clear();
+      msg.mentions.users.set('041025599435591424', {
+        id: '041025599435591424'
+      });
+      msg.content = '$setgroup <#041025599435591424> User'
+      await commands.executeCmd(msg, ['setgroup', '<#041025599435591424>', 'User']);
+      var response = await storage.getUser(msg, '041025599435591424');
+      expect(response.groups).to.equal('Member,User');
+    });
+  });
   describe('Roll', function() {
     it('Should return the result of one six faced die', function() {
       msg.content = '$roll 1d6';
