@@ -6,6 +6,7 @@ const mustache = require('mustache');
 const sql = require('sqlite');
 const fs = require('fs');
 const rewire = require('rewire');
+const giphy = require('../src/giphy-api.js');
 var msg = require('./test-resources/test-messages.js').msg1
 
 //Add test values to config
@@ -17,6 +18,8 @@ var client = sinon.stub(Discord, 'Client');
 client.returns(require('./test-resources/test-client.js'));
 var msgSend = sinon.spy(msg.channel, 'send')
 var reply = sinon.spy(msg, 'reply')
+var search = sinon.stub(giphy, 'search');
+search.returns('A gif');
 const storage = require('../src/storage.js');
 const levels = rewire('../src/levels.js');
 const permGroups = require('../src/permission-group.js');
@@ -521,6 +524,13 @@ describe('Test commands', function() {
       await commands.executeCmd(msg, ['purgegroups', '<#041025599435591424>']);
       var response = await storage.getUser(msg, '041025599435591424');
       expect(response.groups).to.equal(null);
+    });
+  });
+  describe('gif', function() {
+    it('Should', async function() {
+      msg.content = '$gif dog';
+      await commands.executeCmd(msg, ['gif', 'dog']);
+      expect(msgSend.lastCall.returnValue).to.equal('A gif')
     });
   });
   describe('roll', function() {
