@@ -203,9 +203,9 @@ var commands = {
   setgroup: {
     permLvl: 3,
     category: "User",
-    execute: function(msg) {
+    execute: async function(msg) {
       var args = msg.content.split(" ").slice(1);
-      permGroup.setGroup(msg, msg.mentions.users.first(), args[1]);
+      await permGroup.setGroup(msg, msg.mentions.users.first(), args[1]);
     }
   },
 
