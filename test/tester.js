@@ -19,7 +19,9 @@ client.returns(require('./test-resources/test-client.js'));
 var msgSend = sinon.spy(msg.channel, 'send')
 var reply = sinon.spy(msg, 'reply')
 var search = sinon.stub(giphy, 'search');
-search.returns('A gif');
+search.resolves('A gif');
+var random = sinon.stub(giphy, 'random');
+random.resolves('A random gif');
 const storage = require('../src/storage.js');
 const levels = rewire('../src/levels.js');
 const permGroups = require('../src/permission-group.js');
@@ -527,11 +529,18 @@ describe('Test commands', function() {
     });
   });
   describe('gif', function() {
-    it('Should', async function() {
+    it('Should return a gif', async function() {
       msg.content = '$gif dog';
       await commands.executeCmd(msg, ['gif', 'dog']);
       expect(msgSend.lastCall.returnValue).to.equal('A gif')
     });
+  });
+  describe('gifrandom', function() {
+    it('Should return a random gif', async function() {
+      msg.content = '$gifrandom dog';
+      await commands.executeCmd(msg, ['gifrandom', 'dog']);
+      expect(msgSend.lastCall.returnValue).to.equal('A random gif')
+    })
   });
   describe('roll', function() {
     it('Should return the result of one six faced die', function() {
