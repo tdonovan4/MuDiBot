@@ -44,9 +44,11 @@ function addToQueue(msg, url) {
   } else {
     //Url is a video
     checkIfAvailable(url).then(values => {
-      if (values != null) {
-        queue.push(values);
+      if (values == null) {
+        bot.printMsg(msg, lang.play.unavailable);
+        return
       }
+      queue.push(values);
       if (queue.length > 1) {
         //Add message to say video was added to the queue
         let text = (values != null) ? mustache.render(lang.play.added.video, {
@@ -84,18 +86,21 @@ function getPlaylistVideos(i, response, msg) {
 
 function checkIfAvailable(url) {
   return new Promise((resolve) => {
-    var regex = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
+    var regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
     var id = url.match(regex);
-    var api = 'https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=' + id + '&key=' + config.youtubeAPIKey;
-    get(api).then(function(response) {
-      if (false) {
-        resolve(false);
+    var api = 'https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=' + id[1] + '&key=' + config.youtubeAPIKey;;
+    get(api).then(response => {
+      if (response.items == undefined || response.items.length < 1) {
+        resolve(null);
       } else {
-        ytdl.getInfo(url).then(info => {
+        ytdl.getInfo(url, function(err, info) {
+          if(info == undefined) {
+            console.log(err);
+            resolve(null);
+            return;
+          }
           var duration = response.items[0].contentDetails.duration.match(/\d\d*\w/g).join(' ');
           resolve([url, info.title, duration.toLowerCase()]);
-        }, function() {
-          resolve(null);
         });
       }
     });
