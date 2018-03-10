@@ -131,7 +131,7 @@ function playVideo(connection, msg) {
 module.exports = {
   //Get YouTube video
   playYoutube: function(msg, link) {
-    //Check if there is a link;
+    //Check if there is a link
     if (link.length == 0) {
       //Missing argument;
       msg.channel.send(lang.error.usage);
