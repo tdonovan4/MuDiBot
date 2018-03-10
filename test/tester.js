@@ -28,6 +28,9 @@ const permGroups = require('../src/permission-group.js');
 
 //Init bot
 const bot = require('../src/bot.js');
+
+//Init stuff that need bot
+const audioPlayer = rewire('../src/audio-player.js');
 var setGame = sinon.spy(bot.client().user, 'setGame');
 var channelSend = sinon.spy(bot.client().channels.get('42'), 'send');
 var printMsg = sinon.stub(bot, 'printMsg');
@@ -320,6 +323,30 @@ describe('Test levels', function() {
       levels.__set__('lastMessages', []);
       await levels.newMessage(msg);
       expect(msg.member.roles.has('2')).to.equal(true);
+    });
+  });
+});
+describe('Test the audio player', function() {
+  //TODO: Replace these placeholder tests after the rework of audio-player.
+  let response;
+  var addToQueue = audioPlayer.__set__({
+    addToQueue: function(msg, url) {
+      response = url
+    }
+  });
+  describe('Test playYoutube', function() {
+    it('Should return wrong usage', function() {
+      audioPlayer.playYoutube(msg, '');
+      expect(msgSend.lastCall.returnValue).to.equal(lang.error.usage);
+    });
+    it('Should return missing voiceChannel', function() {
+      audioPlayer.playYoutube(msg, ['pet']);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.notFound.voiceChannel);
+    });
+    it('Should execute addToQueue with the url', function() {
+      msg.member.voiceChannel = 'Not null';
+      audioPlayer.playYoutube(msg, ['https://www.youtube.com/watch?v=jNQXAC9IVRw']);
+      expect(response).to.equal('https://www.youtube.com/watch?v=jNQXAC9IVRw');
     });
   });
 });
