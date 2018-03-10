@@ -329,7 +329,7 @@ describe('Test levels', function() {
 describe('Test the audio player', function() {
   //TODO: Replace these placeholder tests after the rework of audio-player.
   let response;
-  var addToQueue = audioPlayer.__set__({
+  audioPlayer.__set__({
     addToQueue: function(msg, url) {
       response = url
     }
@@ -347,6 +347,20 @@ describe('Test the audio player', function() {
       msg.member.voiceChannel = 'Not null';
       audioPlayer.playYoutube(msg, ['https://www.youtube.com/watch?v=jNQXAC9IVRw']);
       expect(response).to.equal('https://www.youtube.com/watch?v=jNQXAC9IVRw');
+    });
+  });
+  describe('Test stop', function() {
+    it('Should call voiceConnection.disconnect()', function() {
+      audioPlayer.__set__({
+        voiceConnection: {
+          disconnect: function(msg) {
+            response = 'disconnected';
+          }
+        }
+      });
+      audioPlayer.stop(msg);
+      expect(response).to.equal('disconnected');
+      expect(printMsg.lastCall.returnValue).to.equal(lang.play.disconnected);
     });
   });
 });
