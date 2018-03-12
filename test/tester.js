@@ -363,6 +363,26 @@ describe('Test the audio player', function() {
       expect(printMsg.lastCall.returnValue).to.equal(lang.play.disconnected);
     });
   });
+  describe('Test skip', function() {
+    it('Should destroy the dispatcherStream', function() {
+      msg.member.voiceChannel = {
+        connection: {
+          player: {
+            dispatcher: {
+              stream: {
+                destroy: function() {
+                  response = 'destroyed';
+                }
+              }
+            }
+          }
+        }
+      }
+      audioPlayer.skip(msg);
+      expect(response).to.equal('destroyed');
+      expect(printMsg.lastCall.returnValue).to.equal(lang.play.skipped);
+    });
+  });
 });
 describe('Validate if message is a command', function() {
   it('Should return false when using a false command', async function() {
