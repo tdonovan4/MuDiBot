@@ -383,6 +383,22 @@ describe('Test the audio player', function() {
       expect(printMsg.lastCall.returnValue).to.equal(lang.play.skipped);
     });
   });
+  describe('Test listQueue', function() {
+    it('Should send empty queue', function() {
+      audioPlayer.listQueue(msg);
+      expect(msgSend.lastCall.returnValue).to.equal(lang.play.queue);
+    });
+    it('Should send a list containing the videos in queue', function() {
+      //Set the videos
+      audioPlayer.__set__({
+        queue: [[0, 'dog'], [1, 'cat']]
+      });
+      audioPlayer.listQueue(msg);
+      expect(msgSend.lastCall.returnValue).to.equal(
+        lang.play.queue + '\n "dog"\n "cat"'
+      );
+    });
+  });
 });
 describe('Validate if message is a command', function() {
   it('Should return false when using a false command', async function() {
