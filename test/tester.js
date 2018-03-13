@@ -30,6 +30,7 @@ const permGroups = require('../src/permission-group.js');
 const bot = require('../src/bot.js');
 
 //Init stuff that need bot
+const customCmd = require('../src/custom-cmd.js');
 const audioPlayer = rewire('../src/audio-player.js');
 var setGame = sinon.spy(bot.client().user, 'setGame');
 var channelSend = sinon.spy(bot.client().channels.get('42'), 'send');
@@ -323,6 +324,36 @@ describe('Test levels', function() {
       levels.__set__('lastMessages', []);
       await levels.newMessage(msg);
       expect(msg.member.roles.has('2')).to.equal(true);
+    });
+  });
+});
+describe('Test the custom commands', function() {
+  describe('Test addCmd', function() {
+    it('Should return wrong usage', async function() {
+      await customCmd.addCmd(msg, ['']);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.usage);
+    });
+    it('Should add the command to the database', async function() {
+      await customCmd.addCmd(msg, ['testCmd1', 'say', 'This is a test']);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.custcmd.cmdAdded);
+    });
+    it('Should return wrong usage when using a too long name', async function() {
+      await customCmd.addCmd(msg, ['thisNameIsReallyTooLongToBeACustomCmd', 'say', 'This is a test']);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.usage);
+    });
+    it('Should return that the command already exists', async function() {
+      await customCmd.addCmd(msg, ['testCmd1', 'say', 'This is a test']);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.cmdAlreadyExists);
+    });
+    it('Should return that the user has too many commands', async function() {
+      config.custcmd.maxCmdsPerUser = 1;
+      await customCmd.addCmd(msg, ['testCmd2', 'say', 'This is a test']);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.tooMuch.cmdsUser);
+    });
+    it('Should add the commandd to the database when using an administrator', async function() {
+      msg.member.permissions.set('ADMINISTRATOR');
+      await customCmd.addCmd(msg, ['testCmd2', 'say', 'This is a test']);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.custcmd.cmdAdded);
     });
   });
 });

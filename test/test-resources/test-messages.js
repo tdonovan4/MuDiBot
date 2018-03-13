@@ -15,6 +15,7 @@ exports.msg1 = {
         resolve()
       });
     },
+    permissions: new Discord.Collection,
     roles: new Discord.Collection
   },
   guild: {
