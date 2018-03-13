@@ -15,17 +15,20 @@ function addCmd(msg, args) {
 
 module.exports = {
   addCmd: async function(msg, args) {
-    var cmds = await this.getCmds(msg, args);
+    var cmds = await this.getCmds(msg);
+    if(cmds == undefined) {
+      cmds = [];
+    } 
     //Check if user have too many commands (ignore if admin or superuser)
     if (msg.member.permissions.has('ADMINISTRATOR') ||
       config.superusers.find(x => x == msg.author.id) != undefined ||
       cmds.filter(x => x.userId == msg.author.id).length < config.custcmd.maxCmdsPerUser) {
       //Check if cmd already exists
-      if (cmds != undefined && cmds.find(x => x.name == args[0]) != undefined) {
+      if (cmds.find(x => x.name == args[0]) != undefined) {
         bot.printMsg(msg, lang.error.cmdAlreadyExists);
       } else {
         //Max number of custom commands is 100
-        if (cmds == undefined || cmds.length <= 100) {
+        if (cmds.length <= 100) {
           //Check if there is enough args and if length of name < 25 characters
           if (args.length >= 3 && args[0].length < 25) {
             //Add command to db
