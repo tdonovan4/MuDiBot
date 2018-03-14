@@ -5,12 +5,16 @@ const mustache = require('mustache');
 var lang = require('./localization.js').getLocalization();
 
 function addCmd(msg, args) {
-  sql.run('INSERT INTO customCmds (serverId, userId, name, action, arg) VALUES (?, ?, ?, ?, ?)', [
+  return new Promise((resolve, reject) => {
+    sql.run('INSERT INTO customCmds (serverId, userId, name, action, arg) VALUES (?, ?, ?, ?, ?)', [
       msg.guild.id, msg.author.id, args[0], args[1], args.slice(2).join(' ')
-    ])
-    .catch(error => {
+    ]).then(() => {
+      resolve();
+    }).catch(error => {
       console.log(error);
+      resolve();
     });
+  });
 }
 
 module.exports = {
@@ -18,7 +22,7 @@ module.exports = {
     var cmds = await this.getCmds(msg);
     if(cmds == undefined) {
       cmds = [];
-    } 
+    }
     //Check if user have too many commands (ignore if admin or superuser)
     if (msg.member.permissions.has('ADMINISTRATOR') ||
       config.superusers.find(x => x == msg.author.id) != undefined ||
@@ -33,7 +37,7 @@ module.exports = {
           if (args.length >= 3 && args[0].length < 25) {
             //Add command to db
             if (args[1] == 'say' || args[1] == 'play') {
-              addCmd(msg, args);
+              await addCmd(msg, args);
               bot.printMsg(msg, lang.custcmd.cmdAdded);
               return;
             }
