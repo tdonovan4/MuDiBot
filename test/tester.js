@@ -328,33 +328,63 @@ describe('Test levels', function() {
   });
 });
 describe('Test the custom commands', function() {
-  describe('Test addCmd', function() {
-    it('Should return wrong usage', async function() {
+  describe('Test addCmd and getCmds', function() {
+    it('addCmd should return wrong usage', async function() {
       await customCmd.addCmd(msg, ['']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.usage);
     });
-    it('Should add the command to the database', async function() {
+    it('getCmds should return empty array', async function() {
+      var response = await customCmd.getCmds(msg);
+      expect(response).to.deep.equal([]);
+    });
+    it('addCmd should add the command to the database', async function() {
       await customCmd.addCmd(msg, ['testCmd1', 'say', 'This is a test']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.custcmd.cmdAdded);
     });
-    it('Should return wrong usage when using a too long name', async function() {
+    it('getCmds should return testCmd1', async function() {
+      var response = await customCmd.getCmds(msg);
+      expect(response).to.deep.equal([{
+        action: 'say',
+        arg: 'This is a test',
+        name: 'testCmd1',
+        serverId: '357156661105365963',
+        userId: '041025599435591424',
+      }]);
+    })
+    it('addCmd should return wrong usage when using a too long name', async function() {
       await customCmd.addCmd(msg, ['thisNameIsReallyTooLongToBeACustomCmd', 'say', 'This is a test']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.usage);
     });
-    it('Should return that the command already exists', async function() {
+    it('addCmd should return that the command already exists', async function() {
       await customCmd.addCmd(msg, ['testCmd1', 'say', 'This is a test']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.cmdAlreadyExists);
     });
-    it('Should return that the user has too many commands', async function() {
+    it('addCmd should return that the user has too many commands', async function() {
       config.custcmd.maxCmdsPerUser = 1;
       await customCmd.addCmd(msg, ['testCmd2', 'say', 'This is a test']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.tooMuch.cmdsUser);
     });
-    it('Should add the commandd to the database when using an administrator', async function() {
+    it('addCmd should add the commandd to the database when using an administrator', async function() {
       msg.member.permissions.set('ADMINISTRATOR');
       await customCmd.addCmd(msg, ['testCmd2', 'say', 'This is a test']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.custcmd.cmdAdded);
     });
+    it('getCmds should return testCmd1 and testCmd2', async function() {
+      var response = await customCmd.getCmds(msg);
+      expect(response).to.deep.equal([{
+        action: 'say',
+        arg: 'This is a test',
+        name: 'testCmd1',
+        serverId: '357156661105365963',
+        userId: '041025599435591424',
+      }, {
+        action: 'say',
+        arg: 'This is a test',
+        name: 'testCmd2',
+        serverId: '357156661105365963',
+        userId: '041025599435591424',
+      }]);
+    })
   });
 });
 describe('Test the audio player', function() {
