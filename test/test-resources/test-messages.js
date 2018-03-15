@@ -20,7 +20,20 @@ exports.msg1 = {
   },
   guild: {
     id: '357156661105365963',
-    roles: new Discord.Collection
+    roles: new Discord.Collection,
+    members: {
+      get: function(id) {
+        var username = 'TestUser';
+        if(id == '357156661105365963') {
+          username = 'George'
+        }
+        return {
+          user: {
+            username: username
+          }
+        }
+      }
+    }
   },
   reply: function(text) {
     return text;

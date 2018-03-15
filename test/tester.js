@@ -404,6 +404,39 @@ describe('Test the custom commands', function() {
       }]);
     });
   });
+  describe('Test printCmds', function() {
+    it('Should return info about testCmd1', async function() {
+      await customCmd.printCmds(msg, ['testCmd1']);
+      var embed = msgSend.lastCall.returnValue.embed;
+      expect(embed.title).to.equal('testCmd1');
+      expect(embed.fields[0].value).to.equal('say');
+      expect(embed.fields[1].value).to.equal('TestUser');
+      expect(embed.fields[2].value).to.equal('This is a test');
+    });
+    it('Should return all custom commands', async function() {
+      msg.author.id = '357156661105365963';
+      await customCmd.addCmd(msg, ['testCmd2', 'say', 'This is a test']);
+      msg.author.id = '041025599435591424';
+      await customCmd.printCmds(msg, []);
+      var response = msgSend.getCall(msgSend.callCount - 2).returnValue;
+      expect(response).to.have.string('testCmd1');
+      expect(response).to.have.string('testCmd2');
+    })
+    it('Should return all TestUser\'s custom commands', async function() {
+      await customCmd.addCmd(msg, ['testCmd3', 'say', 'This is a test']);
+      await customCmd.printCmds(msg, ['']);
+      var response = msgSend.getCall(msgSend.callCount - 2).returnValue;
+      expect(response).to.have.string('testCmd1');
+      expect(response).to.have.string('testCmd3');
+    });
+    it('Should return that the list is empty', async function() {
+      await customCmd.removeCmd(msg, ['testCmd1']);
+      await customCmd.removeCmd(msg, ['testCmd2']);
+      await customCmd.removeCmd(msg, ['testCmd3']);
+      await customCmd.printCmds(msg, ['']);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.custcmdlist.empty);
+    });
+  });
 });
 describe('Test the audio player', function() {
   //TODO: Replace these placeholder tests after the rework of audio-player.
