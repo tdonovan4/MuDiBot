@@ -55,30 +55,37 @@ module.exports = {
     }
   },
   removeCmd: function(msg, args) {
-    sql.open(config.pathDatabase).then(() => {
-      sql.all("SELECT * FROM customCmds WHERE serverId = ? AND name = ?", [msg.guild.id, args[0]])
-        .then(row => {
-          if (row.length > 0) {
-            sql.all("DELETE FROM customCmds WHERE serverId = ? AND name = ?", [msg.guild.id, args[0]])
-              .then(() => {
-                bot.printMsg(msg, lang.custcmdremove.cmdRemoved)
-              }).catch(error => {
+    return new Promise((resolve, reject) => {
+      sql.open(config.pathDatabase).then(() => {
+        sql.all("SELECT * FROM customCmds WHERE serverId = ? AND name = ?", [msg.guild.id, args[0]])
+          .then(row => {
+            if (row.length > 0) {
+              sql.all("DELETE FROM customCmds WHERE serverId = ? AND name = ?", [msg.guild.id, args[0]])
+                .then(() => {
+                  bot.printMsg(msg, lang.custcmdremove.cmdRemoved);
+                  resolve();
+                }).catch(error => {
+                  console.log(error);
+                  resolve();
+                });
+            } else {
+              //Command not found
+              bot.printMsg(msg, lang.error.notFound.cmd);
+              resolve();
+            }
+          }).catch(error => {
+            //Check if table exist
+            sql.run('CREATE TABLE IF NOT EXISTS customCmds (serverId TEXT, userId TEXT, name TEXT, action TEXT, arg TEXT)')
+              .catch(error => {
                 console.log(error);
               });
-          } else {
-            //Command not found
-            bot.printMsg(msg, lang.error.notFound.cmd);
-          }
-        }).catch(error => {
-          //Check if table exist
-          sql.run('CREATE TABLE IF NOT EXISTS customCmds (serverId TEXT, userId TEXT, name TEXT, action TEXT, arg TEXT)')
-            .catch(error => {
-              console.log(error);
-            });
-        });
-      sql.close();
-    }).catch(error => {
-      console.log(error);
+            resolve();
+          });
+        sql.close();
+      }).catch(error => {
+        console.log(error);
+        resolve();
+      });
     });
   },
   getCmds: function(msg) {

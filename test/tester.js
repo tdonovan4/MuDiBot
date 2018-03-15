@@ -386,6 +386,24 @@ describe('Test the custom commands', function() {
       }]);
     })
   });
+  describe('Test removeCmd', function() {
+    it('Should return command not found', async function() {
+      await customCmd.removeCmd(msg, ['testCmd3']);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.notFound.cmd);
+    });
+    it('Should remove testCmd2', async function() {
+      await customCmd.removeCmd(msg, ['testCmd2']);
+      var response = await customCmd.getCmds(msg);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.custcmdremove.cmdRemoved);
+      expect(response).to.deep.equal([{
+        action: 'say',
+        arg: 'This is a test',
+        name: 'testCmd1',
+        serverId: '357156661105365963',
+        userId: '041025599435591424',
+      }]);
+    });
+  });
 });
 describe('Test the audio player', function() {
   //TODO: Replace these placeholder tests after the rework of audio-player.
