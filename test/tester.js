@@ -25,6 +25,7 @@ random.resolves('A random gif');
 const storage = require('../src/storage.js');
 const levels = rewire('../src/levels.js');
 const permGroups = require('../src/permission-group.js');
+const warnings = require('../src/warnings.js');
 
 //Init bot
 const bot = require('../src/bot.js');
@@ -509,6 +510,28 @@ describe('Test the audio player', function() {
       expect(msgSend.lastCall.returnValue).to.equal(
         lang.play.queue + '\n "dog"\n "cat"'
       );
+    });
+  });
+});
+describe('Test warnings', function() {
+  describe('Test warn', function() {
+    it('Should return wrong usage', function() {
+      msg.mentions.users.clear();
+      warnings.warn(msg, 1);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.usage);
+    });
+    it('Should increase TestUser\'s warnings by one', async function() {
+      msg.mentions.users.set('041025599435591424', {
+        id: '041025599435591424'
+      });
+      await warnings.warn(msg, 1);
+      var response = await storage.getUser(msg, '041025599435591424');
+      expect(response.warnings).to.equal(1);
+    });
+    it('Should decrease TestUser\'s warnings by one', async function() {
+      await warnings.warn(msg, -1);
+      var response = await storage.getUser(msg, '041025599435591424');
+      expect(response.warnings).to.equal(0);
     });
   });
 });
