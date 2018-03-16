@@ -570,6 +570,31 @@ describe('Test warnings', function() {
       expect(printMsg.lastCall.returnValue).to.equal('<@041025599435591424>: 2 warnings');
     });
   });
+  describe('Test purge', function() {
+    it('Should return wrong usage', function() {
+      msg.mentions.users.clear();
+      msg.content = '$warnpurge';
+      warnings.purge(msg);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.usage);
+    });
+    it('Should purge TestUser', async function() {
+      msg.mentions.users.set('041025599435591424', {
+        id: '041025599435591424'
+      });
+      msg.content = '$warnpurge';
+      await warnings.purge(msg);
+      var response = await storage.getUser(msg, '041025599435591424');
+      expect(response.warnings).to.equal(0);
+    });
+    it('Should purge all', async function() {
+      await warnings.warn(msg, 1);
+      msg.content = '$warnpurge all';
+      await warnings.purge(msg);
+      var response = await storage.getUsers(msg);
+      expect(response[0].warnings).to.equal(0);
+      expect(response[1].warnings).to.equal(0);
+    });
+  });
 });
 describe('Validate if message is a command', function() {
   it('Should return false when using a false command', async function() {
