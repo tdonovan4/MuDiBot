@@ -23,19 +23,25 @@ function modifyUsersWarnings(msg, value) {
 }
 
 function modifyUserWarnings(msg, userId, value) {
-  sql.open(config.pathDatabase).then(() => {
-    sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
-      .then(() => {
-        sql.run('UPDATE users SET warnings = ? WHERE serverId = ? AND userId = ?', [value, msg.guild.id, userId])
-          .catch(error => {
+  return new Promise(function(resolve) {
+    sql.open(config.pathDatabase).then(() => {
+      sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
+        .then(() => {
+          sql.run('UPDATE users SET warnings = ? WHERE serverId = ? AND userId = ?', [value, msg.guild.id, userId]).then(() => {
+            resolve();
+          }).catch(error => {
             console.log(error);
+            resolve();
           });
-      }).catch(error => {
-        console.log(error);
-      });
-    sql.close();
-  }).catch(error => {
-    console.log(error);
+        }).catch(error => {
+          console.log(error);
+          resolve();
+        });
+      sql.close();
+    }).catch(error => {
+      console.log(error);
+      resolve();
+    });
   });
 }
 
@@ -45,11 +51,10 @@ module.exports = {
       //There is a mention
       var user = await storage.getUser(msg, msg.mentions.users.first().id);
       var warnings = user.warnings
-
       if (warnings != undefined) {
         //User warnings found!
         warnings = warnings + num;
-        modifyUserWarnings(msg, user.userId, warnings);
+        await modifyUserWarnings(msg, user.userId, warnings);
         user.warnings = warnings;
         bot.printMsg(msg, mustache.render(lang.warn.list, user));
       } else {
