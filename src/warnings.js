@@ -7,18 +7,25 @@ const config = require('./args.js').getConfig()[1];
 var lang = require('./localization.js').getLocalization();
 
 function modifyUsersWarnings(msg, value) {
-  sql.open(config.pathDatabase).then(() => {
-    sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
-      .then(() => {
-        sql.run('UPDATE users SET warnings = ? WHERE serverId = ?', [value, msg.guild.id]).catch(error => {
+  return new Promise(function(resolve) {
+    sql.open(config.pathDatabase).then(() => {
+      sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
+        .then(() => {
+          sql.run('UPDATE users SET warnings = ? WHERE serverId = ?', [value, msg.guild.id]).then(() => {
+            resolve();
+          }).catch(error => {
+            console.log(error);
+            resolve();
+          });
+        }).catch(error => {
           console.log(error);
+          resolve();
         });
-      }).catch(error => {
-        console.log(error);
-      });
-    sql.close();
-  }).catch(error => {
-    console.log(error);
+      sql.close();
+    }).catch(error => {
+      console.log(error);
+      resolve();
+    });
   });
 }
 
@@ -101,14 +108,14 @@ module.exports = {
 
     if (args == 'all') {
       //Purge all users
-      modifyUsersWarnings(msg, 0)
+      await modifyUsersWarnings(msg, 0)
       bot.printMsg(msg, lang.warn.usersCleared);
     } else if (msg.mentions.users.first() != undefined) {
       //Purge the user
       var user = await storage.getUser(msg, msg.mentions.users.first().id);
 
       if (user != undefined) {
-        modifyUserWarnings(msg, user.userId, 0)
+        await modifyUserWarnings(msg, user.userId, 0)
         bot.printMsg(msg, lang.warn.userCleared);
       } else {
         bot.printMsg(msg, lang.error.invalidArg.user);
