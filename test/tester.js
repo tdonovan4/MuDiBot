@@ -534,6 +534,42 @@ describe('Test warnings', function() {
       expect(response.warnings).to.equal(0);
     });
   });
+  describe('Test list', function() {
+    it('Should return wrong usage', function() {
+      msg.mentions.users.clear();
+      msg.content = '$warnlist';
+      warnings.list(msg);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.usage);
+    });
+    it('Should return no warnings', async function() {
+      msg.content = '$warnlist all';
+      await warnings.list(msg);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.warn.noWarns);
+    });
+    it('Should return all warnings', async function() {
+      //Add warnings to users
+      msg.mentions.users.set('357156661105365963', {
+        id: '357156661105365963'
+      });
+      await warnings.warn(msg, 3);
+      msg.mentions.users.clear();
+
+      msg.mentions.users.set('041025599435591424', {
+        id: '041025599435591424'
+      });
+      await warnings.warn(msg, 2);
+
+      msg.content = '$warnlist all';
+      await warnings.list(msg);
+      expect(printMsg.lastCall.returnValue).to.equal(
+        '<@041025599435591424>: 2 warnings\n<@357156661105365963>: 3 warnings');
+    });
+    it('Should return TestUser\'s warnings', async function() {
+      msg.content = '$warnlist';
+      await warnings.list(msg);
+      expect(printMsg.lastCall.returnValue).to.equal('<@041025599435591424>: 2 warnings');
+    });
+  });
 });
 describe('Validate if message is a command', function() {
   it('Should return false when using a false command', async function() {
