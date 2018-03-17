@@ -27,6 +27,7 @@ const storage = require('../src/storage.js');
 const levels = rewire('../src/levels.js');
 const permGroups = require('../src/permission-group.js');
 const warnings = require('../src/warnings.js');
+const defaultChannel = require('../src/default-channel.js');
 
 //Init bot
 const bot = require('../src/bot.js');
@@ -595,6 +596,50 @@ describe('Test warnings', function() {
       expect(response[0].warnings).to.equal(0);
       expect(response[1].warnings).to.equal(0);
     });
+  });
+});
+describe('Test default-channel', function() {
+  var testClient = require('./test-resources/test-client.js');
+  var member = {
+    guild: {
+      id: '357156661105365963'
+    }
+  }
+  it('Should return first channel as default channel', async function() {
+    testClient.channels.set('1', {
+      position: 0,
+      name: '1',
+      guild: {
+        id: '357156661105365963'
+      },
+      id: '1',
+      type: 'text'
+    });
+    var response = await defaultChannel.getChannel(testClient, member);
+    expect(response.position).to.equal(0);
+  })
+  it('Should return general as default channel', async function() {
+    testClient.channels.set('2', {
+      position: 1,
+      name: 'general',
+      guild: {
+        id: '357156661105365963'
+      },
+      id: '2',
+      type: 'text'
+    });
+    var response = await defaultChannel.getChannel(testClient, member);
+    expect(response.name).to.equal('general');
+  });
+  it('Should set channel1 as default channel', async function() {
+    await defaultChannel.setChannel(msg, {id: '1'});
+    var response = await defaultChannel.getChannel(testClient, member);
+    expect(response.id).to.equal('1');
+  });
+  it('Should set general as default channel', async function() {
+    await defaultChannel.setChannel(msg, {id: '2'});
+    var response = await defaultChannel.getChannel(testClient, member);
+    expect(response.id).to.equal('2');
   });
 });
 describe('Validate if message is a command', function() {
