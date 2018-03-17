@@ -3,57 +3,68 @@ const config = require('./args.js').getConfig()[1];
 
 module.exports = {
   setChannel: function(msg, channel) {
-    sql.open(config.pathDatabase).then(() => {
-
-      sql.get(`SELECT * FROM servers WHERE serverId = "${msg.guild.id}"`).then(row => {
-        if (!row) {
-          //Table exist but not row
-          sql.run("INSERT INTO servers (serverId, defaultChannel) VALUES (?, ?)", [msg.guild.id, channel.id]);
-        } else {
-          sql.run("UPDATE servers SET defaultChannel = ? WHERE serverId = ?", [channel.id, msg.guild.id]);
-        }
-      }).catch(() => {
-        sql.run("CREATE TABLE IF NOT EXISTS servers (serverId TEXT, defaultChannel TEXT)").then(() => {
-          //Table don't exist
-          sql.run("INSERT INTO servers (serverId, defaultChannel) VALUES (?, ?)", [msg.guild.id, channel.id]);
-        }).catch(error => {
-          console.log(error);
+    return new Promise(function(resolve) {
+      sql.open(config.pathDatabase).then(() => {
+        sql.get(`SELECT * FROM servers WHERE serverId = "${msg.guild.id}"`).then(row => {
+          if (!row) {
+            //Table exist but not row
+            sql.run("INSERT INTO servers (serverId, defaultChannel) VALUES (?, ?)", [msg.guild.id, channel.id]).then(() => {
+              resolve()
+            });
+          } else {
+            sql.run("UPDATE servers SET defaultChannel = ? WHERE serverId = ?", [channel.id, msg.guild.id]).then(() => {
+              resolve()
+            });
+          }
+        }).catch(() => {
+          sql.run("CREATE TABLE IF NOT EXISTS servers (serverId TEXT, defaultChannel TEXT)").then(() => {
+            //Table don't exist
+            sql.run("INSERT INTO servers (serverId, defaultChannel) VALUES (?, ?)", [msg.guild.id, channel.id]);
+          }).catch(error => {
+            console.log(error);
+          });
+          resolve()
         });
+        sql.close();
+      }).catch(error => {
+        console.log(error);
+        resolve()
       });
-      sql.close();
-    }).catch(error => {
-      console.log(error);
     });
   },
 
   getChannel: async function(client, member) {
     await sql.open(config.pathDatabase)
-
-    var channel = await sql.get("SELECT * FROM servers WHERE serverId = ?", member.guild.id).then(row => {
-      if (!row) {
-        sql.run("INSERT INTO servers (serverId, defaultChannel) VALUES (?, ?)", [member.guild.id, null]);
-      } else {
-        return row.defaultChannel;
+    try {
+      var row = await sql.get("SELECT * FROM servers WHERE serverId = ?", member.guild.id);
+    }
+    catch(error) {
+      try {
+        await sql.run("CREATE TABLE IF NOT EXISTS servers (serverId TEXT, defaultChannel TEXT)");
       }
-    }).catch(() => {
-      sql.run("CREATE TABLE IF NOT EXISTS servers (serverId TEXT, defaultChannel TEXT)").then(() => {
-        sql.run("INSERT INTO servers (serverId, defaultChannel) VALUES (?, ?)", [member.guild.id, null]);
-      }).catch(error => {
+      catch(error) {
         console.log(error);
-      });
-    });
+      }
+      sql.run("INSERT INTO servers (serverId, defaultChannel) VALUES (?, ?)", [member.guild.id, null]);
+    }
 
-    if (client.channels.get(channel) != undefined) {
-      return client.channels.get(channel);
+    if (!row) {
+      await sql.run("INSERT INTO servers (serverId, defaultChannel) VALUES (?, ?)", [member.guild.id, null]);
+      sql.close();
+    } else if(row.defaultChannel != null) {
+      sql.close();
+      if (client.channels.get(row.defaultChannel) != undefined) {
+        return client.channels.get(row.defaultChannel);
+      }
     }
 
     //Get all text channels in server
     var channels = client.channels.filter(function(channel) {
-      return channel.type == 'text' && channel.guild == member.guild;
+      return channel.type == 'text' && channel.guild.id == member.guild.id;
     });
 
     var channel = channels.find('name', 'general');
-    if (channel == undefined) {
+    if (channel == null) {
       //General don't exist
       channel = channels.find('position', 0);
     }
