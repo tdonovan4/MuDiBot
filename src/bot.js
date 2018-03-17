@@ -90,49 +90,6 @@ client.on('message', msg => {
   }
 });
 
-//Function that fetch, check and delete messages
-function clear(msg, num) {
-  //Add command and users to clear to list
-  var clearList = config.clearlog.commandsToClear.concat(config.clearlog.usersToClear);
-  //Add bot commands to list
-  clearList = clearList.concat(keys.map(x => config.prefix + x));
-  //Remove empty string from list
-  clearList = clearList.filter(x => x != '');
-  console.log(clearList);
-
-  //Fetch
-  msg.channel.fetchMessages({
-      limit: parseInt(num)
-    })
-    .then(messages => {
-      console.log(lang.clearlog.maxNum + num);
-      var msg = messages.array();
-      var deletedMessages = 0;
-
-      //Check messages
-      for (var i = 0; i < messages.array().length; i++) {
-        //Delete commands from bot
-        if (msg[i].author.id === client.user.id) {
-          msg[i].delete()
-          deletedMessages++;
-        } else {
-          //Find and delete
-          for (var n = 0; n < clearList.length; n++) {
-            if (msg[i].content.substring(0, clearList[n].length) === clearList[n] || msg[i].author.id === clearList[n]) {
-              msg[i].delete()
-              deletedMessages++;
-              break
-            }
-          }
-        }
-      }
-      console.log(mustache.render(lang.clearlog.deleted, {
-        deletedMessages
-      }));
-    })
-    .catch(console.error);
-}
-
 //Convert roles into mention objects
 function mention(roles, role) {
   if (role === 'everyone') {
