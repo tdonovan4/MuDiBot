@@ -7,7 +7,8 @@ const sql = require('sqlite');
 const fs = require('fs');
 const rewire = require('rewire');
 const giphy = require('../src/giphy-api.js');
-var msg = require('./test-resources/test-messages.js').msg1
+var testMessages = rewire('./test-resources/test-messages.js');
+var msg = testMessages.msg1;
 
 //Add test values to config
 require('./set-config.js').setTestConfig();
@@ -850,6 +851,20 @@ describe('Test commands', function() {
       result = parseInt(reply.lastCall.returnValue);
       expect(result).to.equal(0);
     });
+  });
+  describe('clearlog' , function() {
+    it('Should delete nothing', async function() {
+      msg.content = '$clearlog 1';
+      await commands.executeCmd(msg, ['clearlog', '1']);
+      var deletedMessages = testMessages.__get__('deletedMessages');
+      expect(deletedMessages).to.deep.equal([]);
+    });
+    it('Should delete commands and messages by client', async function() {
+      msg.content = '$clearlog';
+      await commands.executeCmd(msg, ['clearlog']);
+      var deletedMessages = testMessages.__get__('deletedMessages');
+      expect(deletedMessages).to.deep.equal(['$ping', 'this', '$info', '$help help', 'a', '$profile']);
+    })
   });
 });
 
