@@ -20,6 +20,8 @@ module.exports = {
   locale: '',
   //The 'game' the bot is playing (more like a status)
   currentStatus: 'Type $help',
+  //The path to the database (default: './storage/data.db')
+  databasePath: './storage/data.db',
   //List of users (id) with all permissions
   superusers: [''],
 
@@ -81,7 +83,7 @@ module.exports = {
   ===============*/
 
   /*Configuration for individual command.
-  They also can be activated or desactivated.
+  They also can be activated or deactivated.
   All commands are activated by default.*/
 
   /*---------------

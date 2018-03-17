@@ -26,6 +26,7 @@
       "group": "Argument manquant: groupe"
     },
     "invalidArg": {
+      "token": "Le token n'est pas valide!",
       "cmd": "Cette commande n'est pas valide",
       "category": "Attention: {{cmds}} n'a pas de catégorie valide",
       "user": "Utilisateur non valide",

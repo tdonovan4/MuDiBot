@@ -26,6 +26,7 @@
       "group": "Missing argument: group"
     },
     "invalidArg": {
+      "token": "The provided token is invalid!",
       "cmd": "This is not a valid command",
       "category": "Warning: {{cmds}} doesn't have a valid category",
       "user": "Invalid user",
