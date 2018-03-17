@@ -619,6 +619,10 @@ describe('Test default-channel', function() {
     expect(response.position).to.equal(0);
   })
   it('Should return general as default channel', async function() {
+    //Delete old defaultChannel
+    await sql.open(config.pathDatabase);
+    await sql.run("DELETE FROM servers WHERE serverId = 357156661105365963 AND defaultChannel = '1'");
+    sql.close();
     testClient.channels.set('2', {
       position: 1,
       name: 'general',

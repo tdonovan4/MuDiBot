@@ -50,10 +50,9 @@ module.exports = {
 
     if (!row) {
       await sql.run("INSERT INTO servers (serverId, defaultChannel) VALUES (?, ?)", [member.guild.id, null]);
-      sql.close();
     } else if(row.defaultChannel != null) {
-      sql.close();
       if (client.channels.get(row.defaultChannel) != undefined) {
+        sql.close();
         return client.channels.get(row.defaultChannel);
       }
     }
