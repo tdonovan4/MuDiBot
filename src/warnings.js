@@ -3,38 +3,52 @@ const storage = require('./storage.js');
 const bot = require('./bot.js');
 const mustache = require('mustache');
 const sql = require('sqlite');
+const config = require('./args.js').getConfig()[1];
 var lang = require('./localization.js').getLocalization();
 
 function modifyUsersWarnings(msg, value) {
-  sql.open('./storage/data.db').then(() => {
-    sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
-      .then(() => {
-        sql.run('UPDATE users SET warnings = ? WHERE serverId = ?', [value, msg.guild.id]).catch(error => {
+  return new Promise(function(resolve) {
+    sql.open(config.pathDatabase).then(() => {
+      sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
+        .then(() => {
+          sql.run('UPDATE users SET warnings = ? WHERE serverId = ?', [value, msg.guild.id]).then(() => {
+            resolve();
+          }).catch(error => {
+            console.log(error);
+            resolve();
+          });
+        }).catch(error => {
           console.log(error);
+          resolve();
         });
-      }).catch(error => {
-        console.log(error);
-      });
-    sql.close();
-  }).catch(error => {
-    console.log(error);
+      sql.close();
+    }).catch(error => {
+      console.log(error);
+      resolve();
+    });
   });
 }
 
 function modifyUserWarnings(msg, userId, value) {
-  sql.open('./storage/data.db').then(() => {
-    sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
-      .then(() => {
-        sql.run('UPDATE users SET warnings = ? WHERE serverId = ? AND userId = ?', [value, msg.guild.id, userId])
-          .catch(error => {
+  return new Promise(function(resolve) {
+    sql.open(config.pathDatabase).then(() => {
+      sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
+        .then(() => {
+          sql.run('UPDATE users SET warnings = ? WHERE serverId = ? AND userId = ?', [value, msg.guild.id, userId]).then(() => {
+            resolve();
+          }).catch(error => {
             console.log(error);
+            resolve();
           });
-      }).catch(error => {
-        console.log(error);
-      });
-    sql.close();
-  }).catch(error => {
-    console.log(error);
+        }).catch(error => {
+          console.log(error);
+          resolve();
+        });
+      sql.close();
+    }).catch(error => {
+      console.log(error);
+      resolve();
+    });
   });
 }
 
@@ -44,11 +58,10 @@ module.exports = {
       //There is a mention
       var user = await storage.getUser(msg, msg.mentions.users.first().id);
       var warnings = user.warnings
-
       if (warnings != undefined) {
         //User warnings found!
         warnings = warnings + num;
-        modifyUserWarnings(msg, user.userId, warnings);
+        await modifyUserWarnings(msg, user.userId, warnings);
         user.warnings = warnings;
         bot.printMsg(msg, mustache.render(lang.warn.list, user));
       } else {
@@ -95,14 +108,14 @@ module.exports = {
 
     if (args == 'all') {
       //Purge all users
-      modifyUsersWarnings(msg, 0)
+      await modifyUsersWarnings(msg, 0)
       bot.printMsg(msg, lang.warn.usersCleared);
     } else if (msg.mentions.users.first() != undefined) {
       //Purge the user
       var user = await storage.getUser(msg, msg.mentions.users.first().id);
 
       if (user != undefined) {
-        modifyUserWarnings(msg, user.userId, 0)
+        await modifyUserWarnings(msg, user.userId, 0)
         bot.printMsg(msg, lang.warn.userCleared);
       } else {
         bot.printMsg(msg, lang.error.invalidArg.user);

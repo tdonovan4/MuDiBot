@@ -1,12 +1,10 @@
-const config = require('./args.js').getConfig();
+const config = require('./args.js').getConfig()[1];
 const mustache = require('mustache');
 var lang = require('./localization.js').getLocalization();
 
 module.exports = {
   //Create the help message
   printCmds: function(msg, cmds) {
-    //const help = localization.help;
-    var roles = msg.channel.guild.roles;
 
     var categories = {
       General: [],

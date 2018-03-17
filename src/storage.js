@@ -1,6 +1,6 @@
 //Handle SQL
 const sql = require('sqlite');
-const config = require('./args.js').getConfig();
+const config = require('./args.js').getConfig()[1];
 const checkTable = 'CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)';
 
 function insertUser(msg, userId) {
@@ -23,7 +23,7 @@ function insertUser(msg, userId) {
 module.exports = {
   getUsers: function(msg) {
     return new Promise((resolve, reject) => {
-      sql.open('./storage/data.db').then(() => {
+      sql.open(config.pathDatabase).then(() => {
         sql.all('SELECT * FROM users WHERE serverId = ?', msg.guild.id)
           .then(row => {
             resolve(row);
@@ -46,7 +46,7 @@ module.exports = {
   },
   getUser: function(msg, userId) {
     return new Promise((resolve, reject) => {
-      sql.open('./storage/data.db').then(() => {
+      sql.open(config.pathDatabase).then(() => {
         sql.get('SELECT * FROM users WHERE serverId = ? AND userId = ?', [msg.guild.id, userId])
           .then(row => {
             if (!row) {
@@ -58,7 +58,7 @@ module.exports = {
             //Check if table exist
             sql.run(checkTable)
               .then(() => {
-                row = insertUser(msg, userId).then(() => {
+                insertUser(msg, userId).then(row => {
                   resolve(row);
                 });
               }).catch(error => {

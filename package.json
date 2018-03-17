@@ -1,25 +1,30 @@
 {
   "name": "MuDiBot",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "A multipurpose Discord bot (MuDiBot) made using discord.js",
   "main": "bot.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/.bin/mocha --reporter spec --exit"
   },
   "author": "tdonovan4",
   "license": "MIT",
   "dependencies": {
-    "discord.js": "^11.2.1",
+    "discord.js": "^11.3.2",
     "erlpack": "github:hammerandchisel/erlpack",
     "mustache": "^2.3.0",
     "node-opus": "^0.2.7",
-    "sodium": "^2.0.1",
-    "sqlite": "^2.8.0",
+    "sodium": "github:paixaop/node-sodium",
+    "sqlite": "^2.9.1",
+    "sqlite3": "^3.1.13",
     "uws": "^0.14.5",
-    "winston": "^2.3.1",
-    "ytdl-core": "^0.13.3"
+    "ytdl-core": "^0.20.2"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^5.0.4",
+    "rewire": "^3.0.2",
+    "sinon": "^4.4.2"
+  },
   "repository": {
     "type": "git",
     "url": "none"

@@ -1,36 +1,43 @@
 const bot = require('./bot.js');
 const sql = require('sqlite');
-const config = require('./args.js').getConfig();
+const config = require('./args.js').getConfig()[1];
 const mustache = require('mustache');
 var lang = require('./localization.js').getLocalization();
 
 function addCmd(msg, args) {
-  sql.run('INSERT INTO customCmds (serverId, userId, name, action, arg) VALUES (?, ?, ?, ?, ?)', [
+  return new Promise((resolve, reject) => {
+    sql.run('INSERT INTO customCmds (serverId, userId, name, action, arg) VALUES (?, ?, ?, ?, ?)', [
       msg.guild.id, msg.author.id, args[0], args[1], args.slice(2).join(' ')
-    ])
-    .catch(error => {
+    ]).then(() => {
+      resolve();
+    }).catch(error => {
       console.log(error);
+      resolve();
     });
+  });
 }
 
 module.exports = {
   addCmd: async function(msg, args) {
-    var cmds = await this.getCmds(msg, args);
+    var cmds = await this.getCmds(msg);
+    if(cmds == undefined) {
+      cmds = [];
+    }
     //Check if user have too many commands (ignore if admin or superuser)
     if (msg.member.permissions.has('ADMINISTRATOR') ||
       config.superusers.find(x => x == msg.author.id) != undefined ||
       cmds.filter(x => x.userId == msg.author.id).length < config.custcmd.maxCmdsPerUser) {
       //Check if cmd already exists
-      if (cmds != undefined && cmds.find(x => x.name == args[0]) != undefined) {
+      if (cmds.find(x => x.name == args[0]) != undefined) {
         bot.printMsg(msg, lang.error.cmdAlreadyExists);
       } else {
         //Max number of custom commands is 100
-        if (cmds == undefined || cmds.length <= 100) {
+        if (cmds.length <= 100) {
           //Check if there is enough args and if length of name < 25 characters
           if (args.length >= 3 && args[0].length < 25) {
             //Add command to db
             if (args[1] == 'say' || args[1] == 'play') {
-              addCmd(msg, args);
+              await addCmd(msg, args);
               bot.printMsg(msg, lang.custcmd.cmdAdded);
               return;
             }
@@ -48,35 +55,42 @@ module.exports = {
     }
   },
   removeCmd: function(msg, args) {
-    sql.open('./storage/data.db').then(() => {
-      sql.all("SELECT * FROM customCmds WHERE serverId = ? AND name = ?", [msg.guild.id, args[0]])
-        .then(row => {
-          if (row.length > 0) {
-            sql.all("DELETE FROM customCmds WHERE serverId = ? AND name = ?", [msg.guild.id, args[0]])
-              .then(() => {
-                bot.printMsg(msg, lang.custcmdremove.cmdRemoved)
-              }).catch(error => {
+    return new Promise((resolve, reject) => {
+      sql.open(config.pathDatabase).then(() => {
+        sql.all("SELECT * FROM customCmds WHERE serverId = ? AND name = ?", [msg.guild.id, args[0]])
+          .then(row => {
+            if (row.length > 0) {
+              sql.all("DELETE FROM customCmds WHERE serverId = ? AND name = ?", [msg.guild.id, args[0]])
+                .then(() => {
+                  bot.printMsg(msg, lang.custcmdremove.cmdRemoved);
+                  resolve();
+                }).catch(error => {
+                  console.log(error);
+                  resolve();
+                });
+            } else {
+              //Command not found
+              bot.printMsg(msg, lang.error.notFound.cmd);
+              resolve();
+            }
+          }).catch(error => {
+            //Check if table exist
+            sql.run('CREATE TABLE IF NOT EXISTS customCmds (serverId TEXT, userId TEXT, name TEXT, action TEXT, arg TEXT)')
+              .catch(error => {
                 console.log(error);
               });
-          } else {
-            //Command not found
-            bot.printMsg(msg, lang.error.notFound.cmd);
-          }
-        }).catch(error => {
-          //Check if table exist
-          sql.run('CREATE TABLE IF NOT EXISTS customCmds (serverId TEXT, userId TEXT, name TEXT, action TEXT, arg TEXT)')
-            .catch(error => {
-              console.log(error);
-            });
-        });
-      sql.close();
-    }).catch(error => {
-      console.log(error);
+            resolve();
+          });
+        sql.close();
+      }).catch(error => {
+        console.log(error);
+        resolve();
+      });
     });
   },
   getCmds: function(msg) {
     return new Promise((resolve, reject) => {
-      sql.open('./storage/data.db').then(() => {
+      sql.open(config.pathDatabase).then(() => {
         sql.all('SELECT * FROM customCmds WHERE serverId = ?', msg.guild.id)
           .then(row => {
             resolve(row);
