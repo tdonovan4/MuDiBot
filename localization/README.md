@@ -4,11 +4,11 @@ You can add a new one by executing new-locale.sh or new-locale.bat, you will the
 
 ##How to localize:
 ###Guidelines
-* Only translate the value. The value is the part after the `:`. In `"msg": "Pong!"`, it would be "Pong!". Do not translate the part before the `:`!
+* Only translate the values. The value is the part after the `:`. In `"msg": "Pong!"`, it would be "Pong!". Do not translate the part before the `:`!
 
 * Do not remove/change special characters like `*` or `_`.
 
-* Do not touch template. A template is this `{{user}}`, it will be replaced by a value. You can only move it to make sense with the sentence.
+* Do not touch templates. A template like this one `{{user}}`, will be replaced by a value. You can only move it to make sense with the sentence.
 
 ###Example:
 For simple text:
@@ -17,7 +17,7 @@ For simple text:
 ```
 becomes
 ```json
-"language": "Langue sélectionnée: français"
+"language": "Langue sélectionnée: Français"
 ```
 
 For text with a template:
