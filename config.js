@@ -21,7 +21,7 @@ module.exports = {
   //The 'game' the bot is playing (more like a status)
   currentStatus: 'Type $help',
   //The path to the database (default: './storage/data.db')
-  databasePath: './storage/data.db',
+  pathDatabase: './storage/data.db',
   //List of users (id) with all permissions
   superusers: [''],
 
