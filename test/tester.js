@@ -653,6 +653,11 @@ describe('Validate if message is a command', function() {
     var response = await commands.checkIfValidCmd(msg, ['randomString']);
     expect(response).to.equal(false);
   });
+  it('Should return false when using wrong prefix', async function() {
+    msg.content = '!help';
+    var response = await commands.checkIfValidCmd(msg, ['help']);
+    expect(response).to.equal(false);
+  });
   before(function() {
     checkPerm.resolves(true);
   });
