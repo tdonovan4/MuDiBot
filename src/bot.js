@@ -59,34 +59,34 @@ client.on('message', msg => {
     }
 
     //Check if message is a command that can be executed
-    var msgValidCmd = commands.checkIfValidCmd(msg, cmd);
+    commands.checkIfValidCmd(msg, cmd).then(msgValidCmd => {
+      if (msgValidCmd) {
+        commands.executeCmd(msg, cmd);
+      } else {
+        //Check if message is a custom command
+        const customCmd = require('./custom-cmd.js');
 
-    if(msgValidCmd) {
-      commands.executeCmd(msg, cmd);
-    } else {
-      //Check if message is a custom command
-      const customCmd = require('./custom-cmd.js');
-
-      customCmd.getCmds(msg).then(custCmds => {
-        var cmd = custCmds.find(x => x.name == msg.content);
-        if (cmd != undefined) {
-          switch (cmd.action) {
-            case 'say':
-              msg.channel.send(cmd.arg);
-              break;
-            case 'play':
-              player.playYoutube(msg, cmd.arg);
-              break;
-            default:
-              console.log(lang.error.invalidArg.cmd);
+        customCmd.getCmds(msg).then(custCmds => {
+          var cmd = custCmds.find(x => x.name == msg.content);
+          if (cmd != undefined) {
+            switch (cmd.action) {
+              case 'say':
+                msg.channel.send(cmd.arg);
+                break;
+              case 'play':
+                player.playYoutube(msg, cmd.arg);
+                break;
+              default:
+                console.log(lang.error.invalidArg.cmd);
+            }
           }
-        }
-      });
-    }
-    if (config.levels.activated == true) {
-      //Add xp
-      levels.newMessage(msg);
-    }
+        });
+      }
+      if (config.levels.activated == true) {
+        //Add xp
+        levels.newMessage(msg);
+      }
+    });
   }
 });
 

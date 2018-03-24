@@ -572,7 +572,7 @@ module.exports = {
     var cmdActivated = config[cmd[0]] != undefined ? config[cmd[0]].activated : true;
 
     //Check if message begins with prefix, if cmd is a valid command and is it's activated
-    if (msg.content.indexOf(config.prefix) == 0 && cmd[0] in commands && cmdActivated) {
+    if (msg.content.startsWith(config.prefix) && cmd[0] in commands && cmdActivated) {
       console.log(msg.author.username + ' - ' + msg.content);
 
       //Check if user has permission
