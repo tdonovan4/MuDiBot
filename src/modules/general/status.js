@@ -10,7 +10,7 @@ module.exports = class statusCommand extends bot.Command {
       name: 'status',
       aliases: [],
       category: 'general',
-      permLvl: 0
+      permLvl: 3
     });
   }
   execute(msg, args) {
