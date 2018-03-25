@@ -13,6 +13,7 @@ var args = require('./args.js');
 var config = args.getConfig()[1];
 var lang = require('./localization.js').getLocalization();
 
+//TODO: delete
 //Format time
 function time() {
   var time = process.uptime();
@@ -611,7 +612,7 @@ module.exports = {
   },
   executeCmd: async function(msg, cmd) {
     //Execute the commandd
-    await commands[cmd[0]].execute(msg)
+    //await commands[cmd[0]].execute(msg)
     module.exports.commands.get(cmd[0]).execute(msg, msg.content.split(" ").slice(1));
   },
 
