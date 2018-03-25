@@ -77,7 +77,6 @@ client.on('message', msg => {
 
     //Check if message is a command that can be executed
     commands.checkIfValidCmd(msg, cmd).then(msgValidCmd => {
-      console.log(msgValidCmd);
       if (msgValidCmd) {
         commands.executeCmd(msg, cmd);
       } else {
