@@ -529,15 +529,26 @@ function clear(msg, num) {
 
 module.exports = {
   commands: new Map(),
-  loadCommands: function(msg) {
+  categories: new Map(),
+  registerCommands: function(msg) {
+    //Search the modules for commands
     var modules = fs.readdirSync('./src/modules');
     for(var module of modules) {
       var files = fs.readdirSync(`./src/modules/${module}`);
       for(var file of files) {
         var commands = require(`./modules/${module}/${file}`);
-        var command = new commands;
-        console.log(command)
+        var command = new commands();
+        console.log(command);
+
+        if(!this.categories.has(module)) {
+          //Add a category
+          var category = new bot.Category(module);
+          this.categories.set(category.name, category);
+        }
+        //Add command to the list of commands
         this.commands.set(command.name, command);
+        //Add command to the category
+        this.categories.get(module).addCommand(command);
       }
     }
   },
@@ -601,7 +612,7 @@ module.exports = {
   executeCmd: async function(msg, cmd) {
     //Execute the commandd
     await commands[cmd[0]].execute(msg)
-    module.exports.commands.get(cmd[0]).execute(msg);
+    module.exports.commands.get(cmd[0]).execute(msg, msg.content.split(" ").slice(1));
   },
 
   modifyText: function(file, text, value) {
