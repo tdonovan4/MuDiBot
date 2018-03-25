@@ -528,6 +528,19 @@ function clear(msg, num) {
 }
 
 module.exports = {
+  commands: new Map(),
+  loadCommands: function(msg) {
+    var modules = fs.readdirSync('./src/modules');
+    for(var module of modules) {
+      var files = fs.readdirSync(`./src/modules/${module}`);
+      for(var file of files) {
+        var commands = require(`./modules/${module}/${file}`);
+        var command = new commands;
+        console.log(command)
+        this.commands.set(command.name, command);
+      }
+    }
+  },
   /*
    *Check if the message author has permission
    *to do the command, return true or false
@@ -588,6 +601,7 @@ module.exports = {
   executeCmd: async function(msg, cmd) {
     //Execute the commandd
     await commands[cmd[0]].execute(msg)
+    module.exports.commands.get(cmd[0]).execute(msg);
   },
 
   modifyText: function(file, text, value) {
