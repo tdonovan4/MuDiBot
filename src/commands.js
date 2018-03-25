@@ -616,6 +616,7 @@ module.exports = {
     module.exports.commands.get(cmd[0]).execute(msg, msg.content.split(" ").slice(1));
   },
 
+  //TODO: remove
   modifyText: function(file, text, value) {
     fs.readFile(file, 'utf8', function(err, data) {
       if (err) {
