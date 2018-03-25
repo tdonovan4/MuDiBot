@@ -44,6 +44,15 @@ module.exports = {
       this.category = commandInfo.category;
       this.permLvl = commandInfo.permLvl;
     }
+  },
+  Category: class {
+    constructor(name) {
+      this.name = name;
+      this.commands = new Map();
+    }
+    addCommand(command) {
+      this.commands.set(command.name, command);
+    }
   }
 }
 
@@ -51,7 +60,7 @@ const commands = require('./commands.js')
 const player = require('./audio-player.js');
 const levels = require('./levels.js');
 
-commands.loadCommands();
+commands.registerCommands();
 /*
  *Function fired when a message is posted
  *to check if the message is calling a command
