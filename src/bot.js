@@ -36,6 +36,14 @@ module.exports = {
   },
   client: function() {
     return client;
+  },
+  Command: class {
+    constructor(commandInfo) {
+      this.name = commandInfo.name;
+      this.aliases = commandInfo.aliases;
+      this.category = commandInfo.category;
+      this.permLvl = commandInfo.permLvl;
+    }
   }
 }
 
@@ -43,6 +51,7 @@ const commands = require('./commands.js')
 const player = require('./audio-player.js');
 const levels = require('./levels.js');
 
+commands.loadCommands();
 /*
  *Function fired when a message is posted
  *to check if the message is calling a command
@@ -50,7 +59,6 @@ const levels = require('./levels.js');
 client.on('message', msg => {
   //Ignore bot
   if (msg.author.bot) return;
-
   //Check if the author is not the bot
   if (msg.author != client.user) {
     let cmd = msg.content.slice(config.prefix.length);
@@ -60,6 +68,7 @@ client.on('message', msg => {
 
     //Check if message is a command that can be executed
     commands.checkIfValidCmd(msg, cmd).then(msgValidCmd => {
+      console.log(msgValidCmd);
       if (msgValidCmd) {
         commands.executeCmd(msg, cmd);
       } else {
