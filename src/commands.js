@@ -539,7 +539,6 @@ module.exports = {
       for(var file of files) {
         var commands = require(`./modules/${module}/${file}`);
         var command = new commands();
-        console.log(command);
 
         if(!this.categories.has(module)) {
           //Add a category
