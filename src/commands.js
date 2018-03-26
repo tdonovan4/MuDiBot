@@ -534,21 +534,30 @@ module.exports = {
   registerCommands: function(msg) {
     //Search the modules for commands
     var modules = fs.readdirSync('./src/modules');
-    for(var module of modules) {
+    for (var module of modules) {
       var files = fs.readdirSync(`./src/modules/${module}`);
-      for(var file of files) {
-        var commands = require(`./modules/${module}/${file}`);
-        var command = new commands();
-
-        if(!this.categories.has(module)) {
-          //Add a category
-          var category = new bot.Category(module);
-          this.categories.set(category.name, category);
+      for (var file of files) {
+        var keys = require(`./modules/${module}/${file}`);
+        //Check if object
+        if(typeof keys != 'object') {
+          keys = {keys}
         }
-        //Add command to the list of commands
-        this.commands.set(command.name, command);
-        //Add command to the category
-        this.categories.get(module).addCommand(command);
+        for (key in keys) {
+          //Check if the key is a subclass of Command
+          if (keys[key].prototype instanceof bot.Command) {
+            var command = new keys[key]();
+
+            if (!this.categories.has(module)) {
+              //Add a category
+              var category = new bot.Category(module);
+              this.categories.set(category.name, category);
+            }
+            //Add command to the list of commands
+            this.commands.set(command.name, command);
+            //Add command to the category
+            this.categories.get(module).addCommand(command);
+          }
+        }
       }
     }
   },
