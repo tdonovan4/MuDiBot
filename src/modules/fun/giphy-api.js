@@ -23,7 +23,7 @@ module.exports = {
     constructor() {
       super({
         name: 'gifrandom',
-        aliases: [],
+        aliases: ['gifr'],
         category: 'fun',
         permLvl: 1
       });
