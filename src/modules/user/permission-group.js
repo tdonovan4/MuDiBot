@@ -5,7 +5,7 @@ const config = require('../../args.js').getConfig()[1];
 var lang = require('../../localization.js').getLocalization();
 
 module.exports = {
-  setGroupCommand: class extends bot.Command {
+  SetGroupCommand: class extends bot.Command {
     constructor() {
       super({
         name: 'setgroup',
@@ -18,7 +18,7 @@ module.exports = {
       await module.exports.setGroup(msg, msg.mentions.users.first(), args[1]);
     }
   },
-  unsetGroupCommand: class extends bot.Command {
+  UnsetGroupCommand: class extends bot.Command {
     constructor() {
       super({
         name: 'unsetgroup',
@@ -31,7 +31,7 @@ module.exports = {
       await module.exports.unsetGroup(msg, msg.mentions.users.first(), args[1]);
     }
   },
-  purgeGroupsCommand: class extends bot.Command {
+  PurgeGroupsCommand: class extends bot.Command {
     constructor() {
       super({
         name: 'purgegroups',

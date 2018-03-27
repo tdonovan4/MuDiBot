@@ -4,7 +4,7 @@ const config = require('../../args.js').getConfig()[1];
 const fs = require('fs');
 var client = bot.client();
 
-module.exports = class statusCommand extends bot.Command {
+module.exports = class StatusCommand extends bot.Command {
   constructor() {
     super({
       name: 'status',

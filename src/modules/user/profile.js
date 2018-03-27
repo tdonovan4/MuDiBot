@@ -6,7 +6,7 @@ const mustache = require('mustache');
 var config = require('../../args.js').getConfig()[1];
 var lang = require('../../localization.js').getLocalization();
 
-module.exports = class profileCommand extends bot.Command {
+module.exports = class ProfileCommand extends bot.Command {
   constructor() {
     super({
       name: 'profile',

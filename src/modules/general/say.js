@@ -2,7 +2,7 @@ const bot = require('../../bot.js');
 var lang = require('../../localization.js').getLocalization();
 var client = bot.client();
 
-module.exports = class sayCommand extends bot.Command {
+module.exports = class SayCommand extends bot.Command {
   constructor() {
     super({
       name: 'say',
