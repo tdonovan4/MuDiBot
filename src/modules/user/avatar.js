@@ -1,7 +1,7 @@
 const bot = require('../../bot.js');
 var lang = require('../../localization.js').getLocalization();
 
-module.exports = class avatarCommand extends bot.Command {
+module.exports = class AvatarCommand extends bot.Command {
   constructor() {
     super({
       name: 'avatar',

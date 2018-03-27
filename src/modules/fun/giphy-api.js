@@ -3,7 +3,7 @@ const https = require('https');
 var config = require('../../args.js').getConfig()[1];
 
 module.exports = {
-  gifCommand: class extends bot.Command {
+  GifCommand: class extends bot.Command {
     constructor() {
       super({
         name: 'gif',
@@ -19,7 +19,7 @@ module.exports = {
       }
     }
   },
-  gifRandomCommand: class extends bot.Command {
+  GifRandomCommand: class extends bot.Command {
     constructor() {
       super({
         name: 'gifrandom',

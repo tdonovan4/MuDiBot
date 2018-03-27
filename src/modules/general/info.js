@@ -5,7 +5,7 @@ var lang = require('../../localization.js').getLocalization();
 var client = bot.client();
 var pjson = require('../../../package.json');
 
-module.exports = class infoCommand extends bot.Command {
+module.exports = class InfoCommand extends bot.Command {
   constructor() {
     super({
       name: 'info',
