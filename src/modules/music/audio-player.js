@@ -9,7 +9,7 @@ var queue = [];
 var voiceConnection;
 
 module.exports = {
-  playCommand: class extends bot.Command {
+  PlayCommand: class extends bot.Command {
     constructor() {
       super({
         name: 'play',
@@ -23,7 +23,7 @@ module.exports = {
     }
   },
   //Stop playing the audio and leave channel
-  stopCommand: class extends bot.Command {
+  StopCommand: class extends bot.Command {
     constructor() {
       super({
         name: 'stop',
@@ -41,7 +41,7 @@ module.exports = {
     }
   },
   //Skip song
-  skipCommand: class extends bot.Command {
+  SkipCommand: class extends bot.Command {
     constructor() {
       super({
         name: 'skip',
@@ -58,7 +58,7 @@ module.exports = {
       } catch (stream) {}
     }
   },
-  queueCommand: class extends bot.Command {
+  QueueCommand: class extends bot.Command {
     constructor() {
       super({
         name: 'queue',
