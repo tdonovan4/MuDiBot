@@ -486,6 +486,7 @@ var commands = {
 
 var keys = Object.keys(commands);
 
+//TODO: delete
 //Function that fetch, check and delete messages
 function clear(msg, num) {
   //Add command and users to clear to list
