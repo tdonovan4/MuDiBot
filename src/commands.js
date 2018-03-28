@@ -356,7 +356,7 @@ var commands = {
 
   skip: {
     //Skip to next song in queue
-    permLvl: "roleMember",
+    permLvl: 1,
     category: "Music",
     execute: function(msg) {
       player.skip(msg);

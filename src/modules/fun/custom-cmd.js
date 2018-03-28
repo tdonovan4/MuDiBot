@@ -83,6 +83,7 @@ module.exports = {
         name: 'custcmdremove',
         aliases: ['ccrem'],
         category: 'fun',
+        //TODO: Reduce to 1, execute only if creator or permLvl >= 3
         permLvl: 3
       });
     }

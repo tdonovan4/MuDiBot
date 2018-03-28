@@ -37,7 +37,6 @@ module.exports = {
   }
 }
 
-
 function get(url) {
   return new Promise(function(resolve) {
     https.get(url, (res) => {
