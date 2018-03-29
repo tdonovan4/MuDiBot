@@ -7,28 +7,6 @@ var config = require('./args.js').getConfig()[1];
 //For localization
 var lang = require('./localization.js').getLocalization();
 
-//Log to the discord user  with the token
-var startTime;
-client.login(config.botToken)
-  .then(startTime = Date.now()).catch(() => {
-    console.log(lang.error.invalidArg.token);
-    process.exitCode = 1;
-    process.exit();
-  });
-
-//Start the bot
-client.on('ready', () => {
-  console.log(mustache.render(lang.general.logged, client));
-  console.log(lang.general.language);
-  //Set status
-  client.user.setActivity(config.currentStatus);
-  //Display startup time
-  var time = Date.now() - startTime; +
-  console.log(mustache.render(lang.general.startupTime, {
-    time
-  }));
-});
-
 module.exports = {
   printMsg: function(msg, text) {
     console.log(text);
@@ -42,12 +20,14 @@ module.exports = {
       this.name = commandInfo.name;
       this.aliases = commandInfo.aliases;
       this.category = commandInfo.category;
+      this.priority = commandInfo.priority;
       this.permLvl = commandInfo.permLvl;
     }
   },
   Category: class {
-    constructor(name) {
-      this.name = name;
+    constructor(categoryInfo) {
+      this.name = categoryInfo.name;
+      this.priority = categoryInfo.priority;
       this.commands = new Map();
     }
     addCommand(command) {
@@ -56,11 +36,38 @@ module.exports = {
   }
 }
 
+//Log to the discord user  with the token
+var startTime;
+client.login(config.botToken)
+  .then(startTime = Date.now()).catch(() => {
+    console.log(lang.error.invalidArg.token);
+    process.exitCode = 1;
+    process.exit();
+  });
+
 const commands = require('./commands.js')
+
+//Start the bot
+client.on('ready', () => {
+  console.log(mustache.render(lang.general.logged, client));
+  console.log(lang.general.language);
+
+  //Register stuff
+  commands.registerCategories(config.categories);
+  commands.registerCommands();
+
+  //Set status
+  client.user.setActivity(config.currentStatus);
+  //Display startup time
+  var time = Date.now() - startTime; +
+  console.log(mustache.render(lang.general.startupTime, {
+    time
+  }));
+});
+
 const player = require('./audio-player.js');
 const levels = require('./levels.js');
 
-commands.registerCommands();
 /*
  *Function fired when a message is posted
  *to check if the message is calling a command

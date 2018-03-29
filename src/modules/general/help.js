@@ -2,6 +2,7 @@ const config = require('../../args.js').getConfig()[1];
 const bot = require('../../bot.js')
 const mustache = require('mustache');
 const commands = require('../../commands.js');
+var categories = commands.categories;
 var lang = require('../../localization.js').getLocalization();
 
 module.exports = class helpCommand extends bot.Command {
@@ -10,86 +11,71 @@ module.exports = class helpCommand extends bot.Command {
       name: 'help',
       aliases: [],
       category: 'general',
+      priority: 10,
       permLvl: 0
     });
   }
   execute(msg, args) {
     if (args[0] != undefined) {
       //Check if args is a valid command
-      if (args[0] in commands) {
+      if (commands.commands.has(args[0])) {
         //Valid command
-        printCmd(msg, commands);
+        printCmd(msg, args, commands.commands.get(args[0]));
       } else {
         bot.printMsg(msg, lang.error.invalidArg.cmd);
       }
     } else {
       //Print all commands
-      printCmds(msg, commands.commands);
+      printCmds(msg);
     }
   }
 }
 
 //Create the help message
-function printCmds(msg, cmds) {
-
-  var categories = {
-    General: [],
-    User: [],
-    Fun: [],
-    Music: [],
-    Warnings: [],
-    Administration: []
-  };
-
-  //Add commands to categories
-  for (var i = 0; i < cmds.length; i++) {
-    if (cmds[i][1].aliasOf == undefined) {
-      var category = cmds[i][1].category;
-      if (category in categories) {
-        categories[category].push(cmds[i][0]);
-      } else {
-        console.log(mustache.render(lang.error.invalidArg.category, {
-          cmds: cmds[i][0]
-        }));
-      }
-    }
-  }
-
-
-  categories = Object.entries(categories)
-
+function printCmds(msg) {
   var numSpace = 18;
   var rows = '';
   var rowNum = 0;
   var columnsFinished = 0;
 
+  //Order categories
+  categories = new Map(Array.from(categories).sort((a, b) => {
+    return b[1].priority - a[1].priority
+  }));
+
   //Create message
-  while (columnsFinished < categories.length) {
+  while (columnsFinished < categories.size) {
     var row = '';
     if (rowNum == 0) {
       //Insert categories
-      for (var i = 0; i < categories.length; i++) {
-        var chars = `[${categories[i][0]}]`;
+      categories.forEach(function(category) {
+        var chars = `[${category.name}]`;
         row += chars + Array(numSpace - chars.length).join(" ")
-      }
+
+        //Order commands
+        category.commands = new Map(Array.from(category.commands).sort((a, b) => {
+          return b[1].priority - a[1].priority
+        }));
+      });
     } else {
       //Insert commands
       //Add a space before (prettier)
       row = ' '
-      for (var i = 0; i < categories.length; i++) {
+      categories.forEach(function(category) {
         var chars = '';
-        //Check if there is still commands
-        if (categories[i][1].length > 0) {
-          chars = config.prefix + categories[i][1][0];
-          //Remove the command
-          categories[i][1].splice(0, 1);
-          if (categories[i][1].length == 0) {
-            //No more commands, the column is finished
+        var command = category.commands.values().next();
+
+        if (!command.done) {
+          chars = config.prefix + command.value.name;
+          //Delete command
+          categories.get(category.name).commands.delete(command.value.name);
+          if (category.commands.values().next().done) {
+            //Done
             columnsFinished++;
           }
         }
-        row += chars + Array(numSpace - chars.length).join(" ");
-      }
+        row += chars + Array(numSpace - chars.length).join(' ');
+      });
     }
     rows += `${row}\n`;
     rowNum++;
@@ -101,9 +87,8 @@ function printCmds(msg, cmds) {
     config
   }));
 }
-function printCmd(msg, cmds) {
-  var args = msg.content.split(" ").slice(1);
-  var cmd = cmds[args[0]];
+
+function printCmd(msg, args, cmd) {
   var help = lang.help[args[0]];
 
   if (help != undefined) {
@@ -119,7 +104,7 @@ function printCmd(msg, cmds) {
     embed.title = config.prefix + args[0];
     embed.color = 0x00ff00;
 
-    var aliases = Object.entries(cmds).filter(x => x[1].aliasOf == args[0]);
+    var aliases = cmd.aliases;
     //Check for aliases
     if (aliases.length > 0) {
       embed.setDescription(`${lang.help.alias} ${aliases.map(x => `\`$${x[0]}\``).join(' ')}`)

@@ -8,6 +8,7 @@ module.exports = class SetChannelCommand extends bot.Command {
       name: 'setchannel',
       aliases: [],
       category: 'administration',
+      priority: 7,
       permLvl: 3
     });
   }

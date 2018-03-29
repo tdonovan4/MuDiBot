@@ -11,6 +11,7 @@ module.exports = class ClearlogCommand extends bot.Command {
       name: 'clearlog',
       aliases: [],
       category: 'administration',
+      priority: 10,
       permLvl: 3
     });
   }

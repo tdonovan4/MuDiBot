@@ -9,6 +9,7 @@ module.exports = {
         name: 'gif',
         aliases: [],
         category: 'fun',
+        priority: 10,
         permLvl: 1
       });
     }
@@ -25,6 +26,7 @@ module.exports = {
         name: 'gifrandom',
         aliases: ['gifr'],
         category: 'fun',
+        priority: 9,
         permLvl: 1
       });
     }
