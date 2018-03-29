@@ -8,6 +8,7 @@ module.exports = {
         name: 'setreward',
         aliases: [],
         category: 'administration',
+        priority: 1,
         permLvl: 3
       });
     }
@@ -21,6 +22,7 @@ module.exports = {
         name: 'unsetreward',
         aliases: [],
         category: 'administration',
+        priority: 0,
         permLvl: 3
       });
     }

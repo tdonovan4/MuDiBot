@@ -8,6 +8,7 @@ module.exports = {
         name: 'kill',
         aliases: [],
         category: 'administration',
+        priority: 9,
         permLvl: 3
       });
     }
@@ -23,6 +24,7 @@ module.exports = {
         name: 'restart',
         aliases: [],
         category: 'administration',
+        priority: 8,
         permLvl: 3
       });
     }

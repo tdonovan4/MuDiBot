@@ -13,6 +13,7 @@ module.exports = {
         name: 'warn',
         aliases: [],
         category: 'warnings',
+        priority: 10,
         permLvl: 2
       });
     }
@@ -26,6 +27,7 @@ module.exports = {
         name: 'unwarn',
         aliases: [],
         category: 'warnings',
+        priority: 9,
         permLvl: 2
       });
     }
@@ -39,6 +41,7 @@ module.exports = {
         name: 'warnlist',
         aliases: [],
         category: 'warnings',
+        priority: 8,
         permLvl: 1
       });
     }
@@ -80,6 +83,7 @@ module.exports = {
         name: 'warnpurge',
         aliases: [],
         category: 'warnings',
+        priority: 7,
         permLvl: 2
       });
     }
