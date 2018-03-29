@@ -532,7 +532,14 @@ function clear(msg, num) {
 module.exports = {
   commands: new Map(),
   categories: new Map(),
-  registerCommands: function(msg) {
+  registerCategories: function(categories) {
+    for(category of categories) {
+      //Add the category
+      var category = new bot.Category(category);
+      this.categories.set(category.name, category);
+    }
+  },
+  registerCommands: function() {
     //Search the modules for commands
     var modules = fs.readdirSync('./src/modules');
     for (var module of modules) {
@@ -547,11 +554,8 @@ module.exports = {
           //Check if the key is a subclass of Command
           if (keys[key].prototype instanceof bot.Command) {
             var command = new keys[key]();
-
             if (!this.categories.has(module)) {
-              //Add a category
-              var category = new bot.Category(module);
-              this.categories.set(category.name, category);
+              this.registerCategories([module]);
             }
             //Add command to the list of commands
             this.commands.set(command.name, command);

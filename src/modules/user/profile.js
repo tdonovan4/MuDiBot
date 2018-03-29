@@ -12,6 +12,7 @@ module.exports = class ProfileCommand extends bot.Command {
       name: 'profile',
       aliases: [],
       category: 'user',
+      priority: 9,
       permLvl: 0
     });
   }
