@@ -24,6 +24,7 @@ module.exports = {
         name: 'custcmd',
         aliases: ['cc'],
         category: 'fun',
+        priority: 2,
         permLvl: 1
       });
     }
@@ -70,6 +71,7 @@ module.exports = {
         name: 'custcmdlist',
         aliases: ['cclist'],
         category: 'fun',
+        priority: 1,
         permLvl: 1
       });
     }
@@ -83,6 +85,7 @@ module.exports = {
         name: 'custcmdremove',
         aliases: ['ccrem'],
         category: 'fun',
+        priority: 0,
         //TODO: Reduce to 1, execute only if creator or permLvl >= 3
         permLvl: 3
       });

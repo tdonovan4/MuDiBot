@@ -86,6 +86,33 @@ module.exports = {
   They also can be activated or deactivated.
   All commands are activated by default.*/
 
+  categories: [
+    {
+      name: 'general',
+      priority: 5
+    },
+    {
+      name: 'user',
+      priority: 4
+    },
+    {
+      name: 'fun',
+      priority: 3
+    },
+    {
+      name: 'music',
+      priority: 2
+    },
+    {
+      name: 'warnings',
+      priority: 1
+    },
+    {
+      name: 'administration',
+      priority: 0
+    }
+  ],
+
   /*---------------
   -Category: General-
   ---------------*/

@@ -15,6 +15,7 @@ module.exports = {
         name: 'play',
         aliases: [],
         category: 'music',
+        priority: 10,
         permLvl: 0
       });
     }
@@ -29,6 +30,7 @@ module.exports = {
         name: 'stop',
         aliases: [],
         category: 'music',
+        priority: 9,
         permLvl: 0
       });
     }
@@ -47,6 +49,7 @@ module.exports = {
         name: 'skip',
         aliases: [],
         category: 'music',
+        priority: 8,
         permLvl: 0
       });
     }
@@ -64,6 +67,7 @@ module.exports = {
         name: 'queue',
         aliases: [],
         category: 'music',
+        priority: 7,
         permLvl: 0
       });
     }

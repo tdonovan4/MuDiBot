@@ -8,6 +8,7 @@ module.exports = class SayCommand extends bot.Command {
       name: 'say',
       aliases: [],
       category: 'general',
+      priority: 0,
       permLvl: 3
     });
   }

@@ -11,6 +11,7 @@ module.exports = class InfoCommand extends bot.Command {
       name: 'info',
       aliases: [],
       category: 'general',
+      priority: 8,
       permLvl: 0
     });
   }

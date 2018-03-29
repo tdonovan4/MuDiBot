@@ -7,6 +7,7 @@ module.exports = class PingCommand extends bot.Command {
       name: 'ping',
       aliases: [],
       category: 'general',
+      priority: 9,
       permLvl: 0
     });
   }

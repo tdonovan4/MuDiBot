@@ -10,6 +10,7 @@ module.exports = class StatusCommand extends bot.Command {
       name: 'status',
       aliases: [],
       category: 'general',
+      priority: 1,
       permLvl: 3
     });
   }

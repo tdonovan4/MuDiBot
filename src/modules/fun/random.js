@@ -8,6 +8,7 @@ module.exports = {
         name: 'flipcoin',
         aliases: [],
         category: 'fun',
+        priority: 8,
         permLvl: 0
       });
     }
@@ -21,6 +22,7 @@ module.exports = {
         name: 'roll',
         aliases: [],
         category: 'fun',
+        priority: 7,
         permLvl: 0
       });
     }
