@@ -46,7 +46,7 @@ module.exports = {
       });
     }
     async execute(msg, args) {
-      if (args == 'all') {
+      if (args[0] == 'all') {
         //List all users warnings
         var users = await storage.getUsers(msg);
 
