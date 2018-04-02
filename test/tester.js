@@ -6,7 +6,6 @@ const mustache = require('mustache');
 const sql = require('sqlite');
 const fs = require('fs');
 const rewire = require('rewire');
-const giphy = require('../src/giphy-api.js');
 var testMessages = rewire('./test-resources/test-messages.js');
 var msg = testMessages.msg1;
 
@@ -19,23 +18,29 @@ var client = sinon.stub(Discord, 'Client');
 client.returns(require('./test-resources/test-client.js'));
 var msgSend = sinon.spy(msg.channel, 'send')
 var reply = sinon.spy(msg, 'reply')
-var search = sinon.stub(giphy, 'search');
-search.resolves('A gif');
-var random = sinon.stub(giphy, 'random');
-random.resolves('A random gif');
+const giphy = rewire('../src/modules/fun/giphy-api.js');
+giphy.__set__({
+  search: function() {
+    return 'A gif';
+  },
+  random: function() {
+    return 'A random gif';
+  }
+})
+
 const storage = require('../src/storage.js');
 const levels = rewire('../src/levels.js');
-const permGroups = require('../src/permission-group.js');
-const warnings = require('../src/warnings.js');
+const permGroups = rewire('../src/modules/user/permission-group.js');
+const warnings = require('../src/modules/warnings/warnings.js');
 const defaultChannel = require('../src/default-channel.js');
 
 //Init bot
 const bot = require('../src/bot.js');
 
 //Init stuff that need bot
-const customCmd = require('../src/custom-cmd.js');
-const audioPlayer = rewire('../src/audio-player.js');
-var setGame = sinon.spy(bot.client().user, 'setGame');
+const customCmd = require('../src/modules/fun/custom-cmd.js');
+const audioPlayer = rewire('../src/modules/music/audio-player.js');
+var setActivity = sinon.spy(bot.client().user, 'setActivity');
 var channelSend = sinon.spy(bot.client().channels.get('42'), 'send');
 var printMsg = sinon.stub(bot, 'printMsg');
 printMsg.returnsArg(1);
@@ -44,10 +49,14 @@ printMsg.returnsArg(1);
 const commands = require('../src/commands.js');
 var checkPerm = sinon.stub(commands, 'checkPerm');
 
+//Register stuff
+commands.registerCategories(config.categories);
+commands.registerCommands();
+
 function deleteDatabase() {
   //Delete the test database if it exists
   var path = './test/test-resources/test-database.db';
-  if(fs.existsSync(path)) {
+  if (fs.existsSync(path)) {
     fs.unlinkSync(path);
   }
 }
@@ -75,7 +84,7 @@ describe('Test storage', function() {
 
       //Test the array
       expectedUserId = ['041025599435591424', '287350581898558262'];
-      for(let i = 0; i < response.length; i++) {
+      for (let i = 0; i < response.length; i++) {
         expect(response[i].serverId).to.equal('357156661105365963');
         expect(response[i].userId).to.equal(expectedUserId[i]);
       }
@@ -132,7 +141,7 @@ describe('Test permission groups', function() {
   });
   describe('Test purgeGroups', function() {
     it('Should return invalid user', function() {
-      permGroups.purgeGroups(msg);
+      permGroups.__get__('purgeGroups')(msg);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.invalidArg.user);
     });
     it('Should purge TestUser\'s groups', async function() {
@@ -140,7 +149,7 @@ describe('Test permission groups', function() {
       msg.mentions.users.set('041025599435591424', {
         id: '041025599435591424'
       });
-      await permGroups.purgeGroups(msg);
+      await permGroups.__get__('purgeGroups')(msg);
       var response = await storage.getUser(msg, '041025599435591424');
       expect(response.groups).to.equal(null);
     })
@@ -276,7 +285,7 @@ describe('Test levels', function() {
       /*This should be executed while the XP is still
         in cooldown because of the test before */
       await modifyUserXp(msg, '041025599435591424', 0);
-      for(var i = 0; i < 5; i++) {
+      for (var i = 0; i < 5; i++) {
         await levels.newMessage(msg);
       }
       var user = await storage.getUser(msg, '041025599435591424');
@@ -299,12 +308,12 @@ describe('Test levels', function() {
       await levels.newMessage(msg);
       //Just one big expect to test if the returned value is correct
       expect(printMsg.lastCall.returnValue).to.equal(mustache.render(lang.general.member.leveled, {
-        msg,
-        progression: 10
-      }) + '\n' +
-      mustache.render(lang.general.member.rankUp, {
-        rank: 'Farmer'
-      }) + '!');
+          msg,
+          progression: 10
+        }) + '\n' +
+        mustache.render(lang.general.member.rankUp, {
+          rank: 'Farmer'
+        }) + '!');
     });
     it('Should set the reward for the user (permission group)', async function() {
       //Set the reward for warrior
@@ -331,17 +340,18 @@ describe('Test levels', function() {
   });
 });
 describe('Test the custom commands', function() {
-  describe('Test addCmd and getCmds', function() {
-    it('addCmd should return wrong usage', async function() {
-      await customCmd.addCmd(msg, ['']);
+  describe('Test custcmd and getCmds', function() {
+    it('custcmd should return wrong usage', async function() {
+      msg.content = '$custcmd';
+      await commands.executeCmd(msg, ['custcmd']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.usage);
     });
     it('getCmds should return empty array', async function() {
       var response = await customCmd.getCmds(msg);
-      expect(response).to.deep.equal([]);
     });
-    it('addCmd should add the command to the database', async function() {
-      await customCmd.addCmd(msg, ['testCmd1', 'say', 'This is a test']);
+    it('custcmd should add the command to the database', async function() {
+      msg.content = '$custcmd testCmd1 say This is a test';
+      await commands.executeCmd(msg, ['custcmd']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.custcmd.cmdAdded);
     });
     it('getCmds should return testCmd1', async function() {
@@ -354,22 +364,26 @@ describe('Test the custom commands', function() {
         userId: '041025599435591424',
       }]);
     })
-    it('addCmd should return wrong usage when using a too long name', async function() {
-      await customCmd.addCmd(msg, ['thisNameIsReallyTooLongToBeACustomCmd', 'say', 'This is a test']);
+    it('custcmd should return wrong usage when using a too long name', async function() {
+      msg.content = '$custcmd thisNameIsReallyTooLongToBeACustomCmd say This is a test';
+      await commands.executeCmd(msg, ['custcmd']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.usage);
     });
-    it('addCmd should return that the command already exists', async function() {
-      await customCmd.addCmd(msg, ['testCmd1', 'say', 'This is a test']);
+    it('custcmd should return that the command already exists', async function() {
+      msg.content = '$custcmd testCmd1 say This is a test';
+      await commands.executeCmd(msg, ['custcmd']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.cmdAlreadyExists);
     });
-    it('addCmd should return that the user has too many commands', async function() {
+    it('custcmd should return that the user has too many commands', async function() {
+      msg.content = '$custcmd testCmd2 say This is a test';
       config.custcmd.maxCmdsPerUser = 1;
-      await customCmd.addCmd(msg, ['testCmd2', 'say', 'This is a test']);
+      await commands.executeCmd(msg, ['custcmd']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.tooMuch.cmdsUser);
     });
-    it('addCmd should add the commandd to the database when using an administrator', async function() {
+    it('custcmd should add the commandd to the database when using an administrator', async function() {
+      msg.content = '$custcmd testCmd2 say This is a test';
       msg.member.permissions.set('ADMINISTRATOR');
-      await customCmd.addCmd(msg, ['testCmd2', 'say', 'This is a test']);
+      await commands.executeCmd(msg, ['custcmd']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.custcmd.cmdAdded);
     });
     it('getCmds should return testCmd1 and testCmd2', async function() {
@@ -391,11 +405,13 @@ describe('Test the custom commands', function() {
   });
   describe('Test removeCmd', function() {
     it('Should return command not found', async function() {
-      await customCmd.removeCmd(msg, ['testCmd3']);
+      msg.content = '$custcmd testCmd3';
+      await commands.executeCmd(msg, ['custcmdremove']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.notFound.cmd);
     });
     it('Should remove testCmd2', async function() {
-      await customCmd.removeCmd(msg, ['testCmd2']);
+      msg.content = '$custcmd testCmd2';
+      await commands.executeCmd(msg, ['custcmdremove']);
       var response = await customCmd.getCmds(msg);
       expect(printMsg.lastCall.returnValue).to.equal(lang.custcmdremove.cmdRemoved);
       expect(response).to.deep.equal([{
@@ -418,7 +434,8 @@ describe('Test the custom commands', function() {
     });
     it('Should return all custom commands', async function() {
       msg.author.id = '357156661105365963';
-      await customCmd.addCmd(msg, ['testCmd2', 'say', 'This is a test']);
+      msg.content = '$custcmd testCmd2 say This is a test';
+      await commands.executeCmd(msg, ['custcmd']);
       msg.author.id = '041025599435591424';
       await customCmd.printCmds(msg, []);
       var response = msgSend.getCall(msgSend.callCount - 2).returnValue;
@@ -426,16 +443,20 @@ describe('Test the custom commands', function() {
       expect(response).to.have.string('testCmd2');
     })
     it('Should return all TestUser\'s custom commands', async function() {
-      await customCmd.addCmd(msg, ['testCmd3', 'say', 'This is a test']);
+      msg.content = '$custcmd testCmd3 say This is a test';
+      await commands.executeCmd(msg, ['custcmd']);
       await customCmd.printCmds(msg, ['']);
       var response = msgSend.getCall(msgSend.callCount - 2).returnValue;
       expect(response).to.have.string('testCmd1');
       expect(response).to.have.string('testCmd3');
     });
     it('Should return that the list is empty', async function() {
-      await customCmd.removeCmd(msg, ['testCmd1']);
-      await customCmd.removeCmd(msg, ['testCmd2']);
-      await customCmd.removeCmd(msg, ['testCmd3']);
+      msg.content = '$custcmdremove testCmd1';
+      await commands.executeCmd(msg, ['custcmdremove']);
+      msg.content = '$custcmdremove testCmd2';
+      await commands.executeCmd(msg, ['custcmdremove']);
+      msg.content = '$custcmdremove testCmd3';
+      await commands.executeCmd(msg, ['custcmdremove']);
       await customCmd.printCmds(msg, ['']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.custcmdlist.empty);
     });
@@ -473,7 +494,8 @@ describe('Test the audio player', function() {
           }
         }
       });
-      audioPlayer.stop(msg);
+      msg.content = '$stop';
+      new audioPlayer.StopCommand().execute(msg, ['']);
       expect(response).to.equal('disconnected');
       expect(printMsg.lastCall.returnValue).to.equal(lang.play.disconnected);
     });
@@ -493,22 +515,27 @@ describe('Test the audio player', function() {
           }
         }
       }
-      audioPlayer.skip(msg);
+      msg.content = '$skip';
+      new audioPlayer.SkipCommand().execute(msg, ['']);
       expect(response).to.equal('destroyed');
       expect(printMsg.lastCall.returnValue).to.equal(lang.play.skipped);
     });
   });
   describe('Test listQueue', function() {
     it('Should send empty queue', function() {
-      audioPlayer.listQueue(msg);
+      msg.content = '$queue';
+      new audioPlayer.QueueCommand().execute(msg, ['']);
       expect(msgSend.lastCall.returnValue).to.equal(lang.play.queue);
     });
     it('Should send a list containing the videos in queue', function() {
       //Set the videos
       audioPlayer.__set__({
-        queue: [[0, 'dog'], [1, 'cat']]
+        queue: [
+          [0, 'dog'],
+          [1, 'cat']
+        ]
       });
-      audioPlayer.listQueue(msg);
+      new audioPlayer.QueueCommand().execute(msg, ['']);
       expect(msgSend.lastCall.returnValue).to.equal(
         lang.play.queue + '\n "dog"\n "cat"'
       );
@@ -537,15 +564,15 @@ describe('Test warnings', function() {
     });
   });
   describe('Test list', function() {
-    it('Should return wrong usage', function() {
+    it('Should return wrong usage', async function() {
       msg.mentions.users.clear();
       msg.content = '$warnlist';
-      warnings.list(msg);
+      await commands.executeCmd(msg, ['warnlist']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.usage);
     });
     it('Should return no warnings', async function() {
       msg.content = '$warnlist all';
-      await warnings.list(msg);
+      await commands.executeCmd(msg, ['warnlist']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.warn.noWarns);
     });
     it('Should return all warnings', async function() {
@@ -562,21 +589,21 @@ describe('Test warnings', function() {
       await warnings.warn(msg, 2);
 
       msg.content = '$warnlist all';
-      await warnings.list(msg);
+      await commands.executeCmd(msg, ['warnlist']);
       expect(printMsg.lastCall.returnValue).to.equal(
         '<@041025599435591424>: 2 warnings\n<@357156661105365963>: 3 warnings');
     });
     it('Should return TestUser\'s warnings', async function() {
       msg.content = '$warnlist';
-      await warnings.list(msg);
+      await commands.executeCmd(msg, ['warnlist']);
       expect(printMsg.lastCall.returnValue).to.equal('<@041025599435591424>: 2 warnings');
     });
   });
   describe('Test purge', function() {
-    it('Should return wrong usage', function() {
+    it('Should return wrong usage', async function() {
       msg.mentions.users.clear();
       msg.content = '$warnpurge';
-      warnings.purge(msg);
+      await commands.executeCmd(msg, ['warnpurge']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.usage);
     });
     it('Should purge TestUser', async function() {
@@ -584,14 +611,14 @@ describe('Test warnings', function() {
         id: '041025599435591424'
       });
       msg.content = '$warnpurge';
-      await warnings.purge(msg);
+      await commands.executeCmd(msg, ['warnpurge']);
       var response = await storage.getUser(msg, '041025599435591424');
       expect(response.warnings).to.equal(0);
     });
     it('Should purge all', async function() {
       await warnings.warn(msg, 1);
       msg.content = '$warnpurge all';
-      await warnings.purge(msg);
+      await commands.executeCmd(msg, ['warnpurge']);
       var response = await storage.getUsers(msg);
       expect(response[0].warnings).to.equal(0);
       expect(response[1].warnings).to.equal(0);
@@ -636,12 +663,16 @@ describe('Test default-channel', function() {
     expect(response.name).to.equal('general');
   });
   it('Should set channel1 as default channel', async function() {
-    await defaultChannel.setChannel(msg, {id: '1'});
+    await defaultChannel.setChannel(msg, {
+      id: '1'
+    });
     var response = await defaultChannel.getChannel(testClient, member);
     expect(response.id).to.equal('1');
   });
   it('Should set general as default channel', async function() {
-    await defaultChannel.setChannel(msg, {id: '2'});
+    await defaultChannel.setChannel(msg, {
+      id: '2'
+    });
     var response = await defaultChannel.getChannel(testClient, member);
     expect(response.id).to.equal('2');
   });
@@ -734,15 +765,19 @@ describe('Test commands', function() {
   });
   describe('status', function() {
     it('Should change the status in config', function() {
-      var modifyText = sinon.stub(commands, 'modifyText');
+      var status = rewire('../src/modules/general/status.js');
+      var response;
+      status.__set__('modifyText', function(path, oldStatus, newStatus) {
+        response = newStatus;
+      });
 
       msg.content = '$status New status!';
-      commands.executeCmd(msg, ['status', 'New status!']);
+      new status().execute(msg, ['New status!']);
       //Check the API has been called with right argument
-      expect(setGame.lastCall.returnValue).to.equal('New status!');
+      expect(setActivity.lastCall.returnValue).to.equal('New status!');
       //Check if config was "modified" (stub) with righ argument
       //TODO: Better expect here
-      expect(modifyText.lastCall.args[2]).to.equal("currentStatus: 'New status!");
+      expect(response).to.equal("currentStatus: 'New status!");
     });
   });
   describe('say', function() {
@@ -859,14 +894,14 @@ describe('Test commands', function() {
   describe('gif', function() {
     it('Should return a gif', async function() {
       msg.content = '$gif dog';
-      await commands.executeCmd(msg, ['gif', 'dog']);
+      await new giphy.GifCommand().execute(msg, ['dog']);
       expect(msgSend.lastCall.returnValue).to.equal('A gif');
     });
   });
   describe('gifrandom', function() {
     it('Should return a random gif', async function() {
       msg.content = '$gifrandom dog';
-      await commands.executeCmd(msg, ['gifrandom', 'dog']);
+      await new giphy.GifRandomCommand().execute(msg, ['dog']);
       expect(msgSend.lastCall.returnValue).to.equal('A random gif');
     })
   });
@@ -906,7 +941,7 @@ describe('Test commands', function() {
       expect(result).to.equal(0);
     });
   });
-  describe('clearlog' , function() {
+  describe('clearlog', function() {
     it('Should delete nothing', async function() {
       msg.content = '$clearlog 1';
       await commands.executeCmd(msg, ['clearlog', '1']);

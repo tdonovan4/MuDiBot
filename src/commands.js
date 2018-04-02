@@ -1,12 +1,6 @@
 const Discord = require("discord.js");
 const bot = require('./bot.js');
-const warnings = require('./warnings.js');
-const player = require('./audio-player.js');
-const levels = require('./levels.js');
-const defaultChannel = require('./default-channel.js');
-const permGroup = require('./permission-group.js');
 const fs = require('fs');
-const mustache = require('mustache');
 const storage = require('./storage.js');
 var client = bot.client();
 var args = require('./args.js');
@@ -110,6 +104,6 @@ module.exports = {
   },
   executeCmd: async function(msg, cmd) {
     //Execute the commandd
-    module.exports.commands.get(cmd[0]).execute(msg, msg.content.split(" ").slice(1));
+    await module.exports.commands.get(cmd[0]).execute(msg, msg.content.split(" ").slice(1));
   },
 }

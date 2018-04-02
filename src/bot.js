@@ -65,7 +65,7 @@ client.on('ready', () => {
   }));
 });
 
-const player = require('./audio-player.js');
+const player = require('./modules/music/audio-player.js');
 const levels = require('./levels.js');
 
 /*
