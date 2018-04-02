@@ -697,6 +697,11 @@ describe('Validate if message is a command', function() {
     var response = await commands.checkIfValidCmd(msg, ['help']);
     expect(response).to.equal(true);
   })
+  it('Should return true with aliases', async function() {
+    msg.content = '$help';
+    var response = await commands.checkIfValidCmd(msg, ['cc']);
+    expect(response).to.equal(true);
+  });
   it('Should return false if command is deactivated', async function() {
     config.help.activated = false
     var response = await commands.checkIfValidCmd(msg, ['help']);
