@@ -88,7 +88,7 @@ client.on('message', msg => {
         commands.executeCmd(msg, cmd);
       } else {
         //Check if message is a custom command
-        const customCmd = require('./custom-cmd.js');
+        const customCmd = require('./modules/fun/custom-cmd.js');
 
         customCmd.getCmds(msg).then(custCmds => {
           var cmd = custCmds.find(x => x.name == msg.content);

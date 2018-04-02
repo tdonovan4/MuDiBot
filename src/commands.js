@@ -84,16 +84,15 @@ module.exports = {
     bot.printMsg(msg, lang.error.notEnoughPermissions);
     return false;
   },
-  checkIfValidCmd: async function(msg, cmd) {
-    var cmdActivated = config[cmd[0]] != undefined ? config[cmd[0]].activated : true;
-    var commands =module.exports.commands.get(cmd[0]);
+  checkIfValidCmd: async function(msg, args) {
+    var command = getCmd(args[0]);
 
-    //Check if message begins with prefix, if cmd is a valid command and is it's activated
-    if (msg.content.startsWith(config.prefix) && commands != null && cmdActivated) {
+    //Check if message begins with prefix, if cmd is a valid command
+    if (msg.content.startsWith(config.prefix) && command != null) {
       console.log(msg.author.username + ' - ' + msg.content);
 
       //Check if user has permission
-      result = await this.checkPerm(msg, commands.permLvl)
+      result = await this.checkPerm(msg, command.permLvl)
       if(result) {
         //Valid command that can be used by the user
         return true
@@ -102,8 +101,26 @@ module.exports = {
     //The command was not found or didn't execute
     return false
   },
-  executeCmd: async function(msg, cmd) {
+  executeCmd: async function(msg, args) {
     //Execute the commandd
-    await module.exports.commands.get(cmd[0]).execute(msg, msg.content.split(" ").slice(1));
+    await getCmd(args[0]).execute(msg, msg.content.split(" ").slice(1));
   },
+}
+
+function getCmd(arg) {
+  var command = module.exports.commands.get(arg);
+  if(!command) {
+    //Search if alias
+    module.exports.commands.forEach(function(aCommand) {
+      if(aCommand.aliases.includes(arg)) {
+        command = aCommand;
+        return;
+      }
+    });
+  }
+  //Check if activated
+  var cmdActivated = config[arg] != undefined ? config[arg].activated : true;
+  if(cmdActivated) {
+    return command;
+  }
 }
