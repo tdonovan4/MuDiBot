@@ -22,49 +22,45 @@ module.exports = class ClearlogCommand extends bot.Command {
     if (numToDel == null || isNaN(numToDel)) {
       numToDel = '50';
     }
-    clear(msg, numToDel);
+    //Add bot commands to list
+    var clearList = [];
+    commands.forEach(function(val) {
+      clearList.push(config.prefix + val.name);
+    });
+    //Add specials commands to clear to list
+    clearList = clearList.concat(config.clearlog.commandsToClear);
+    //Add users
+    var usersToClear = config.clearlog.usersToClear.filter(x => x != '');
+    //Remove empty string from list
+    clearList = clearList.filter(x => x != '');
+
+    clear(msg, clearList, usersToClear, numToDel);
   }
 }
 
 //Function that fetch, check and delete messages
-function clear(msg, num) {
-  //Add command and users to clear to list
-  var clearList = config.clearlog.commandsToClear.concat(config.clearlog.usersToClear);
-  //Add bot commands to list
-  var commandList = [];
-  commands.forEach(function(val) {
-    commandList.push(config.prefix + val.name);
-  });
-  clearList = clearList.concat(commandList);
-  //Remove empty string from list
-  clearList = clearList.filter(x => x != '');
+function clear(msg, strings, users, num) {
+  //Add bot user to list of users to delete
+  users.push(client.user.id);
 
-  //Fetch
+  //Fetch a specific number of messages
   msg.channel.fetchMessages({
       limit: parseInt(num)
     })
     .then(messages => {
+      messages = messages.array()
       console.log(lang.clearlog.maxNum + num);
-      var messages = messages.array();
-      var deletedMessages = 0;
+      //Filter message by author and content
+      messages = messages.filter(message => {
+        return users.some(user => user == message.author.id) ||
+          strings.some(string => message.content.startsWith(string));
+      });
+      var deletedMessages = messages.length;
 
-      //Check messages
-      for (var i = 0; i < messages.length; i++) {
-        //Delete commands from bot
-        if (messages[i].author.id === client.user.id) {
-          messages[i].delete()
-          deletedMessages++;
-        } else {
-          //Find and delete
-          for (var n = 0; n < clearList.length; n++) {
-            if (messages[i].content.substring(0, clearList[n].length) === clearList[n] || messages[i].author.id === clearList[n]) {
-              messages[i].delete()
-              deletedMessages++;
-              break
-            }
-          }
-        }
-      }
+      //Delete messages
+      messages.forEach(message => {
+        message.delete();
+      })
       console.log(mustache.render(lang.clearlog.deleted, {
         deletedMessages
       }));
