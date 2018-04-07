@@ -959,6 +959,42 @@ describe('Test commands', function() {
       var deletedMessages = testMessages.__get__('deletedMessages');
       expect(deletedMessages).to.deep.equal(['$ping', 'this', '$info', '$help help', 'a', '$profile']);
     })
+    it('Should delete message containing "This is a test"', async function() {
+      msg.mentions.users.clear();
+      msg.content = '$clearlog This is a test 10';
+      //Reset deletedMessages
+      testMessages.__set__('deletedMessages', []);
+      await commands.executeCmd(msg, ['clearlog']);
+      var deletedMessages = testMessages.__get__('deletedMessages');
+      expect(deletedMessages).to.deep.equal(['This is a test 123']);
+    })
+    it('Should delete messages by user with id 384633488400140664', async function() {
+      msg.mentions.users.set('384633488400140664', {
+        id: '384633488400140664'
+      });
+      msg.content = '$clearlog <@384633488400140664> 15';
+      //Reset deletedMessages
+      testMessages.__set__('deletedMessages', []);
+      await commands.executeCmd(msg, ['clearlog']);
+      var deletedMessages = testMessages.__get__('deletedMessages');
+      expect(deletedMessages).to.deep.equal(['flower', 'pot']);
+    });
+    it('Should delete message with flower by user with id 384633488400140664', async function() {
+      msg.content = '$clearlog <@384633488400140664> flower 15';
+      //Reset deletedMessages
+      testMessages.__set__('deletedMessages', []);
+      await commands.executeCmd(msg, ['clearlog']);
+      var deletedMessages = testMessages.__get__('deletedMessages');
+      expect(deletedMessages).to.deep.equal(['flower']);
+    });
+    it('Should delete message with filters inversed', async function() {
+      msg.content = '$clearlog flower <@384633488400140664> 15';
+      //Reset deletedMessages
+      testMessages.__set__('deletedMessages', []);
+      await commands.executeCmd(msg, ['clearlog']);
+      var deletedMessages = testMessages.__get__('deletedMessages');
+      expect(deletedMessages).to.deep.equal(['flower']);
+    });
   });
 });
 

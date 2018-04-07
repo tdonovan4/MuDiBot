@@ -89,6 +89,26 @@ exports.msg1 = {
         author: {
           id: '1'
         }
+      }, {
+        content: 'This is a test 123',
+        author: {
+          id: '1'
+        }
+      }, {
+        content: 'flower',
+        author: {
+          id: '384633488400140664'
+        }
+      }, {
+        content: 'pot',
+        author: {
+          id: '384633488400140664'
+        }
+      }, {
+        content: 'flower',
+        author: {
+          id: '1'
+        }
       }];
       var returnedMsg = []
       for(var i = 0; i < args.limit; i++) {
