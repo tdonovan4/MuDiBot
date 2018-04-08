@@ -20,6 +20,16 @@ module.exports = class ClearlogCommand extends bot.Command {
     var usersToClear = [];
     var filter = false;
 
+    let numToDel = args[args.length - 1];
+
+    //In case the number to delete isn't a valid number
+    if (isNaN(numToDel)) {
+      numToDel = '50';
+    } else {
+      //Remove the number so that the other arguments work
+      args.slice(args.length);
+    }
+    
     if (args.length > 1) {
       var mention = msg.mentions.users.last();
 
@@ -29,7 +39,7 @@ module.exports = class ClearlogCommand extends bot.Command {
         //Delete mention in args
         args[args.findIndex(x => x == `<@${mention.id}>`)] = '';
       }
-      clearList.push(args.slice(0, args.length - 1).filter(x => x != '').join(' '));
+      clearList.push(args.slice(0, args.length).filter(x => x != '').join(' '));
       filter = true;
     } else {
       //Remove regular commands + configured commands and users
@@ -41,13 +51,6 @@ module.exports = class ClearlogCommand extends bot.Command {
       clearList = clearList.concat(config.clearlog.commandsToClear);
       //Add users
       usersToClear = config.clearlog.usersToClear;
-    }
-
-    let numToDel = args[args.length - 1];
-
-    //In case the number to delete isn't a valid number
-    if (numToDel == null || isNaN(numToDel)) {
-      numToDel = '50';
     }
 
     var messages = await getMsgToDelete(msg, clearList, usersToClear, numToDel, filter);
