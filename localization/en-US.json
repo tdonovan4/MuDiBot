@@ -172,8 +172,9 @@
       "msg": "Removes all warnings from an user or all users"
     },
     "clearlog": {
-      "usages": ["<messages to check>"],
-      "msg": "Deletes all commands related to the bot"
+      "usages": ["","<message num>", "<user to delete> <message num>",
+        "<string to delete> <message num>", "<user to delete> <string to delete> <message num>"],
+      "msg": "By default, delete bot commands. Can also be used with filters."
     },
     "kill": {
       "usages": [""],
@@ -268,7 +269,8 @@
   },
   "clearlog": {
     "maxNum": "Max number of messages to delete: ",
-    "deleted": "{{deletedMessages}} messages deleted!"
+    "confirm": "You are about to delete {{length}} message(s). :white_check_mark: to confirm or :x: to cancel.",
+    "deleted": "{{length}} message(s) deleted!"
   },
   "warn": {
     "list": "<@{{userId}}>: {{warnings}} warnings",

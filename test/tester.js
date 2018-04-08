@@ -426,7 +426,7 @@ describe('Test the custom commands', function() {
   describe('Test printCmds', function() {
     it('Should return info about testCmd1', async function() {
       await customCmd.printCmds(msg, ['testCmd1']);
-      var embed = msgSend.lastCall.returnValue.embed;
+      var embed = msgSend.lastCall.returnValue.content.embed;
       expect(embed.title).to.equal('testCmd1');
       expect(embed.fields[0].value).to.equal('say');
       expect(embed.fields[1].value).to.equal('TestUser');
@@ -438,7 +438,7 @@ describe('Test the custom commands', function() {
       await commands.executeCmd(msg, ['custcmd']);
       msg.author.id = '041025599435591424';
       await customCmd.printCmds(msg, []);
-      var response = msgSend.getCall(msgSend.callCount - 2).returnValue;
+      var response = msgSend.getCall(msgSend.callCount - 2).returnValue.content;
       expect(response).to.have.string('testCmd1');
       expect(response).to.have.string('testCmd2');
     })
@@ -446,7 +446,7 @@ describe('Test the custom commands', function() {
       msg.content = '$custcmd testCmd3 say This is a test';
       await commands.executeCmd(msg, ['custcmd']);
       await customCmd.printCmds(msg, ['']);
-      var response = msgSend.getCall(msgSend.callCount - 2).returnValue;
+      var response = msgSend.getCall(msgSend.callCount - 2).returnValue.content;
       expect(response).to.have.string('testCmd1');
       expect(response).to.have.string('testCmd3');
     });
@@ -473,7 +473,7 @@ describe('Test the audio player', function() {
   describe('Test playYoutube', function() {
     it('Should return wrong usage', function() {
       audioPlayer.playYoutube(msg, '');
-      expect(msgSend.lastCall.returnValue).to.equal(lang.error.usage);
+      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.usage);
     });
     it('Should return missing voiceChannel', function() {
       audioPlayer.playYoutube(msg, ['pet']);
@@ -525,7 +525,7 @@ describe('Test the audio player', function() {
     it('Should send empty queue', function() {
       msg.content = '$queue';
       new audioPlayer.QueueCommand().execute(msg, ['']);
-      expect(msgSend.lastCall.returnValue).to.equal(lang.play.queue);
+      expect(msgSend.lastCall.returnValue.content).to.equal(lang.play.queue);
     });
     it('Should send a list containing the videos in queue', function() {
       //Set the videos
@@ -536,7 +536,7 @@ describe('Test the audio player', function() {
         ]
       });
       new audioPlayer.QueueCommand().execute(msg, ['']);
-      expect(msgSend.lastCall.returnValue).to.equal(
+      expect(msgSend.lastCall.returnValue.content).to.equal(
         lang.play.queue + '\n "dog"\n "cat"'
       );
     });
@@ -725,12 +725,12 @@ describe('Test commands', function() {
       var expectedString = mustache.render(lang.help.msg, {
         config
       });
-      expect(msgSend.lastCall.returnValue).to.equal(expectedString);
+      expect(msgSend.lastCall.returnValue.content).to.equal(expectedString);
     });
     it('Should return help for ping', function() {
       msg.content = '$help ping'
       commands.executeCmd(msg, ['help', 'ping']);
-      var embed = msgSend.lastCall.returnValue.embed;
+      var embed = msgSend.lastCall.returnValue.content.embed;
       /*Test embed
        *TODO stop using hard coded values
        *Title */
@@ -757,7 +757,7 @@ describe('Test commands', function() {
   describe('info', function() {
     it('Should return infos', function() {
       commands.executeCmd(msg, ['info']);
-      var embed = msgSend.lastCall.returnValue.embed;
+      var embed = msgSend.lastCall.returnValue.content.embed;
       var pjson = require('../package.json');
       //Test embed
       expect(embed.fields[0].value).to.have.string(pjson.name);
@@ -789,12 +789,12 @@ describe('Test commands', function() {
     it('Should return the message', function() {
       msg.content = '$say here test';
       commands.executeCmd(msg, ['say', 'here', 'test']);
-      expect(msgSend.lastCall.returnValue).to.equal('test');
+      expect(msgSend.lastCall.returnValue.content).to.equal('test');
     });
     it('Should return missing argument: channel', function() {
       msg.content = '$say test';
       commands.executeCmd(msg, ['say', 'test']);
-      expect(msgSend.lastCall.returnValue).to.equal(lang.error.missingArg.channel);
+      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.missingArg.channel);
     });
     it('Should return the message in the channel with ID 42', function() {
       msg.content = '$say <#42> test';
@@ -804,12 +804,12 @@ describe('Test commands', function() {
     it('Should return missing argument: channel when using wrong channel', function() {
       msg.content = '$say badString test';
       commands.executeCmd(msg, ['say', 'badString', 'test']);
-      expect(msgSend.lastCall.returnValue).to.equal(lang.error.missingArg.channel);
+      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.missingArg.channel);
     });
     it('Should return missing argument: message', function() {
       msg.content = '$say here';
       commands.executeCmd(msg, ['say', 'here']);
-      expect(msgSend.lastCall.returnValue).to.equal(lang.error.missingArg.message);
+      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.missingArg.message);
     })
   });
   describe('avatar', function() {
@@ -835,7 +835,7 @@ describe('Test commands', function() {
     it('Should return the message author\'s (TestUser) profile', async function() {
       msg.content = '$profile';
       await commands.executeCmd(msg, ['profile'])
-      var embed = msgSend.lastCall.returnValue.embed;
+      var embed = msgSend.lastCall.returnValue.content.embed;
       expect(embed.title).to.equal('TestUser\'s profile');
       expect(embed.fields[0].value).to.equal('Emperor ');
       expect(embed.fields[1].value).to.equal('Member');
@@ -847,7 +847,7 @@ describe('Test commands', function() {
       msg.content = '$profile';
       config.superusers = ['041025599435591424'];
       await commands.executeCmd(msg, ['profile']);
-      var embed = msgSend.lastCall.returnValue.embed;
+      var embed = msgSend.lastCall.returnValue.content.embed;
       expect(embed.fields[1].value).to.equal('Superuser, Member');
     });
     it('Should return George\'s profile', async function() {
@@ -859,7 +859,7 @@ describe('Test commands', function() {
       });
       msg.content = `$profile <#${id}>`;
       await commands.executeCmd(msg, ['profile', `<#${id}>`])
-      var embed = msgSend.lastCall.returnValue.embed;
+      var embed = msgSend.lastCall.returnValue.content.embed;
       expect(embed.title).to.equal('George\'s profile');
       expect(embed.fields[0].value).to.equal('Vagabond ');
       expect(embed.fields[1].value).to.equal('Ø');
@@ -900,14 +900,14 @@ describe('Test commands', function() {
     it('Should return a gif', async function() {
       msg.content = '$gif dog';
       await new giphy.GifCommand().execute(msg, ['dog']);
-      expect(msgSend.lastCall.returnValue).to.equal('A gif');
+      expect(msgSend.lastCall.returnValue.content).to.equal('A gif');
     });
   });
   describe('gifrandom', function() {
     it('Should return a random gif', async function() {
       msg.content = '$gifrandom dog';
       await new giphy.GifRandomCommand().execute(msg, ['dog']);
-      expect(msgSend.lastCall.returnValue).to.equal('A random gif');
+      expect(msgSend.lastCall.returnValue.content).to.equal('A random gif');
     })
   });
   describe('flipcoin', function() {

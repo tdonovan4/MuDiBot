@@ -15,16 +15,16 @@ module.exports = class ClearlogCommand extends bot.Command {
       permLvl: 3
     });
   }
-  execute(msg, args) {
+  async execute(msg, args) {
     var clearList = [];
     var usersToClear = [];
     var filter = false;
 
-    if(args.length > 1) {
+    if (args.length > 1) {
       var mention = msg.mentions.users.first();
 
       //Use filters
-      if(mention != undefined) {
+      if (mention != undefined) {
         usersToClear.push(mention.id);
         //Delete mention in args
         args[args.findIndex(x => x == `<@${mention.id}>`)] = '';
@@ -43,21 +43,37 @@ module.exports = class ClearlogCommand extends bot.Command {
       usersToClear = config.clearlog.usersToClear;
     }
 
-    let numToDel = args[args.length-1];
+    let numToDel = args[args.length - 1];
 
     //In case the number to delete isn't a valid number
     if (numToDel == null || isNaN(numToDel)) {
       numToDel = '50';
     }
 
-    clear(msg, clearList, usersToClear, numToDel, filter);
+    var messages = await getMsgToDelete(msg, clearList, usersToClear, numToDel, filter);
+    //Send confirmation message
+    var confirmationMsg = await msg.channel.send(mustache.render(lang.clearlog.confirm, messages));
+    //React with two options
+    await confirmationMsg.react('✅');
+    await confirmationMsg.react('❌');
+    //Collect reactions by author for the next 5 seconds
+    var reaction = await confirmationMsg.awaitReactions((reaction, user) => {
+      return ['✅', '❌'].indexOf(reaction.emoji.name) > -1 && user.id === msg.author.id;
+    }, {max: 1, time: 5000});
+
+    //Check if should delete the messages
+    if(reaction.first().emoji.name === '✅') {
+      deleteAll(messages);
+    }
+    //Delete the confirmation message
+    confirmationMsg.delete();
   }
 }
 
-//Function that fetch, check and delete messages
-function clear(msg, strings, users, num, filter) {
+//Function that fetch and check messages
+async function getMsgToDelete(msg, strings, users, num, filter) {
   //Add bot user to list of users to delete
-  if(!filter) {
+  if (!filter) {
     users.push(client.user.id);
   }
 
@@ -66,37 +82,38 @@ function clear(msg, strings, users, num, filter) {
   users = users.filter(x => x != '');
 
   //Fetch a specific number of messages
-  msg.channel.fetchMessages({
+  try {
+    var messages = await msg.channel.fetchMessages({
       limit: parseInt(num)
     })
-    .then(messages => {
-      messages = messages.array()
-      console.log(lang.clearlog.maxNum + num);
-      //Filter message by author and content
-      messages = messages.filter(message => {
-        containsUser = users.some(user => user == message.author.id);
-        containsString = strings.some(string => message.content.startsWith(string));
-        if(filter) {
-          return (containsUser || users.length == 0) &&
-          (containsString || strings.length == 0);
-        }
-        //Default
-        return containsUser || containsString;
-      });
-      var deletedMessages = messages.length;
+  } catch(e) {
+    console.log(e);
+  }
+  messages = messages.array();
+  console.log(lang.clearlog.maxNum + num);
 
-      //Delete messages
-      messages.forEach(message => {
-        try {
-          message.delete()
-        }
-        catch(e) {
-          console.log(e)
-        }
-      })
-      console.log(mustache.render(lang.clearlog.deleted, {
-        deletedMessages
-      }));
-    })
-    .catch(console.error);
+  //Filter message by author and content
+  messages = messages.filter(message => {
+    containsUser = users.some(user => user == message.author.id);
+    containsString = strings.some(string => message.content.startsWith(string));
+    if (filter) {
+      return (containsUser || users.length == 0) &&
+        (containsString || strings.length == 0);
+    }
+    //Default
+    return containsUser || containsString;
+  });
+  return messages;
+}
+
+function deleteAll(messages) {
+  //Delete messages
+  messages.forEach(message => {
+    try {
+      message.delete()
+    } catch (e) {
+      console.log(e)
+    }
+  })
+  console.log(mustache.render(lang.clearlog.deleted, messages));
 }
