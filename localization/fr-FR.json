@@ -172,8 +172,9 @@
       "msg": "Enlève tous les avertissements d'un utilisateur ou de tous les utilisateurs"
     },
     "clearlog": {
-      "usages": ["<messages à regarder>"],
-      "msg": "Supprime les commandes dans le salon"
+      "usages": ["","<nombre de messages>", "<utilisateur à supprimer> <nombre de messages>",
+        "<mots à supprimer> <nombre de messages>", "<utilisateur à supprimer> <mots à supprimer> <nombre de messages>"],
+      "msg": "Par défaut, supprime les commands. Peut aussi être utiliser avec des filtres."
     },
     "kill": {
       "usages": [""],
@@ -268,7 +269,8 @@
   },
   "clearlog": {
     "maxNum": "Nombre maximal de messages à supprimer: ",
-    "deleted": "{{deletedMessages}} messages supprimés!"
+    "confirm": "Vous êtes sur le point de supprimer {{length}} message(s). :white_check_mark: pour confirmer ou :x: pour annuler.",
+    "deleted": "{{length}} message(s) supprimés!"
   },
   "warn": {
     "list": "<@{{userId}}>: {{warnings}} avertissement",

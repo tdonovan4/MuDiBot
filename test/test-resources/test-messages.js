@@ -25,7 +25,7 @@ exports.msg1 = {
     members: {
       get: function(id) {
         var username = 'TestUser';
-        if(id == '357156661105365963') {
+        if (id == '357156661105365963') {
           username = 'George'
         }
         return {
@@ -41,7 +41,24 @@ exports.msg1 = {
   },
   channel: {
     send: function(text) {
-      return text;
+      return {
+        content: text,
+        react: function(emoji) {
+          return emoji
+        },
+        awaitReactions: function() {
+          return {
+            first: function() {
+              return {
+                emoji: {
+                  name: '✅'
+                }
+              }
+            }
+          }
+        },
+        delete: function() {}
+      }
     },
     fetchMessages: async function(args) {
       var predefinedMsg = [{
@@ -111,8 +128,8 @@ exports.msg1 = {
         }
       }];
       var returnedMsg = []
-      for(var i = 0; i < args.limit; i++) {
-        if(i > predefinedMsg.length - 1) break;
+      for (var i = 0; i < args.limit; i++) {
+        if (i > predefinedMsg.length - 1) break;
         predefinedMsg[i].delete = function() {
           deletedMessages.push(this.content);
         }
