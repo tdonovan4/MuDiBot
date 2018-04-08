@@ -21,7 +21,7 @@ module.exports = class ClearlogCommand extends bot.Command {
     var filter = false;
 
     if (args.length > 1) {
-      var mention = msg.mentions.users.first();
+      var mention = msg.mentions.users.last();
 
       //Use filters
       if (mention != undefined) {
@@ -62,7 +62,7 @@ module.exports = class ClearlogCommand extends bot.Command {
     }, {max: 1, time: 5000});
 
     //Check if should delete the messages
-    if(reaction.first().emoji.name === '✅') {
+    if(reaction.first() != undefined && reaction.first().emoji.name === '✅') {
       deleteAll(messages);
     }
     //Delete the confirmation message
