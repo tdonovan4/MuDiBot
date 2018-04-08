@@ -27,10 +27,10 @@ module.exports = class ClearlogCommand extends bot.Command {
       numToDel = '50';
     } else {
       //Remove the number so that the other arguments work
-      args.slice(args.length);
+      args.splice(args.length - 1);
     }
-    
-    if (args.length > 1) {
+
+    if (args.length > 0) {
       var mention = msg.mentions.users.last();
 
       //Use filters
