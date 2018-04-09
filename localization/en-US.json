@@ -243,6 +243,9 @@
     "heads": "heads",
     "tails": "tails"
   },
+  "roll": {
+    "invalid": "Wrong usage! Make sure to follow `<# of dice>d<# of faces><modifier>` and keep inputs bellow 50.\n"
+  },
   "custcmd": {
     "cmdAdded": "Command added"
   },

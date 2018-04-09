@@ -243,6 +243,9 @@
     "heads": "face",
     "tails": "pile"
   },
+  "roll": {
+    "invalid": "Utilisation incorrecte! Veuillez suivre `<# de dés>d<# de faces><modifieur>` et de garder les nombres en bas de 50.\n"
+  },
   "customcmd": {
     "cmdAdded": "Commande ajoutée"
   },
