@@ -6,6 +6,7 @@ const mustache = require('mustache');
 const sql = require('sqlite');
 const fs = require('fs');
 const rewire = require('rewire');
+const youtube = require('./test-resources/test-youtube.js');
 var testMessages = rewire('./test-resources/test-messages.js');
 var msg = testMessages.msg1;
 
@@ -463,11 +464,16 @@ describe('Test the custom commands', function() {
   });
 });
 describe('Test the audio player', function() {
-  //TODO: Replace these placeholder tests after the rework of audio-player.
-  let response;
+  let videoId
   audioPlayer.__set__({
-    addToQueue: function(msg, url) {
-      response = url
+    getVideoInfo: function(video) {
+      console.log(video)
+      videoId = video;
+    }
+  });
+  audioPlayer.__set__({
+    get: function() {
+      return youtube.search();
     }
   });
   describe('Test playYoutube', function() {
@@ -479,10 +485,14 @@ describe('Test the audio player', function() {
       audioPlayer.playYoutube(msg, ['pet']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.notFound.voiceChannel);
     });
-    it('Should execute addToQueue with the url', function() {
+    it('Should return a video with a test tag', async function() {
       msg.member.voiceChannel = 'Not null';
-      audioPlayer.playYoutube(msg, ['https://www.youtube.com/watch?v=jNQXAC9IVRw']);
-      expect(response).to.equal('https://www.youtube.com/watch?v=jNQXAC9IVRw');
+      await audioPlayer.playYoutube(msg, ['test']);
+      expect(videoId).to.equal('test123');
+    });
+    it('Should return video ID of the url', async function() {
+      await audioPlayer.playYoutube(msg, ['https://www.youtube.com/watch?v=jNQXAC9IVRw']);
+      expect(videoId).to.equal('jNQXAC9IVRw');
     });
   });
   describe('Test stop', function() {
