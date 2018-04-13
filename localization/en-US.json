@@ -42,6 +42,7 @@
       "rank": "Rank not found",
       "group": "Group not found",
       "rankReward": "No reward found for this rank",
+      "video": "I couldn't find a video matching what you entered. :thinking: Try again with something different!",
       "voiceChannel": "You are not in a voice channel!"
     },
     "tooMuch": {

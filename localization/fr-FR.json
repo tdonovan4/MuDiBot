@@ -42,6 +42,7 @@
       "rank": "Rang non trouvé",
       "group": "Groupe non trouvé",
       "rankReward": "Aucune récompense trouvée pour ce rang",
+      "video": "Je n'ai pas trouvé de vidéo pour ce que vous avez entré. :thinking: Essayez quelque chose de différent!",
       "voiceChannel": "Vous n'êtes pas dans un salon vocal"
     },
     "tooMuch": {

@@ -82,9 +82,9 @@ module.exports = {
     }
   },
   //Get YouTube video
-  playYoutube: function(msg, link) {
-    //Check if there is a link
-    if (link.length == 0) {
+  playYoutube: async function(msg, args) {
+    //Check if there is an arg
+    if (args.length == 0) {
       //Missing argument;
       msg.channel.send(lang.error.usage);
       return;
@@ -95,20 +95,41 @@ module.exports = {
       bot.printMsg(msg, lang.error.notFound.voiceChannel);
       return;
     }
+    var videoId;
     //Check if url to video
-    var regex = /^(http(s)??\:\/\/)?(www\.)?((youtube\.com\/watch\?v=)|(youtu.be\/))([a-zA-Z0-9\-_])+/
-    if (regex.test(link[0])) {
+    var regexUrl = /^(http(s)??\:\/\/)?(www\.)?((youtube\.com\/watch\?v=)|(youtu.be\/))([a-zA-Z0-9\-_])+/;
+    if (regexUrl.test(args[0])) {
       //Direct link to video
-      addToQueue(msg, link[0]);
+      var regexId = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
+      var videoId = args[0].match(regexId)[1];
     } else {
       //Search the video with the YouTube API
-      var video = 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=[' + link + ']&maxResults=1&type=video&key=' + config.youtubeAPIKey;
-      get(video).then(function(response) {
-        var url = 'https://www.youtube.com/watch?v=' + response.items[0].id.videoId
-        addToQueue(msg, url);
-      });
+      var response = await get('https://www.googleapis.com/youtube/v3/search?part=snippet' +
+        `&q=${encodeURIComponent(args)}` +
+        '&maxResults=1' +
+        '&type=video' +
+        `&key=${config.youtubeAPIKey}`);
+      if(response.items != undefined && response.items.length > 0) {
+        videoId = response.items[0].id.videoId;
+      }
+    }
+    //Check if a video was found
+    if(videoId != undefined) {
+      getVideoInfo(videoId);
+    } else {
+      //Error: no video found
+      msg.channel.send(lang.error.notFound.video);
     }
   }
+}
+
+async function getVideoInfo(videoId) {
+  console.log(videoId);
+  var response = await get('https://www.googleapis.com/youtube/v3/videos' +
+  '?part=snippet,contentDetails' +
+  `&id=${videoId}` +
+  `&key=${config.youtubeAPIKey}`);
+  console.log(response.items[0]);
 }
 
 function joinChannel(msg) {
