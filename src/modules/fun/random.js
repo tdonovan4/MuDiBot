@@ -30,31 +30,26 @@ module.exports = {
       args = msg.content.split(/[ d+]|(?=-)/g).slice(1);
       var invalid = false;
       function checkIfValid(string) {
-        //Return false if whitespace because apparently " " is a number in JavaScript
         if(string == /\s/g.test(string)) {
           return false;
         }
-        result = isNaN(string) || string > 50;
+        result = isNaN(string) || string > 50 || string < 1;
         return !result;
       }
       //Get values
-      var numDice = 1;
-      if (checkIfValid(args[0]) || args[0] > 1){
-        numDice = parseInt(args[0]);
-      } else {
-        invalid = true;
+      var values = [1, 6, 0];
+      for(var i = 0; i < 3; i++) {
+        if(checkIfValid(args[i])) {
+          values[i] = parseInt(args[i])
+        } else {
+          console.log('test');
+          invalid = true;
+        }
       }
-      var die = 6;
-      if (checkIfValid(args[1])) {
-        die = parseInt(args[1]);
-      } else {
-        invalid = true;
-      }
-      var bonus = checkIfValid(args[2]) ? parseInt(args[2]) : 0;
       //RNG
       var dice = [];
-      for (var i = 0; i < numDice; i++) {
-        dice.push(Math.floor(Math.random() * die) + 1);
+      for (var i = 0; i < values[0]; i++) {
+        dice.push(Math.floor(Math.random() * values[1]) + 1);
       }
       //Make message
       var reply = '';
@@ -63,10 +58,10 @@ module.exports = {
         reply += lang.roll.invalid;
       }
       reply += `(${dice.join(' + ')})`;
-      if (bonus > 0) {
-        reply += ` + ${bonus}`;
+      if (values[2] > 0) {
+        reply += ` + ${values[2]}`;
       }
-      reply += ` = ${dice.reduce((a, b) => a+b) + bonus}`;
+      reply += ` = ${dice.reduce((a, b) => a+b) + values[2]}`;
       msg.channel.send(reply);
     }
   }
