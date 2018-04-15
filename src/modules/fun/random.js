@@ -38,13 +38,18 @@ module.exports = {
       }
       //Get values
       var values = [1, 6, 0];
-      for(var i = 0; i < 3; i++) {
+      for(var i = 0; i < 2; i++) {
         if(checkIfValid(args[i])) {
-          values[i] = parseInt(args[i])
+          values[i] = parseInt(args[i]);
         } else {
-          console.log('test');
           invalid = true;
         }
+      }
+      //Special for bonus
+      if(!isNaN(args[2]) && args[2] <= 50) {
+        values[2] = parseInt(args[2]);
+      } else if(args[2] != undefined) {
+        invalid = true;
       }
       //RNG
       var dice = [];
@@ -60,6 +65,8 @@ module.exports = {
       reply += `(${dice.join(' + ')})`;
       if (values[2] > 0) {
         reply += ` + ${values[2]}`;
+      } else if(values[2] < 0) {
+        reply += ` - ${values[2]}`;
       }
       reply += ` = ${dice.reduce((a, b) => a+b) + values[2]}`;
       msg.channel.send(reply);
