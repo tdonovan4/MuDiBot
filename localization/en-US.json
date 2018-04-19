@@ -269,7 +269,7 @@
     "playing": "Playing: `{{queue.0.1}}` ({{queue.0.2}})",
     "queue": "**List of videos in queue:**",
     "disconnected": "Disconnected!",
-    "unavailable": "This video is unavailable"
+    "unavailable": "A video was found, but is unavailable"
   },
   "clearlog": {
     "maxNum": "Max number of messages to delete: ",

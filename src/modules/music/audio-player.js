@@ -5,6 +5,7 @@ const bot = require('../../bot.js');
 const config = require('../../args.js').getConfig()[1];
 const mustache = require('mustache');
 var lang = require('../../localization.js').getLocalization();
+var guildQueues = new Map();
 var queue = [];
 var voiceConnection;
 
@@ -101,7 +102,11 @@ module.exports = {
     if (regexUrl.test(args[0])) {
       //Direct link to video
       var regexId = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
-      var videoId = args[0].match(regexId)[1];
+      var videoId = args[0].match(regexId);
+      //If case not valid
+      if (videoId != null) {
+        videoId = videoId[1];
+      }
     } else {
       //Search the video with the YouTube API
       var response = await get('https://www.googleapis.com/youtube/v3/search?part=snippet' +
@@ -109,13 +114,13 @@ module.exports = {
         '&maxResults=1' +
         '&type=video' +
         `&key=${config.youtubeAPIKey}`);
-      if(response.items != undefined && response.items.length > 0) {
+      if (response.items != undefined && response.items.length > 0) {
         videoId = response.items[0].id.videoId;
       }
     }
     //Check if a video was found
-    if(videoId != undefined) {
-      getVideoInfo(videoId);
+    if (videoId != undefined) {
+      getVideoInfo(msg, videoId);
     } else {
       //Error: no video found
       msg.channel.send(lang.error.notFound.video);
@@ -123,13 +128,47 @@ module.exports = {
   }
 }
 
-async function getVideoInfo(videoId) {
-  console.log(videoId);
+class GuildQueue {
+  constructor(id) {
+    this.queue = new Map();
+    this.id = id;
+  }
+  addToQueue(video) {
+    this.queue.set(video.id, video);
+  }
+}
+
+class Video {
+  constructor(id, title, duration) {
+    this.id = id;
+    this.title = title;
+    this.duration = duration;
+  }
+}
+
+function getQueue(id) {
+  var queue = guildQueues.get(id);
+  if(queue == null) {
+    //Not defined, creating a queue
+     guildQueues.set(id, new GuildQueue(id));
+     queue = guildQueues.get(id);
+  }
+  return queue;
+}
+
+async function getVideoInfo(msg, videoId) {
   var response = await get('https://www.googleapis.com/youtube/v3/videos' +
-  '?part=snippet,contentDetails' +
-  `&id=${videoId}` +
-  `&key=${config.youtubeAPIKey}`);
-  console.log(response.items[0]);
+    '?part=snippet,contentDetails' +
+    `&id=${videoId}` +
+    `&key=${config.youtubeAPIKey}`);
+  if (response.items != undefined && response.items.length > 0) {
+    var item = response.items[0]
+    var video = new Video(item.id, item.snippet.title, item.contentDetails.duration);
+    //Add the video to the guild queue
+    getQueue(msg.guild.id).addToQueue(video);
+  } else {
+    msg.channel.send(lang.play.unavailable);
+  }
 }
 
 function joinChannel(msg) {

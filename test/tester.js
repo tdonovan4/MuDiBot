@@ -464,18 +464,41 @@ describe('Test the custom commands', function() {
   });
 });
 describe('Test the audio player', function() {
+  //Setup
   let videoId
   audioPlayer.__set__({
-    getVideoInfo: function(video) {
-      console.log(video)
+    get: function(url) {
+      //Remove start of url
+      url = url.split('https://www.googleapis.com/youtube/v3/')[1].split('?');
+      //Seperate other values
+      url = url.concat(url[1].split('&'));
+      url.splice(1, 1);
+      if(url[0] == 'search') {
+        var tag = url[2].split('q=')[1];
+        if(tag == 'noResults') {
+          return {
+            items: []
+          }
+        }
+        return youtube.search(tag);
+      } else if(url[0] == 'videos') {
+        var id = url[2].split('id=')[1];
+        if(id == 'unavailable123') {
+          return {
+            items: []
+          }
+        }
+        return youtube.videos(id);
+      }
+    }
+  });
+  var oldGetVideoInfo = audioPlayer.__get__('getVideoInfo');
+  audioPlayer.__set__({
+    getVideoInfo: function(msg, video) {
       videoId = video;
     }
   });
-  audioPlayer.__set__({
-    get: function() {
-      return youtube.search();
-    }
-  });
+  //Test beginning
   describe('Test playYoutube', function() {
     it('Should return wrong usage', function() {
       audioPlayer.playYoutube(msg, '');
@@ -490,9 +513,41 @@ describe('Test the audio player', function() {
       await audioPlayer.playYoutube(msg, ['test']);
       expect(videoId).to.equal('test123');
     });
+    it('Should return not found if no video found', async function() {
+      await audioPlayer.playYoutube(msg, ['noResults']);
+      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.notFound.video);
+    });
     it('Should return video ID of the url', async function() {
       await audioPlayer.playYoutube(msg, ['https://www.youtube.com/watch?v=jNQXAC9IVRw']);
       expect(videoId).to.equal('jNQXAC9IVRw');
+    });
+    it('Should return not found when not able to extract video ID from url', async function() {
+      msg.channel.send('Just to make sure');
+      await audioPlayer.playYoutube(msg, ['https://www.youtube.com/watch?v=jNQXAC9IVR']);
+      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.notFound.video);
+    });
+  });
+  describe('Test getQueue', function() {
+    it('Should create a new queue and return it', function() {
+      var response = audioPlayer.__get__('getQueue')('1');
+      expect(response.id).to.equal('1');
+    });
+    it('Should return the first queue', function() {
+      //Create another queue
+      audioPlayer.__get__('getQueue')('2');
+      var response = audioPlayer.__get__('getQueue')('1');
+      expect(response.id).to.equal('1');
+    });
+  });
+  describe('Test getVideoInfo', function() {
+    it('Should return a video', async function() {
+      await oldGetVideoInfo(msg, 'test123');
+      var guildQueue = audioPlayer.__get__('getQueue')(msg.guild.id);
+      expect(guildQueue.queue.has('test123')).to.equal(true);
+    });
+    it('Should return an error when the video unavailable', async function() {
+      await oldGetVideoInfo(msg, 'unavailable123');
+      expect(msgSend.lastCall.returnValue.content).to.equal(lang.play.unavailable);
     });
   });
   describe('Test stop', function() {
