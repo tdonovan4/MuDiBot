@@ -1,10 +1,26 @@
 module.exports = {
-  search: function() {
+  search: function(url) {
+    var videoId = `${url}123`;
     return {
       items: [
         {
           id: {
-            videoId: 'test123'
+            videoId: videoId
+          }
+        }
+      ]
+    }
+  },
+  videos: function(videoId) {
+    return {
+      items: [
+        {
+          id: videoId,
+          snippet: {
+            title: `A video ${videoId}`
+          },
+          contentDetails: {
+            duration: '1M30S'
           }
         }
       ]
