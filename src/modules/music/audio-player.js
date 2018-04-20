@@ -98,14 +98,12 @@ module.exports = {
     }
     var videoId;
     //Check if url to video
-    var regexUrl = /^(http(s)??\:\/\/)?(www\.)?((youtube\.com\/watch\?v=)|(youtu.be\/))([a-zA-Z0-9\-_])+/;
-    if (regexUrl.test(args[0])) {
+    if (ytdl.validateURL(args[0])) {
       //Direct link to video
-      var regexId = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
-      var videoId = args[0].match(regexId);
+      var videoId = ytdl.getURLVideoID(args[0]);
       //If case not valid
       if (videoId != null) {
-        videoId = videoId[1];
+        videoId = videoId;
       }
     } else {
       //Search the video with the YouTube API

@@ -521,11 +521,6 @@ describe('Test the audio player', function() {
       await audioPlayer.playYoutube(msg, ['https://www.youtube.com/watch?v=jNQXAC9IVRw']);
       expect(videoId).to.equal('jNQXAC9IVRw');
     });
-    it('Should return not found when not able to extract video ID from url', async function() {
-      msg.channel.send('Just to make sure');
-      await audioPlayer.playYoutube(msg, ['https://www.youtube.com/watch?v=jNQXAC9IVR']);
-      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.notFound.video);
-    });
   });
   describe('Test getQueue', function() {
     it('Should create a new queue and return it', function() {
