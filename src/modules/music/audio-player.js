@@ -134,6 +134,9 @@ class GuildQueue {
   addToQueue(video) {
     this.queue.set(video.id, video);
   }
+  getVideos(number) {
+    this.queue.get()
+  }
 }
 
 class Video {
@@ -169,13 +172,6 @@ async function getVideoInfo(msg, videoId) {
   }
 }
 
-function joinChannel(msg) {
-  var channel = msg.member.voiceChannel;
-  if (typeof channel !== "undefined") {
-    channel.join().then(connection => playVideo(connection, msg));
-  }
-}
-
 function get(url) {
   return new Promise(function(resolve) {
     https.get(url, (res) => {
@@ -189,103 +185,5 @@ function get(url) {
     }).on('error', function(e) {
       console.log(e.msg);
     });
-  });
-}
-
-function addToQueue(msg, url) {
-  if (url.indexOf('list=') !== -1) {
-    //Url is a playlist
-    var regExpPlaylist = new RegExp("list=([a-zA-Z0-9\-\_]+)&?", "i");
-    var id = regExpPlaylist.exec(url);
-    var api = 'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=' + id[1] + '&maxResults=50&key=' + config.youtubeAPIKey;
-
-    get(api).then(function(response) {
-      getPlaylistVideos(0, response, msg);
-    });
-  } else {
-    //Url is a video
-    checkIfAvailable(url).then(values => {
-      if (values == null) {
-        bot.printMsg(msg, lang.play.unavailable);
-        return
-      }
-      queue.push(values);
-      if (queue.length > 1) {
-        //Add message to say video was added to the queue
-        let text = (values != null) ? mustache.render(lang.play.added.video, {
-          values
-        }) : lang.play.unavailable;
-        bot.printMsg(msg, text);
-      }
-      if (msg.member.voiceChannel.connection == null) {
-        joinChannel(msg);
-      }
-    });
-  }
-}
-
-function getPlaylistVideos(i, response, msg) {
-  var promises = [];
-  for (i = 0; i < response.items.length; i++) {
-    var video = 'https://www.youtube.com/watch?v=' + response.items[i].snippet.resourceId.videoId
-    promises[i] = checkIfAvailable(video).then(values => {
-      return values;
-    });
-  }
-  Promise.all(promises).then(values => {
-    for (n = 0; n < values.length; n++) {
-      if (values[n] != null) {
-        queue.push(values[n]);
-      }
-    }
-    bot.printMsg(msg, lang.play.added.playlist);
-    if (msg.member.voiceChannel.connection == null && queue.length != 0) {
-      joinChannel(msg);
-    }
-  });
-}
-
-function checkIfAvailable(url) {
-  return new Promise((resolve) => {
-    var regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
-    var id = url.match(regex);
-    var api = 'https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=' + id[1] + '&key=' + config.youtubeAPIKey;;
-    get(api).then(response => {
-      if (response.items == undefined || response.items.length < 1) {
-        resolve(null);
-      } else {
-        ytdl.getInfo(url, function(err, info) {
-          if (info == undefined) {
-            console.log(err);
-            resolve(null);
-            return;
-          }
-          var duration = response.items[0].contentDetails.duration.match(/\d\d*\w/g).join(' ');
-          resolve([url, info.title, duration.toLowerCase()]);
-        });
-      }
-    });
-  });
-}
-
-//Play YouTube video (audio only)
-function playVideo(connection, msg) {
-  voiceConnection = connection;
-  bot.printMsg(msg, mustache.render(lang.play.playing, {
-    queue
-  }));
-  //Downloading
-  var stream = ytdl(queue[0][0], {
-    filter: 'audioonly'
-  });
-  dispatcher = connection.playStream(stream);
-
-  dispatcher.on('end', () => {
-    queue.splice(0, 1)
-    if (queue.length > 0) {
-      playVideo(connection, msg)
-    } else {
-      connection.disconnect();
-    }
   });
 }
