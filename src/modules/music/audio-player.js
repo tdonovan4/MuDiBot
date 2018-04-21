@@ -128,14 +128,14 @@ module.exports = {
 
 class GuildQueue {
   constructor(id) {
-    this.queue = new Map();
+    this.queue = []
     this.id = id;
   }
   addToQueue(video) {
-    this.queue.set(video.id, video);
+    this.queue.push(video);
   }
   getVideos(number) {
-    this.queue.get()
+    return this.queue.slice(0, number);
   }
 }
 
@@ -167,6 +167,7 @@ async function getVideoInfo(msg, videoId) {
     var video = new Video(item.id, item.snippet.title, item.contentDetails.duration);
     //Add the video to the guild queue
     getQueue(msg.guild.id).addToQueue(video);
+    console.log(getQueue(msg.guild.id).getVideos(1));
   } else {
     msg.channel.send(lang.play.unavailable);
   }

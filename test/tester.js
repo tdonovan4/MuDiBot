@@ -538,7 +538,7 @@ describe('Test the audio player', function() {
     it('Should return a video', async function() {
       await oldGetVideoInfo(msg, 'test123');
       var guildQueue = audioPlayer.__get__('getQueue')(msg.guild.id);
-      expect(guildQueue.queue.has('test123')).to.equal(true);
+      expect(guildQueue.queue[0].id).to.equal('test123');
     });
     it('Should return an error when the video unavailable', async function() {
       await oldGetVideoInfo(msg, 'unavailable123');
