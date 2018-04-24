@@ -6,8 +6,6 @@ const config = require('../../args.js').getConfig()[1];
 const mustache = require('mustache');
 var lang = require('../../localization.js').getLocalization();
 var guildQueues = new Map();
-var queue = [];
-var voiceConnection;
 
 module.exports = {
   PlayCommand: class extends bot.Command {
@@ -36,10 +34,17 @@ module.exports = {
       });
     }
     execute(msg, args) {
-      if (voiceConnection != null) {
-        voiceConnection.disconnect();
-        queue = [];
+      var guildQueue = getQueue(msg.guild.id);
+      if (guildQueue.connection != undefined) {
+        //Disconnect from channel
+        guildQueue.connection.disconnect();
+        //Reset
+        guildQueue.connection = undefined;
+        guildQueue.queue = [];
         bot.printMsg(msg, lang.play.disconnected);
+      } else {
+        //Not in a channel
+        bot.printMsg(msg, lang.stop.notInVoiceChannel);
       }
     }
   },
@@ -143,9 +148,10 @@ class GuildQueue {
     var video = this.queue[0];
     var url = `https://youtu.be/${video.id}`;
     try {
-      var stream = module.exports.downloadVideo(url, { filter : 'audioonly' });
-    }
-    catch(error) {
+      var stream = module.exports.downloadVideo(url, {
+        filter: 'audioonly'
+      });
+    } catch (error) {
       //Error during video downloading
       console.log(error);
       msg.channel.send(lang.ytdlError);
@@ -172,10 +178,10 @@ class GuildQueue {
     //Add video to queue
     this.queue.push(video);
     //Message if not first in queue
-    if(this.queue.length > 1) {
+    if (this.queue.length > 1) {
       msg.channel.send(mustache.render(lang.play.added, video));
     }
-    if(this.connection == undefined) {
+    if (this.connection == undefined) {
       //No voiceConnection so join the channel and start playing the queue.
       this.connection = await msg.member.voiceChannel.join();
       this.playQueue(msg);
@@ -193,10 +199,10 @@ class Video {
 
 function getQueue(id) {
   var queue = guildQueues.get(id);
-  if(queue == null) {
+  if (queue == null) {
     //Not defined, creating a queue
-     guildQueues.set(id, new GuildQueue(id));
-     queue = guildQueues.get(id);
+    guildQueues.set(id, new GuildQueue(id));
+    queue = guildQueues.get(id);
   }
   return queue;
 }
