@@ -51,7 +51,8 @@
     },
     "cmdAlreadyExists": "Cette commande existe déjà!",
     "groupDuplicate": "Cette utilisateur est déjà dans ce groupe!",
-    "notEnoughPermissions": "Permissions insuffisantes"
+    "notEnoughPermissions": "Permissions insuffisantes",
+    "ytdlError": "Cette vidéo n'a pas pu être télécharger (peut-être indisponible?)."
   },
   "ranks": {
     "vagabond": "Vagabond",
@@ -261,12 +262,9 @@
     "cmdRemoved": "Commande supprimée"
   },
   "play": {
-    "added": {
-      "video": "`{{values.1}}` a été ajouté à la file d'attente",
-      "playlist": "La liste de lecture a été ajouté à la file d'attente"
-    },
+    "added": "```css\n{{title}} ~ [{{duration}}]\n``` a été ajouté à la file d'attente",
     "skipped": "Vidéo passé!",
-    "playing": "Joue: `{{queue.0.1}}` ({{queue.0.2}})",
+    "playing": "Joue: ```css\n{{title}} ~ [{{duration}}]\n```",
     "queue": "**Liste de vidéos dans la file d'attente:**",
     "disconnected": "Déconnecté!",
     "unavailable": "Une vidéo a été trouvée, mais elle n'est pas disponible"

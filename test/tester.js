@@ -78,7 +78,7 @@ describe('Test storage', function() {
     });
   });
   describe('Test getUsers', function() {
-    it('Should returns an array of users in the guild', async function() {
+    it('Should return an array of users in the guild', async function() {
       //Add another user. TODO: better way to add users
       storage.getUser(msg, '287350581898558262');
       var response = await storage.getUsers(msg);
@@ -466,6 +466,8 @@ describe('Test the custom commands', function() {
 describe('Test the audio player', function() {
   //Setup
   let videoId
+  var oldVoiceChannel = msg.member.voiceChannel
+  var oldGetVideoInfo = audioPlayer.__get__('getVideoInfo');
   audioPlayer.__set__({
     get: function(url) {
       //Remove start of url
@@ -490,14 +492,13 @@ describe('Test the audio player', function() {
         }
         return youtube.videos(id);
       }
-    }
-  });
-  var oldGetVideoInfo = audioPlayer.__get__('getVideoInfo');
-  audioPlayer.__set__({
+    },
     getVideoInfo: function(msg, video) {
       videoId = video;
     }
   });
+  var downloadVideo = sinon.stub(audioPlayer, 'downloadVideo');
+  downloadVideo.returnsArg(0);
   //Test beginning
   describe('Test playYoutube', function() {
     it('Should return wrong usage', function() {
@@ -505,11 +506,12 @@ describe('Test the audio player', function() {
       expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.usage);
     });
     it('Should return missing voiceChannel', function() {
+      msg.member.voiceChannel = undefined;
       audioPlayer.playYoutube(msg, ['pet']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.notFound.voiceChannel);
     });
     it('Should return a video with a test tag', async function() {
-      msg.member.voiceChannel = 'Not null';
+      msg.member.voiceChannel = oldVoiceChannel;
       await audioPlayer.playYoutube(msg, ['test']);
       expect(videoId).to.equal('test123');
     });
@@ -534,15 +536,49 @@ describe('Test the audio player', function() {
       expect(response.id).to.equal('1');
     });
   });
+  var guildQueue = audioPlayer.__get__('getQueue')(msg.guild.id);
   describe('Test getVideoInfo', function() {
     it('Should return a video', async function() {
-      await oldGetVideoInfo(msg, 'test123');
-      var guildQueue = audioPlayer.__get__('getQueue')(msg.guild.id);
-      expect(guildQueue.queue[0].id).to.equal('test123');
+      await oldGetVideoInfo(msg, 'CylLNY-WSJw');
+      expect(guildQueue.queue[0].id).to.equal('CylLNY-WSJw');
     });
     it('Should return an error when the video unavailable', async function() {
       await oldGetVideoInfo(msg, 'unavailable123');
       expect(msgSend.lastCall.returnValue.content).to.equal(lang.play.unavailable);
+    });
+  });
+  describe('Test addToQueue', function() {
+    it('Should join a channel and start playing', async function() {
+      //Clear the queue
+      guildQueue.queue = [];
+      var video = {
+        id: 'test123',
+        title: 'test123',
+        duration: '3M'
+      }
+      await guildQueue.addToQueue(msg, video);
+      expect(guildQueue.queue[0].id).to.equal('test123');
+      expect(guildQueue.connection).to.exist;
+    });
+    it('Should put the next video in queue', async function() {
+      var video = {
+        id: 'test1234',
+        title: 'test1234',
+        duration: '3M'
+      }
+      await guildQueue.addToQueue(msg, video);
+      expect(guildQueue.queue[1].id).to.equal('test1234');
+      expect(msgSend.lastCall.returnValue.content).to.equal(mustache.render(lang.play.added, video));
+    })
+  });
+  describe('Test playQueue', function() {
+    it('Should play the next video', function() {
+      guildQueue.connection.dispatcher.emit('end');
+      expect(guildQueue.connection).to.exist;
+    });
+    it('Should leave the channel after playing the last video', function() {
+      guildQueue.connection.dispatcher.emit('end');
+      expect(guildQueue.connection).to.equal(undefined);
     });
   });
   describe('Test stop', function() {

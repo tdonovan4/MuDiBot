@@ -1,4 +1,5 @@
 const Discord = require("discord.js");
+var events = require('events');
 var deletedMessages = [];
 
 exports.msg1 = {
@@ -15,6 +16,21 @@ exports.msg1 = {
         })
         resolve()
       });
+    },
+    voiceChannel: {
+      join: function() {
+        //voiceConnection
+        return {
+          playStream: function(url) {
+            this.playing = url;
+            this.dispatcher = new events.EventEmitter()
+            this.disconnect = function() {
+              this.playing = undefined;
+            }
+            return this.dispatcher;
+          }
+        }
+      },
     },
     permissions: new Discord.Collection,
     roles: new Discord.Collection
