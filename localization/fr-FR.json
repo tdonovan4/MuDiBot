@@ -269,6 +269,9 @@
     "disconnected": "Déconnecté!",
     "unavailable": "Une vidéo a été trouvée, mais elle n'est pas disponible"
   },
+  "stop": {
+    "notInVoiceChannel": "Je ne suis pas dans un salon vocal!"
+  },
   "clearlog": {
     "maxNum": "Nombre maximal de messages à supprimer: ",
     "confirm": "Vous êtes sur le point de supprimer {{length}} message(s). :white_check_mark: pour confirmer ou :x: pour annuler.",

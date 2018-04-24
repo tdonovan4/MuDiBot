@@ -475,17 +475,17 @@ describe('Test the audio player', function() {
       //Seperate other values
       url = url.concat(url[1].split('&'));
       url.splice(1, 1);
-      if(url[0] == 'search') {
+      if (url[0] == 'search') {
         var tag = url[2].split('q=')[1];
-        if(tag == 'noResults') {
+        if (tag == 'noResults') {
           return {
             items: []
           }
         }
         return youtube.search(tag);
-      } else if(url[0] == 'videos') {
+      } else if (url[0] == 'videos') {
         var id = url[2].split('id=')[1];
-        if(id == 'unavailable123') {
+        if (id == 'unavailable123') {
           return {
             items: []
           }
@@ -582,17 +582,17 @@ describe('Test the audio player', function() {
     });
   });
   describe('Test stop', function() {
-    it('Should call voiceConnection.disconnect()', function() {
-      audioPlayer.__set__({
-        voiceConnection: {
-          disconnect: function(msg) {
-            response = 'disconnected';
-          }
-        }
-      });
+    it('Should return not in a voice channel', function() {
       msg.content = '$stop';
       new audioPlayer.StopCommand().execute(msg, ['']);
-      expect(response).to.equal('disconnected');
+      expect(printMsg.lastCall.returnValue).to.equal(lang.stop.notInVoiceChannel);
+    });
+    it('Should disconnect from voice channel', function() {
+      guildQueue.connection = {
+        disconnect: function() {}
+      };
+      new audioPlayer.StopCommand().execute(msg, ['']);
+      expect(guildQueue.connection).to.equal(undefined);
       expect(printMsg.lastCall.returnValue).to.equal(lang.play.disconnected);
     });
   });

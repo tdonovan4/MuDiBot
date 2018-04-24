@@ -269,6 +269,9 @@
     "disconnected": "Disconnected!",
     "unavailable": "A video was found, but is unavailable"
   },
+  "stop": {
+    "notInVoiceChannel": "I'm not in a voice channel!"
+  },
   "clearlog": {
     "maxNum": "Max number of messages to delete: ",
     "confirm": "You are about to delete {{length}} message(s). :white_check_mark: to confirm or :x: to cancel.",
