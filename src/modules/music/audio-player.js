@@ -123,6 +123,10 @@ module.exports = {
       //Error: no video found
       msg.channel.send(lang.error.notFound.video);
     }
+  },
+  downloadVideo: function(url, args) {
+    //So that it can be stubbed
+    return ytdl(url, args);
   }
 }
 
@@ -130,12 +134,52 @@ class GuildQueue {
   constructor(id) {
     this.queue = []
     this.id = id;
-  }
-  addToQueue(video) {
-    this.queue.push(video);
+    this.connection;
   }
   getVideos(number) {
     return this.queue.slice(0, number);
+  }
+  playQueue(msg) {
+    var video = this.queue[0];
+    var url = `https://youtu.be/${video.id}`;
+    try {
+      var stream = module.exports.downloadVideo(url, { filter : 'audioonly' });
+    }
+    catch(error) {
+      //Error during video downloading
+      console.log(error);
+      msg.channel.send(lang.ytdlError);
+    }
+
+    var dispatcher = this.connection.playStream(stream);
+
+    msg.channel.send(mustache.render(lang.play.playing, video));
+
+    dispatcher.on('end', () => {
+      //Remove played video
+      this.queue.splice(0, 1);
+      if (this.queue.length > 0) {
+        //Playing the next song
+        this.playQueue(msg);
+      } else {
+        this.connection.disconnect();
+        //Remove connection
+        this.connection = undefined;
+      }
+    });
+  }
+  async addToQueue(msg, video) {
+    //Add video to queue
+    this.queue.push(video);
+    //Message if not first in queue
+    if(this.queue.length > 1) {
+      msg.channel.send(mustache.render(lang.play.added, video));
+    }
+    if(this.connection == undefined) {
+      //No voiceConnection so join the channel and start playing the queue.
+      this.connection = await msg.member.voiceChannel.join();
+      this.playQueue(msg);
+    }
   }
 }
 
@@ -143,7 +187,7 @@ class Video {
   constructor(id, title, duration) {
     this.id = id;
     this.title = title;
-    this.duration = duration;
+    this.duration = duration.match(/\d\d*\w/g).join(' ').toLowerCase();
   }
 }
 
@@ -166,8 +210,7 @@ async function getVideoInfo(msg, videoId) {
     var item = response.items[0]
     var video = new Video(item.id, item.snippet.title, item.contentDetails.duration);
     //Add the video to the guild queue
-    getQueue(msg.guild.id).addToQueue(video);
-    console.log(getQueue(msg.guild.id).getVideos(1));
+    getQueue(msg.guild.id).addToQueue(msg, video);
   } else {
     msg.channel.send(lang.play.unavailable);
   }

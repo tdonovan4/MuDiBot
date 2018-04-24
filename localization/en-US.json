@@ -51,7 +51,8 @@
     },
     "cmdAlreadyExists": "This command already exists!",
     "groupDuplicate": "This user already is in this group!",
-    "notEnoughPermissions": "Not enough permissions"
+    "notEnoughPermissions": "Not enough permissions",
+    "ytdlError": "This video could not be downloaded (maybe unavailable?)."
   },
   "ranks": {
     "vagabond": "Vagabond",
@@ -261,12 +262,9 @@
     "cmdRemoved": "Command removed"
   },
   "play": {
-    "added": {
-      "video": "`{{values.1}}` added to the queue",
-      "playlist": "Playlist added to the queue"
-    },
+    "added": "This video has been added to the queue! :notepad_spiral:  ```css\n{{title}} ~ [{{duration}}]\n```",
     "skipped": "Video skipped!",
-    "playing": "Playing: `{{queue.0.1}}` ({{queue.0.2}})",
+    "playing": "**Playing:** :notes: ```css\n{{title}} ~ [{{duration}}]\n```",
     "queue": "**List of videos in queue:**",
     "disconnected": "Disconnected!",
     "unavailable": "A video was found, but is unavailable"
