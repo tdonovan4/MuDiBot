@@ -44,7 +44,7 @@ module.exports = {
         bot.printMsg(msg, lang.play.disconnected);
       } else {
         //Not in a channel
-        bot.printMsg(msg, lang.stop.notInVoiceChannel);
+        bot.printMsg(msg, lang.error.notPlaying);
       }
     }
   },
@@ -60,11 +60,16 @@ module.exports = {
       });
     }
     execute(msg, args) {
-      try {
-        var dispatcherStream = msg.member.voiceChannel.connection.player.dispatcher.stream;
-        dispatcherStream.destroy();
+      var guildQueue = getQueue(msg.guild.id);
+      if (guildQueue.connection != undefined) {
+        //Must print before so that it is in order
         bot.printMsg(msg, lang.play.skipped);
-      } catch (stream) {}
+        //End stream
+        guildQueue.connection.dispatcher.end();
+      } else {
+        //Not in a channel
+        bot.printMsg(msg, lang.error.notPlaying);
+      }
     }
   },
   QueueCommand: class extends bot.Command {
