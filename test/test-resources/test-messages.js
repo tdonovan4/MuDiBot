@@ -24,6 +24,9 @@ exports.msg1 = {
           playStream: function(url) {
             this.playing = url;
             this.dispatcher = new events.EventEmitter()
+            this.dispatcher.end = function() {
+              this.emit('end');
+            }
             this.disconnect = function() {
               this.playing = undefined;
             }

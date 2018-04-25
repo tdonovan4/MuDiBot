@@ -573,19 +573,19 @@ describe('Test the audio player', function() {
   });
   describe('Test playQueue', function() {
     it('Should play the next video', function() {
-      guildQueue.connection.dispatcher.emit('end');
+      guildQueue.connection.dispatcher.end();
       expect(guildQueue.connection).to.exist;
     });
     it('Should leave the channel after playing the last video', function() {
-      guildQueue.connection.dispatcher.emit('end');
+      guildQueue.connection.dispatcher.end();
       expect(guildQueue.connection).to.equal(undefined);
     });
   });
   describe('Test stop', function() {
-    it('Should return not in a voice channel', function() {
+    it('Should return not playing anything', function() {
       msg.content = '$stop';
       new audioPlayer.StopCommand().execute(msg, ['']);
-      expect(printMsg.lastCall.returnValue).to.equal(lang.stop.notInVoiceChannel);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.notPlaying);
     });
     it('Should disconnect from voice channel', function() {
       guildQueue.connection = {
@@ -597,23 +597,31 @@ describe('Test the audio player', function() {
     });
   });
   describe('Test skip', function() {
-    it('Should destroy the dispatcherStream', function() {
-      msg.member.voiceChannel = {
-        connection: {
-          player: {
-            dispatcher: {
-              stream: {
-                destroy: function() {
-                  response = 'destroyed';
-                }
-              }
-            }
-          }
-        }
-      }
+    it('Should return not playing anything', function() {
       msg.content = '$skip';
       new audioPlayer.SkipCommand().execute(msg, ['']);
-      expect(response).to.equal('destroyed');
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.notPlaying);
+    });
+    it('Should skip the video playing', async function() {
+      //Setup
+      guildQueue.queue = [{
+        id: 'test',
+        title: 'This is a test!',
+        duration: '3M'
+      }, {
+        id: 'test2',
+        title: 'This is a test!',
+        duration: '3M'
+      }];
+      await guildQueue.addToQueue(msg, {
+        id: 'test3',
+        title: 'This is a test!',
+        duration: '3M'
+      });
+      console.log(guildQueue);
+      //Real testing
+      new audioPlayer.SkipCommand().execute(msg, ['']);
+      expect(guildQueue.queue[0].id).to.equal('test2');
       expect(printMsg.lastCall.returnValue).to.equal(lang.play.skipped);
     });
   });

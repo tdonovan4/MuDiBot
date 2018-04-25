@@ -52,7 +52,8 @@
     "cmdAlreadyExists": "Cette commande existe déjà!",
     "groupDuplicate": "Cette utilisateur est déjà dans ce groupe!",
     "notEnoughPermissions": "Permissions insuffisantes",
-    "ytdlError": "Cette vidéo n'a pas pu être télécharger (peut-être indisponible?)."
+    "ytdlError": "Cette vidéo n'a pas pu être télécharger (peut-être indisponible?).",
+    "notPlaying": "Aucune vidéo ne joue!"
   },
   "ranks": {
     "vagabond": "Vagabond",
@@ -268,9 +269,6 @@
     "queue": "**Liste de vidéos dans la file d'attente:**",
     "disconnected": "Déconnecté!",
     "unavailable": "Une vidéo a été trouvée, mais elle n'est pas disponible"
-  },
-  "stop": {
-    "notInVoiceChannel": "Je ne suis pas dans un salon vocal!"
   },
   "clearlog": {
     "maxNum": "Nombre maximal de messages à supprimer: ",
