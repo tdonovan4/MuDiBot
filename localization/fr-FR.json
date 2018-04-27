@@ -265,8 +265,8 @@
   "play": {
     "added": "```css\n{{title}} ~ [{{duration}}]\n``` a été ajouté à la file d'attente",
     "skipped": "Vidéo passé!",
-    "playing": "Joue: ```css\n{{title}} ~ [{{duration}}]\n```",
-    "queue": "**Liste de vidéos dans la file d'attente:**",
+    "playing": "Joue présentement: ```css\n{{title}} ~ [{{duration}}]\n```",
+    "queue": "**Dans la file d'attente:** :notepad_spiral:",
     "disconnected": "Déconnecté!",
     "unavailable": "Une vidéo a été trouvée, mais elle n'est pas disponible"
   },

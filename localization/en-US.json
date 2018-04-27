@@ -266,7 +266,7 @@
     "added": "This video has been added to the queue! :notepad_spiral:  ```css\n{{title}} ~ [{{duration}}]\n```",
     "skipped": "Video skipped!",
     "playing": "**Playing:** :notes: ```css\n{{title}} ~ [{{duration}}]\n```",
-    "queue": "**List of videos in queue:**",
+    "queue": "**In queue:** :notepad_spiral:",
     "disconnected": "Disconnected!",
     "unavailable": "A video was found, but is unavailable"
   },
