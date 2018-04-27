@@ -111,6 +111,26 @@ async function getVideoInfo(msg, videoId) {
   }
 }
 
+function printVideos(msg, queue, num) {
+  var text = '';
+  if (num > 0) {
+    //Print the video currently playing
+    text += mustache.render(lang.play.playing, queue[0]);
+    if (num > 1) {
+      //Display videos in queue
+      text += lang.play.queue + '```css';
+      for (var i = 1; i < num; i++) {
+        var video = queue[i];
+        text += `\n${i}. ${video.title} ~ [${video.duration}]`;
+      }
+      text += '```';
+    }
+  } else {
+    text += lang.error.notPlaying;
+  }
+  msg.channel.send(text);
+}
+
 module.exports = {
   PlayCommand: class extends bot.Command {
     constructor() {
@@ -187,13 +207,9 @@ module.exports = {
       });
     }
     execute(msg, args) {
-      var list = lang.play.queue;
-      //Get video titles
-      for (i = 0; i < queue.length; i++) {
-        list += '\n "' + queue[i][1] + '"';
-      }
-      //Write titles
-      msg.channel.send(list);
+      var queue = getQueue(msg.guild.id).queue;
+      var num = Math.min(queue.length, 21);
+      printVideos(msg, queue, num);
     }
   },
   //Get YouTube video

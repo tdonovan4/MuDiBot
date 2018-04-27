@@ -618,7 +618,6 @@ describe('Test the audio player', function() {
         title: 'This is a test!',
         duration: '3M'
       });
-      console.log(guildQueue);
       //Real testing
       new audioPlayer.SkipCommand().execute(msg, ['']);
       expect(guildQueue.queue[0].id).to.equal('test2');
@@ -627,22 +626,64 @@ describe('Test the audio player', function() {
   });
   describe('Test listQueue', function() {
     it('Should send empty queue', function() {
+      guildQueue.queue = [];
       msg.content = '$queue';
       new audioPlayer.QueueCommand().execute(msg, ['']);
-      expect(msgSend.lastCall.returnValue.content).to.equal(lang.play.queue);
+      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.notPlaying);
     });
-    it('Should send a list containing the videos in queue', function() {
+    it('Should send queue only for current video playing', function() {
+      guildQueue.queue = [{
+        id: 'test',
+        title: 'test',
+        duration: '3M'
+      }];
+      new audioPlayer.QueueCommand().execute(msg, ['']);
+      expect(msgSend.lastCall.returnValue.content).to.equal('**Playing:** :notes: ```css\ntest ~ [3M]\n```');
+    });
+    it('Should send queue for 4 videos', function() {
       //Set the videos
-      audioPlayer.__set__({
-        queue: [
-          [0, 'dog'],
-          [1, 'cat']
-        ]
-      });
+      guildQueue.queue = guildQueue.queue.concat([{
+        id: 'test2',
+        title: 'test2',
+        duration: '3M'
+      }, {
+        id: 'test3',
+        title: 'test3',
+        duration: '3M'
+      }, {
+        id: 'test4',
+        title: 'test4',
+        duration: '3M'
+      }]);
       new audioPlayer.QueueCommand().execute(msg, ['']);
       expect(msgSend.lastCall.returnValue.content).to.equal(
-        lang.play.queue + '\n "dog"\n "cat"'
-      );
+        '**Playing:** :notes: ```css' +
+        '\ntest ~ [3M]' +
+        '\n```**In queue:** :notepad_spiral:```css' +
+        '\n1. test2 ~ [3M]' +
+        '\n2. test3 ~ [3M]' +
+        '\n3. test4 ~ [3M]```');
+    });
+    it('Should send only the first 20 videos (+ the one playing)', function() {
+      guildQueue.queue = [];
+      //Add lot of videos
+      for(var i = 0; i < 25; i++) {
+        guildQueue.queue.push({
+          id: 'test' + i,
+          title: 'test' + i,
+          duration: '3M'
+        });
+      }
+      new audioPlayer.QueueCommand().execute(msg, ['']);
+      expect(msgSend.lastCall.returnValue.content).to.equal(
+        '**Playing:** :notes: ```css' +
+        '\ntest0 ~ [3M]' +
+        '\n```**In queue:** :notepad_spiral:```css' +
+        '\n1. test1 ~ [3M]\n2. test2 ~ [3M]\n3. test3 ~ [3M]\n4. test4 ~ [3M]' +
+        '\n5. test5 ~ [3M]\n6. test6 ~ [3M]\n7. test7 ~ [3M]\n8. test8 ~ [3M]' +
+        '\n9. test9 ~ [3M]\n10. test10 ~ [3M]\n11. test11 ~ [3M]\n12. test12 ~ [3M]' +
+        '\n13. test13 ~ [3M]\n14. test14 ~ [3M]\n15. test15 ~ [3M]\n16. test16 ~ [3M]' +
+        '\n17. test17 ~ [3M]\n18. test18 ~ [3M]\n19. test19 ~ [3M]\n20. test20 ~ [3M]```');
     });
   });
 });
