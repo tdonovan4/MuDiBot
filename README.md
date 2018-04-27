@@ -41,7 +41,7 @@ You can then write `$help` (by default) to display all the available commands.
 
 ## Contribute
 Feel free to report any issues [here](https://github.com/tdonovan4/MuDiBot/issues) or submit a pull request!
-I still learning and I would love feedbacks.
+I'm still learning and I would love feedbacks.
 
 ## License
 [MIT](LICENSE) © Thomas Donovan
