@@ -76,7 +76,7 @@
     "usage": "Usage:",
     "help": {
       "usages": ["", "<command>"],
-      "msg": "Displays all commands or help for a specific command"
+      "msg": "Display all commands or help for a specific command"
     },
     "ping": {
       "usages": [""],
@@ -84,7 +84,7 @@
     },
     "info": {
       "usages": [""],
-      "msg": "Displays information about the bot"
+      "msg": "Display information about the bot"
     },
     "status": {
       "usages": ["<new status>"],
@@ -116,11 +116,11 @@
     },
     "gif": {
       "usages": ["", "<what to search>"],
-      "msg": "Searches for a gif or sends a trending GIF if there is no argument"
+      "msg": "Searche for a gif or sends a trending GIF if there is no argument"
     },
     "gifrandom": {
       "usages": ["", "<tag>"],
-      "msg": "Sends a random GIF"
+      "msg": "Send a random GIF"
     },
     "flipcoin": {
       "usages": [""],
@@ -144,11 +144,11 @@
     },
     "play": {
       "usages": ["<song url", "tags>"],
-      "msg": "Puts a song in queue and plays it"
+      "msg": "Put a song in queue and play it"
     },
     "stop": {
       "usages": [""],
-      "msg": "Makes the bot leave the voice channel"
+      "msg": "Make the bot leave the voice channel"
     },
     "skip": {
       "usages": [""],
@@ -160,19 +160,19 @@
     },
     "warn": {
       "usages": ["<user>"],
-      "msg": "Puts a warning on user"
+      "msg": "Put a warning on user"
     },
     "unwarn": {
       "usages": ["<user>"],
-      "msg": "Removes a warning from user"
+      "msg": "Remove a warning from user"
     },
     "warnlist": {
       "usages": ["<user>", "all"],
-      "msg": "Lists warnings of an user or all users"
+      "msg": "List warnings of an user or all users"
     },
     "warnpurge": {
       "usages": ["<user>", "all"],
-      "msg": "Removes all warnings from an user or all users"
+      "msg": "Remove all warnings from an user or all users"
     },
     "clearlog": {
       "usages": ["","<message num>", "<user to delete> <message num>",
@@ -181,11 +181,11 @@
     },
     "kill": {
       "usages": [""],
-      "msg": "Kills the process"
+      "msg": "Kill the process"
     },
     "restart": {
       "usages": [""],
-      "msg": "Restarts the bot"
+      "msg": "Restart the bot"
     },
     "setchannel": {
       "usages": [""],
