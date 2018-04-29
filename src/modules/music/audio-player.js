@@ -102,7 +102,7 @@ async function getVideoInfo(msg, videoId) {
     `&id=${videoId}` +
     `&key=${config.youtubeAPIKey}`);
   if (response.items != undefined && response.items.length > 0) {
-    var item = response.items[0]
+    var item = response.items[0];
     var video = new Video(item.id, item.snippet.title, item.contentDetails.duration);
     //Add the video to the guild queue
     getQueue(msg.guild.id).addToQueue(msg, video);
