@@ -263,9 +263,9 @@
     "cmdRemoved": "Commande supprimée"
   },
   "play": {
-    "added": "```css\n{{title}} ~ [{{duration}}]\n``` a été ajouté à la file d'attente",
+    "added": "```css\n{{{title}}} ~ [{{duration}}]\n``` a été ajouté à la file d'attente",
     "skipped": "Vidéo passé!",
-    "playing": "Joue présentement: ```css\n{{title}} ~ [{{duration}}]\n```",
+    "playing": "Joue présentement: ```css\n{{{title}}} ~ [{{duration}}]\n```",
     "queue": "**Dans la file d'attente:** :notepad_spiral:",
     "disconnected": "Déconnecté!",
     "unavailable": "Une vidéo a été trouvée, mais elle n'est pas disponible"

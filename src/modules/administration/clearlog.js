@@ -36,8 +36,9 @@ module.exports = class ClearlogCommand extends bot.Command {
       //Use filters
       if (mention != undefined) {
         usersToClear.push(mention.id);
-        //Delete mention in args
-        args[args.findIndex(x => x == `<@${mention.id}>`)] = '';
+        //Delete mention in args (handle username and nickname)
+        args[args.findIndex(x => x == `<@${mention.id}>`
+          || x == `<@!${mention.id}>`)] = '';
       }
       clearList.push(args.slice(0, args.length).filter(x => x != '').join(' '));
       filter = true;
