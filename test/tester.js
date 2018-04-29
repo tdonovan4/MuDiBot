@@ -1135,6 +1135,17 @@ describe('Test commands', function() {
       var deletedMessages = testMessages.__get__('deletedMessages');
       expect(deletedMessages).to.deep.equal(['flower', 'pot']);
     });
+    it('Should delete messages by user with id 384633488400140664 if changed nickname', async function() {
+      msg.mentions.users.set('384633488400140664', {
+        id: '384633488400140664'
+      });
+      msg.content = '$clearlog <@!384633488400140664> 15';
+      //Reset deletedMessages
+      testMessages.__set__('deletedMessages', []);
+      await commands.executeCmd(msg, ['clearlog']);
+      var deletedMessages = testMessages.__get__('deletedMessages');
+      expect(deletedMessages).to.deep.equal(['flower', 'pot']);
+    });
     it('Should delete message with flower by user with id 384633488400140664', async function() {
       msg.content = '$clearlog <@384633488400140664> flower 15';
       //Reset deletedMessages
