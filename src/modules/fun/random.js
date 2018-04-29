@@ -66,8 +66,9 @@ module.exports = {
       if (values[2] > 0) {
         reply += ` + ${values[2]}`;
       } else if(values[2] < 0) {
-        reply += ` - ${values[2]}`;
+        reply += ` - ${Math.abs(values[2])}`;
       }
+      //Add total
       reply += ` = ${dice.reduce((a, b) => a+b) + values[2]}`;
       msg.channel.send(reply);
     }
