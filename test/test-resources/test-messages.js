@@ -1,4 +1,5 @@
 const Discord = require("discord.js");
+var events = require('events');
 var deletedMessages = [];
 
 exports.msg1 = {
@@ -16,6 +17,24 @@ exports.msg1 = {
         resolve()
       });
     },
+    voiceChannel: {
+      join: function() {
+        //voiceConnection
+        return {
+          playStream: function(url) {
+            this.playing = url;
+            this.dispatcher = new events.EventEmitter()
+            this.dispatcher.end = function() {
+              this.emit('end');
+            }
+            this.disconnect = function() {
+              this.playing = undefined;
+            }
+            return this.dispatcher;
+          }
+        }
+      },
+    },
     permissions: new Discord.Collection,
     roles: new Discord.Collection
   },
@@ -25,7 +44,7 @@ exports.msg1 = {
     members: {
       get: function(id) {
         var username = 'TestUser';
-        if(id == '357156661105365963') {
+        if (id == '357156661105365963') {
           username = 'George'
         }
         return {
@@ -41,7 +60,24 @@ exports.msg1 = {
   },
   channel: {
     send: function(text) {
-      return text;
+      return {
+        content: text,
+        react: function(emoji) {
+          return emoji
+        },
+        awaitReactions: function() {
+          return {
+            first: function() {
+              return {
+                emoji: {
+                  name: '✅'
+                }
+              }
+            }
+          }
+        },
+        delete: function() {}
+      }
     },
     fetchMessages: async function(args) {
       var predefinedMsg = [{
@@ -89,10 +125,30 @@ exports.msg1 = {
         author: {
           id: '1'
         }
+      }, {
+        content: 'This is a test 123',
+        author: {
+          id: '1'
+        }
+      }, {
+        content: 'flower',
+        author: {
+          id: '384633488400140664'
+        }
+      }, {
+        content: 'pot',
+        author: {
+          id: '384633488400140664'
+        }
+      }, {
+        content: 'flower',
+        author: {
+          id: '1'
+        }
       }];
       var returnedMsg = []
-      for(var i = 0; i < args.limit; i++) {
-        if(i > predefinedMsg.length - 1) break;
+      for (var i = 0; i < args.limit; i++) {
+        if (i > predefinedMsg.length - 1) break;
         predefinedMsg[i].delete = function() {
           deletedMessages.push(this.content);
         }

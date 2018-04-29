@@ -1,10 +1,52 @@
-const bot = require('./bot.js');
-const storage = require('./storage.js');
+const bot = require('../../bot.js');
+const storage = require('../../storage.js');
 const sql = require('sqlite');
-const config = require('./args.js').getConfig()[1];
-var lang = require('./localization.js').getLocalization();
+const config = require('../../args.js').getConfig()[1];
+var lang = require('../../localization.js').getLocalization();
 
 module.exports = {
+  SetGroupCommand: class extends bot.Command {
+    constructor() {
+      super({
+        name: 'setgroup',
+        aliases: [],
+        category: 'user',
+        priority: 2,
+        permLvl: 3
+      });
+    }
+    async execute(msg, args) {
+      await module.exports.setGroup(msg, msg.mentions.users.first(), args[1]);
+    }
+  },
+  UnsetGroupCommand: class extends bot.Command {
+    constructor() {
+      super({
+        name: 'unsetgroup',
+        aliases: ['ungroup'],
+        category: 'user',
+        priority: 1,
+        permLvl: 3
+      });
+    }
+    async execute(msg, args) {
+      await module.exports.unsetGroup(msg, msg.mentions.users.first(), args[1]);
+    }
+  },
+  PurgeGroupsCommand: class extends bot.Command {
+    constructor() {
+      super({
+        name: 'purgegroups',
+        aliases: ['gpurge'],
+        category: 'user',
+        priority: 0,
+        permLvl: 3
+      });
+    }
+    async execute(msg, args) {
+      await purgeGroups(msg);
+    }
+  },
   setGroup: function(msg, user, group) {
     var groups = config.groups;
 
@@ -155,33 +197,34 @@ module.exports = {
       }
     });
   },
-  purgeGroups: function(msg) {
-    var user = msg.mentions.users.first();
+}
 
-    //Check if there is a user in msg
-    if (user == undefined) {
-      //Invalid argument: user
-      bot.printMsg(msg, lang.error.invalidArg.user);
-      return;
-    }
-    
-    return new Promise((resolve, reject) => {
-      sql.open(config.pathDatabase).then(() => {
-        sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
-          .then(() => {
-            sql.run('UPDATE users SET groups = null WHERE serverId = ? AND userId = ?', [msg.guild.id, user.id]).then(() => {
-              bot.printMsg(msg, lang.purgegroups.purged);
-              resolve();
-            }).catch(error => {
-              console.log(error);
-              reject();
-            });
-          });
-        sql.close();
-      }).catch(error => {
-        console.log(error);
-        reject();
-      });
-    });
+function purgeGroups(msg) {
+  var user = msg.mentions.users.first();
+
+  //Check if there is a user in msg
+  if (user == undefined) {
+    //Invalid argument: user
+    bot.printMsg(msg, lang.error.invalidArg.user);
+    return;
   }
+
+  return new Promise((resolve, reject) => {
+    sql.open(config.pathDatabase).then(() => {
+      sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
+        .then(() => {
+          sql.run('UPDATE users SET groups = null WHERE serverId = ? AND userId = ?', [msg.guild.id, user.id]).then(() => {
+            bot.printMsg(msg, lang.purgegroups.purged);
+            resolve();
+          }).catch(error => {
+            console.log(error);
+            reject();
+          });
+        });
+      sql.close();
+    }).catch(error => {
+      console.log(error);
+      reject();
+    });
+  });
 }

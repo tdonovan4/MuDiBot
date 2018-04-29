@@ -21,7 +21,7 @@ module.exports = {
   //The 'game' the bot is playing (more like a status)
   currentStatus: 'Type $help',
   //The path to the database (default: './storage/data.db')
-  databasePath: './storage/data.db',
+  pathDatabase: './storage/data.db',
   //List of users (id) with all permissions
   superusers: [''],
 
@@ -85,6 +85,33 @@ module.exports = {
   /*Configuration for individual command.
   They also can be activated or deactivated.
   All commands are activated by default.*/
+
+  categories: [
+    {
+      name: 'general',
+      priority: 5
+    },
+    {
+      name: 'user',
+      priority: 4
+    },
+    {
+      name: 'fun',
+      priority: 3
+    },
+    {
+      name: 'music',
+      priority: 2
+    },
+    {
+      name: 'warnings',
+      priority: 1
+    },
+    {
+      name: 'administration',
+      priority: 0
+    }
+  ],
 
   /*---------------
   -Category: General-

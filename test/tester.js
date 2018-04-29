@@ -6,7 +6,7 @@ const mustache = require('mustache');
 const sql = require('sqlite');
 const fs = require('fs');
 const rewire = require('rewire');
-const giphy = require('../src/giphy-api.js');
+const youtube = require('./test-resources/test-youtube.js');
 var testMessages = rewire('./test-resources/test-messages.js');
 var msg = testMessages.msg1;
 
@@ -19,23 +19,29 @@ var client = sinon.stub(Discord, 'Client');
 client.returns(require('./test-resources/test-client.js'));
 var msgSend = sinon.spy(msg.channel, 'send')
 var reply = sinon.spy(msg, 'reply')
-var search = sinon.stub(giphy, 'search');
-search.resolves('A gif');
-var random = sinon.stub(giphy, 'random');
-random.resolves('A random gif');
+const giphy = rewire('../src/modules/fun/giphy-api.js');
+giphy.__set__({
+  search: function() {
+    return 'A gif';
+  },
+  random: function() {
+    return 'A random gif';
+  }
+})
+
 const storage = require('../src/storage.js');
 const levels = rewire('../src/levels.js');
-const permGroups = require('../src/permission-group.js');
-const warnings = require('../src/warnings.js');
+const permGroups = rewire('../src/modules/user/permission-group.js');
+const warnings = require('../src/modules/warnings/warnings.js');
 const defaultChannel = require('../src/default-channel.js');
 
 //Init bot
 const bot = require('../src/bot.js');
 
 //Init stuff that need bot
-const customCmd = require('../src/custom-cmd.js');
-const audioPlayer = rewire('../src/audio-player.js');
-var setGame = sinon.spy(bot.client().user, 'setGame');
+const customCmd = require('../src/modules/fun/custom-cmd.js');
+const audioPlayer = rewire('../src/modules/music/audio-player.js');
+var setActivity = sinon.spy(bot.client().user, 'setActivity');
 var channelSend = sinon.spy(bot.client().channels.get('42'), 'send');
 var printMsg = sinon.stub(bot, 'printMsg');
 printMsg.returnsArg(1);
@@ -44,10 +50,14 @@ printMsg.returnsArg(1);
 const commands = require('../src/commands.js');
 var checkPerm = sinon.stub(commands, 'checkPerm');
 
+//Register stuff
+commands.registerCategories(config.categories);
+commands.registerCommands();
+
 function deleteDatabase() {
   //Delete the test database if it exists
   var path = './test/test-resources/test-database.db';
-  if(fs.existsSync(path)) {
+  if (fs.existsSync(path)) {
     fs.unlinkSync(path);
   }
 }
@@ -68,14 +78,14 @@ describe('Test storage', function() {
     });
   });
   describe('Test getUsers', function() {
-    it('Should returns an array of users in the guild', async function() {
+    it('Should return an array of users in the guild', async function() {
       //Add another user. TODO: better way to add users
       storage.getUser(msg, '287350581898558262');
       var response = await storage.getUsers(msg);
 
       //Test the array
       expectedUserId = ['041025599435591424', '287350581898558262'];
-      for(let i = 0; i < response.length; i++) {
+      for (let i = 0; i < response.length; i++) {
         expect(response[i].serverId).to.equal('357156661105365963');
         expect(response[i].userId).to.equal(expectedUserId[i]);
       }
@@ -132,7 +142,7 @@ describe('Test permission groups', function() {
   });
   describe('Test purgeGroups', function() {
     it('Should return invalid user', function() {
-      permGroups.purgeGroups(msg);
+      permGroups.__get__('purgeGroups')(msg);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.invalidArg.user);
     });
     it('Should purge TestUser\'s groups', async function() {
@@ -140,7 +150,7 @@ describe('Test permission groups', function() {
       msg.mentions.users.set('041025599435591424', {
         id: '041025599435591424'
       });
-      await permGroups.purgeGroups(msg);
+      await permGroups.__get__('purgeGroups')(msg);
       var response = await storage.getUser(msg, '041025599435591424');
       expect(response.groups).to.equal(null);
     })
@@ -276,7 +286,7 @@ describe('Test levels', function() {
       /*This should be executed while the XP is still
         in cooldown because of the test before */
       await modifyUserXp(msg, '041025599435591424', 0);
-      for(var i = 0; i < 5; i++) {
+      for (var i = 0; i < 5; i++) {
         await levels.newMessage(msg);
       }
       var user = await storage.getUser(msg, '041025599435591424');
@@ -299,12 +309,12 @@ describe('Test levels', function() {
       await levels.newMessage(msg);
       //Just one big expect to test if the returned value is correct
       expect(printMsg.lastCall.returnValue).to.equal(mustache.render(lang.general.member.leveled, {
-        msg,
-        progression: 10
-      }) + '\n' +
-      mustache.render(lang.general.member.rankUp, {
-        rank: 'Farmer'
-      }) + '!');
+          msg,
+          progression: 10
+        }) + '\n' +
+        mustache.render(lang.general.member.rankUp, {
+          rank: 'Farmer'
+        }) + '!');
     });
     it('Should set the reward for the user (permission group)', async function() {
       //Set the reward for warrior
@@ -331,17 +341,18 @@ describe('Test levels', function() {
   });
 });
 describe('Test the custom commands', function() {
-  describe('Test addCmd and getCmds', function() {
-    it('addCmd should return wrong usage', async function() {
-      await customCmd.addCmd(msg, ['']);
+  describe('Test custcmd and getCmds', function() {
+    it('custcmd should return wrong usage', async function() {
+      msg.content = '$custcmd';
+      await commands.executeCmd(msg, ['custcmd']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.usage);
     });
     it('getCmds should return empty array', async function() {
       var response = await customCmd.getCmds(msg);
-      expect(response).to.deep.equal([]);
     });
-    it('addCmd should add the command to the database', async function() {
-      await customCmd.addCmd(msg, ['testCmd1', 'say', 'This is a test']);
+    it('custcmd should add the command to the database', async function() {
+      msg.content = '$custcmd testCmd1 say This is a test';
+      await commands.executeCmd(msg, ['custcmd']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.custcmd.cmdAdded);
     });
     it('getCmds should return testCmd1', async function() {
@@ -354,22 +365,26 @@ describe('Test the custom commands', function() {
         userId: '041025599435591424',
       }]);
     })
-    it('addCmd should return wrong usage when using a too long name', async function() {
-      await customCmd.addCmd(msg, ['thisNameIsReallyTooLongToBeACustomCmd', 'say', 'This is a test']);
+    it('custcmd should return wrong usage when using a too long name', async function() {
+      msg.content = '$custcmd thisNameIsReallyTooLongToBeACustomCmd say This is a test';
+      await commands.executeCmd(msg, ['custcmd']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.usage);
     });
-    it('addCmd should return that the command already exists', async function() {
-      await customCmd.addCmd(msg, ['testCmd1', 'say', 'This is a test']);
+    it('custcmd should return that the command already exists', async function() {
+      msg.content = '$custcmd testCmd1 say This is a test';
+      await commands.executeCmd(msg, ['custcmd']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.cmdAlreadyExists);
     });
-    it('addCmd should return that the user has too many commands', async function() {
+    it('custcmd should return that the user has too many commands', async function() {
+      msg.content = '$custcmd testCmd2 say This is a test';
       config.custcmd.maxCmdsPerUser = 1;
-      await customCmd.addCmd(msg, ['testCmd2', 'say', 'This is a test']);
+      await commands.executeCmd(msg, ['custcmd']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.tooMuch.cmdsUser);
     });
-    it('addCmd should add the commandd to the database when using an administrator', async function() {
+    it('custcmd should add the commandd to the database when using an administrator', async function() {
+      msg.content = '$custcmd testCmd2 say This is a test';
       msg.member.permissions.set('ADMINISTRATOR');
-      await customCmd.addCmd(msg, ['testCmd2', 'say', 'This is a test']);
+      await commands.executeCmd(msg, ['custcmd']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.custcmd.cmdAdded);
     });
     it('getCmds should return testCmd1 and testCmd2', async function() {
@@ -391,11 +406,13 @@ describe('Test the custom commands', function() {
   });
   describe('Test removeCmd', function() {
     it('Should return command not found', async function() {
-      await customCmd.removeCmd(msg, ['testCmd3']);
+      msg.content = '$custcmd testCmd3';
+      await commands.executeCmd(msg, ['custcmdremove']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.notFound.cmd);
     });
     it('Should remove testCmd2', async function() {
-      await customCmd.removeCmd(msg, ['testCmd2']);
+      msg.content = '$custcmd testCmd2';
+      await commands.executeCmd(msg, ['custcmdremove']);
       var response = await customCmd.getCmds(msg);
       expect(printMsg.lastCall.returnValue).to.equal(lang.custcmdremove.cmdRemoved);
       expect(response).to.deep.equal([{
@@ -410,7 +427,7 @@ describe('Test the custom commands', function() {
   describe('Test printCmds', function() {
     it('Should return info about testCmd1', async function() {
       await customCmd.printCmds(msg, ['testCmd1']);
-      var embed = msgSend.lastCall.returnValue.embed;
+      var embed = msgSend.lastCall.returnValue.content.embed;
       expect(embed.title).to.equal('testCmd1');
       expect(embed.fields[0].value).to.equal('say');
       expect(embed.fields[1].value).to.equal('TestUser');
@@ -418,100 +435,255 @@ describe('Test the custom commands', function() {
     });
     it('Should return all custom commands', async function() {
       msg.author.id = '357156661105365963';
-      await customCmd.addCmd(msg, ['testCmd2', 'say', 'This is a test']);
+      msg.content = '$custcmd testCmd2 say This is a test';
+      await commands.executeCmd(msg, ['custcmd']);
       msg.author.id = '041025599435591424';
       await customCmd.printCmds(msg, []);
-      var response = msgSend.getCall(msgSend.callCount - 2).returnValue;
+      var response = msgSend.getCall(msgSend.callCount - 2).returnValue.content;
       expect(response).to.have.string('testCmd1');
       expect(response).to.have.string('testCmd2');
     })
     it('Should return all TestUser\'s custom commands', async function() {
-      await customCmd.addCmd(msg, ['testCmd3', 'say', 'This is a test']);
+      msg.content = '$custcmd testCmd3 say This is a test';
+      await commands.executeCmd(msg, ['custcmd']);
       await customCmd.printCmds(msg, ['']);
-      var response = msgSend.getCall(msgSend.callCount - 2).returnValue;
+      var response = msgSend.getCall(msgSend.callCount - 2).returnValue.content;
       expect(response).to.have.string('testCmd1');
       expect(response).to.have.string('testCmd3');
     });
     it('Should return that the list is empty', async function() {
-      await customCmd.removeCmd(msg, ['testCmd1']);
-      await customCmd.removeCmd(msg, ['testCmd2']);
-      await customCmd.removeCmd(msg, ['testCmd3']);
+      msg.content = '$custcmdremove testCmd1';
+      await commands.executeCmd(msg, ['custcmdremove']);
+      msg.content = '$custcmdremove testCmd2';
+      await commands.executeCmd(msg, ['custcmdremove']);
+      msg.content = '$custcmdremove testCmd3';
+      await commands.executeCmd(msg, ['custcmdremove']);
       await customCmd.printCmds(msg, ['']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.custcmdlist.empty);
     });
   });
 });
 describe('Test the audio player', function() {
-  //TODO: Replace these placeholder tests after the rework of audio-player.
-  let response;
+  //Setup
+  let videoId
+  var oldVoiceChannel = msg.member.voiceChannel
+  var oldGetVideoInfo = audioPlayer.__get__('getVideoInfo');
   audioPlayer.__set__({
-    addToQueue: function(msg, url) {
-      response = url
+    get: function(url) {
+      //Remove start of url
+      url = url.split('https://www.googleapis.com/youtube/v3/')[1].split('?');
+      //Seperate other values
+      url = url.concat(url[1].split('&'));
+      url.splice(1, 1);
+      if (url[0] == 'search') {
+        var tag = url[2].split('q=')[1];
+        if (tag == 'noResults') {
+          return {
+            items: []
+          }
+        }
+        return youtube.search(tag);
+      } else if (url[0] == 'videos') {
+        var id = url[2].split('id=')[1];
+        if (id == 'unavailable123') {
+          return {
+            items: []
+          }
+        }
+        return youtube.videos(id);
+      }
+    },
+    getVideoInfo: function(msg, video) {
+      videoId = video;
     }
   });
+  var downloadVideo = sinon.stub(audioPlayer, 'downloadVideo');
+  downloadVideo.returnsArg(0);
+  //Test beginning
   describe('Test playYoutube', function() {
     it('Should return wrong usage', function() {
       audioPlayer.playYoutube(msg, '');
-      expect(msgSend.lastCall.returnValue).to.equal(lang.error.usage);
+      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.usage);
     });
     it('Should return missing voiceChannel', function() {
+      msg.member.voiceChannel = undefined;
       audioPlayer.playYoutube(msg, ['pet']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.notFound.voiceChannel);
     });
-    it('Should execute addToQueue with the url', function() {
-      msg.member.voiceChannel = 'Not null';
-      audioPlayer.playYoutube(msg, ['https://www.youtube.com/watch?v=jNQXAC9IVRw']);
-      expect(response).to.equal('https://www.youtube.com/watch?v=jNQXAC9IVRw');
+    it('Should return a video with a test tag', async function() {
+      msg.member.voiceChannel = oldVoiceChannel;
+      await audioPlayer.playYoutube(msg, ['test']);
+      expect(videoId).to.equal('test123');
+    });
+    it('Should return not found if no video found', async function() {
+      await audioPlayer.playYoutube(msg, ['noResults']);
+      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.notFound.video);
+    });
+    it('Should return video ID of the url', async function() {
+      await audioPlayer.playYoutube(msg, ['https://www.youtube.com/watch?v=jNQXAC9IVRw']);
+      expect(videoId).to.equal('jNQXAC9IVRw');
+    });
+  });
+  describe('Test getQueue', function() {
+    it('Should create a new queue and return it', function() {
+      var response = audioPlayer.__get__('getQueue')('1');
+      expect(response.id).to.equal('1');
+    });
+    it('Should return the first queue', function() {
+      //Create another queue
+      audioPlayer.__get__('getQueue')('2');
+      var response = audioPlayer.__get__('getQueue')('1');
+      expect(response.id).to.equal('1');
+    });
+  });
+  var guildQueue = audioPlayer.__get__('getQueue')(msg.guild.id);
+  describe('Test getVideoInfo', function() {
+    it('Should return a video', async function() {
+      await oldGetVideoInfo(msg, 'CylLNY-WSJw');
+      expect(guildQueue.queue[0].id).to.equal('CylLNY-WSJw');
+    });
+    it('Should return an error when the video unavailable', async function() {
+      await oldGetVideoInfo(msg, 'unavailable123');
+      expect(msgSend.lastCall.returnValue.content).to.equal(lang.play.unavailable);
+    });
+  });
+  describe('Test addToQueue', function() {
+    it('Should join a channel and start playing', async function() {
+      //Clear the queue
+      guildQueue.queue = [];
+      var video = {
+        id: 'test123',
+        title: 'test123',
+        duration: '3M'
+      }
+      await guildQueue.addToQueue(msg, video);
+      expect(guildQueue.queue[0].id).to.equal('test123');
+      expect(guildQueue.connection).to.exist;
+    });
+    it('Should put the next video in queue', async function() {
+      var video = {
+        id: 'test1234',
+        title: 'test1234',
+        duration: '3M'
+      }
+      await guildQueue.addToQueue(msg, video);
+      expect(guildQueue.queue[1].id).to.equal('test1234');
+      expect(msgSend.lastCall.returnValue.content).to.equal(mustache.render(lang.play.added, video));
+    })
+  });
+  describe('Test playQueue', function() {
+    it('Should play the next video', function() {
+      guildQueue.connection.dispatcher.end();
+      expect(guildQueue.connection).to.exist;
+    });
+    it('Should leave the channel after playing the last video', function() {
+      guildQueue.connection.dispatcher.end();
+      expect(guildQueue.connection).to.equal(undefined);
     });
   });
   describe('Test stop', function() {
-    it('Should call voiceConnection.disconnect()', function() {
-      audioPlayer.__set__({
-        voiceConnection: {
-          disconnect: function(msg) {
-            response = 'disconnected';
-          }
-        }
-      });
-      audioPlayer.stop(msg);
-      expect(response).to.equal('disconnected');
+    it('Should return not playing anything', function() {
+      msg.content = '$stop';
+      new audioPlayer.StopCommand().execute(msg, ['']);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.notPlaying);
+    });
+    it('Should disconnect from voice channel', function() {
+      guildQueue.connection = {
+        disconnect: function() {}
+      };
+      new audioPlayer.StopCommand().execute(msg, ['']);
+      expect(guildQueue.connection).to.equal(undefined);
       expect(printMsg.lastCall.returnValue).to.equal(lang.play.disconnected);
     });
   });
   describe('Test skip', function() {
-    it('Should destroy the dispatcherStream', function() {
-      msg.member.voiceChannel = {
-        connection: {
-          player: {
-            dispatcher: {
-              stream: {
-                destroy: function() {
-                  response = 'destroyed';
-                }
-              }
-            }
-          }
-        }
-      }
-      audioPlayer.skip(msg);
-      expect(response).to.equal('destroyed');
+    it('Should return not playing anything', function() {
+      msg.content = '$skip';
+      new audioPlayer.SkipCommand().execute(msg, ['']);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.notPlaying);
+    });
+    it('Should skip the video playing', async function() {
+      //Setup
+      guildQueue.queue = [{
+        id: 'test',
+        title: 'This is a test!',
+        duration: '3M'
+      }, {
+        id: 'test2',
+        title: 'This is a test!',
+        duration: '3M'
+      }];
+      await guildQueue.addToQueue(msg, {
+        id: 'test3',
+        title: 'This is a test!',
+        duration: '3M'
+      });
+      //Real testing
+      new audioPlayer.SkipCommand().execute(msg, ['']);
+      expect(guildQueue.queue[0].id).to.equal('test2');
       expect(printMsg.lastCall.returnValue).to.equal(lang.play.skipped);
     });
   });
   describe('Test listQueue', function() {
     it('Should send empty queue', function() {
-      audioPlayer.listQueue(msg);
-      expect(msgSend.lastCall.returnValue).to.equal(lang.play.queue);
+      guildQueue.queue = [];
+      msg.content = '$queue';
+      new audioPlayer.QueueCommand().execute(msg, ['']);
+      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.notPlaying);
     });
-    it('Should send a list containing the videos in queue', function() {
+    it('Should send queue only for current video playing', function() {
+      guildQueue.queue = [{
+        id: 'test',
+        title: 'test',
+        duration: '3M'
+      }];
+      new audioPlayer.QueueCommand().execute(msg, ['']);
+      expect(msgSend.lastCall.returnValue.content).to.equal('**Playing:** :notes: ```css\ntest ~ [3M]\n```');
+    });
+    it('Should send queue for 4 videos', function() {
       //Set the videos
-      audioPlayer.__set__({
-        queue: [[0, 'dog'], [1, 'cat']]
-      });
-      audioPlayer.listQueue(msg);
-      expect(msgSend.lastCall.returnValue).to.equal(
-        lang.play.queue + '\n "dog"\n "cat"'
-      );
+      guildQueue.queue = guildQueue.queue.concat([{
+        id: 'test2',
+        title: 'test2',
+        duration: '3M'
+      }, {
+        id: 'test3',
+        title: 'test3',
+        duration: '3M'
+      }, {
+        id: 'test4',
+        title: 'test4',
+        duration: '3M'
+      }]);
+      new audioPlayer.QueueCommand().execute(msg, ['']);
+      expect(msgSend.lastCall.returnValue.content).to.equal(
+        '**Playing:** :notes: ```css' +
+        '\ntest ~ [3M]' +
+        '\n```**In queue:** :notepad_spiral:```css' +
+        '\n1. test2 ~ [3M]' +
+        '\n2. test3 ~ [3M]' +
+        '\n3. test4 ~ [3M]```');
+    });
+    it('Should send only the first 20 videos (+ the one playing)', function() {
+      guildQueue.queue = [];
+      //Add lot of videos
+      for(var i = 0; i < 25; i++) {
+        guildQueue.queue.push({
+          id: 'test' + i,
+          title: 'test' + i,
+          duration: '3M'
+        });
+      }
+      new audioPlayer.QueueCommand().execute(msg, ['']);
+      expect(msgSend.lastCall.returnValue.content).to.equal(
+        '**Playing:** :notes: ```css' +
+        '\ntest0 ~ [3M]' +
+        '\n```**In queue:** :notepad_spiral:```css' +
+        '\n1. test1 ~ [3M]\n2. test2 ~ [3M]\n3. test3 ~ [3M]\n4. test4 ~ [3M]' +
+        '\n5. test5 ~ [3M]\n6. test6 ~ [3M]\n7. test7 ~ [3M]\n8. test8 ~ [3M]' +
+        '\n9. test9 ~ [3M]\n10. test10 ~ [3M]\n11. test11 ~ [3M]\n12. test12 ~ [3M]' +
+        '\n13. test13 ~ [3M]\n14. test14 ~ [3M]\n15. test15 ~ [3M]\n16. test16 ~ [3M]' +
+        '\n17. test17 ~ [3M]\n18. test18 ~ [3M]\n19. test19 ~ [3M]\n20. test20 ~ [3M]```');
     });
   });
 });
@@ -537,19 +709,14 @@ describe('Test warnings', function() {
     });
   });
   describe('Test list', function() {
-    it('Should return wrong usage', function() {
-      msg.mentions.users.clear();
-      msg.content = '$warnlist';
-      warnings.list(msg);
-      expect(printMsg.lastCall.returnValue).to.equal(lang.error.usage);
-    });
     it('Should return no warnings', async function() {
-      msg.content = '$warnlist all';
-      await warnings.list(msg);
+      msg.content = '$warnlist';
+      await commands.executeCmd(msg, ['warnlist']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.warn.noWarns);
     });
     it('Should return all warnings', async function() {
       //Add warnings to users
+      msg.mentions.users.clear();
       msg.mentions.users.set('357156661105365963', {
         id: '357156661105365963'
       });
@@ -561,22 +728,22 @@ describe('Test warnings', function() {
       });
       await warnings.warn(msg, 2);
 
-      msg.content = '$warnlist all';
-      await warnings.list(msg);
+      msg.content = '$warnlist';
+      await commands.executeCmd(msg, ['warnlist']);
       expect(printMsg.lastCall.returnValue).to.equal(
         '<@041025599435591424>: 2 warnings\n<@357156661105365963>: 3 warnings');
     });
     it('Should return TestUser\'s warnings', async function() {
-      msg.content = '$warnlist';
-      await warnings.list(msg);
+      msg.content = '$warnlist <@041025599435591424>';
+      await commands.executeCmd(msg, ['warnlist']);
       expect(printMsg.lastCall.returnValue).to.equal('<@041025599435591424>: 2 warnings');
     });
   });
   describe('Test purge', function() {
-    it('Should return wrong usage', function() {
+    it('Should return wrong usage', async function() {
       msg.mentions.users.clear();
       msg.content = '$warnpurge';
-      warnings.purge(msg);
+      await commands.executeCmd(msg, ['warnpurge']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.usage);
     });
     it('Should purge TestUser', async function() {
@@ -584,14 +751,14 @@ describe('Test warnings', function() {
         id: '041025599435591424'
       });
       msg.content = '$warnpurge';
-      await warnings.purge(msg);
+      await commands.executeCmd(msg, ['warnpurge']);
       var response = await storage.getUser(msg, '041025599435591424');
       expect(response.warnings).to.equal(0);
     });
     it('Should purge all', async function() {
       await warnings.warn(msg, 1);
       msg.content = '$warnpurge all';
-      await warnings.purge(msg);
+      await commands.executeCmd(msg, ['warnpurge']);
       var response = await storage.getUsers(msg);
       expect(response[0].warnings).to.equal(0);
       expect(response[1].warnings).to.equal(0);
@@ -636,12 +803,16 @@ describe('Test default-channel', function() {
     expect(response.name).to.equal('general');
   });
   it('Should set channel1 as default channel', async function() {
-    await defaultChannel.setChannel(msg, {id: '1'});
+    await defaultChannel.setChannel(msg, {
+      id: '1'
+    });
     var response = await defaultChannel.getChannel(testClient, member);
     expect(response.id).to.equal('1');
   });
   it('Should set general as default channel', async function() {
-    await defaultChannel.setChannel(msg, {id: '2'});
+    await defaultChannel.setChannel(msg, {
+      id: '2'
+    });
     var response = await defaultChannel.getChannel(testClient, member);
     expect(response.id).to.equal('2');
   });
@@ -653,6 +824,11 @@ describe('Validate if message is a command', function() {
     var response = await commands.checkIfValidCmd(msg, ['randomString']);
     expect(response).to.equal(false);
   });
+  it('Should return false when using wrong prefix', async function() {
+    msg.content = '!help';
+    var response = await commands.checkIfValidCmd(msg, ['help']);
+    expect(response).to.equal(false);
+  });
   before(function() {
     checkPerm.resolves(true);
   });
@@ -661,6 +837,11 @@ describe('Validate if message is a command', function() {
     var response = await commands.checkIfValidCmd(msg, ['help']);
     expect(response).to.equal(true);
   })
+  it('Should return true with aliases', async function() {
+    msg.content = '$help';
+    var response = await commands.checkIfValidCmd(msg, ['cc']);
+    expect(response).to.equal(true);
+  });
   it('Should return false if command is deactivated', async function() {
     config.help.activated = false
     var response = await commands.checkIfValidCmd(msg, ['help']);
@@ -684,12 +865,12 @@ describe('Test commands', function() {
       var expectedString = mustache.render(lang.help.msg, {
         config
       });
-      expect(msgSend.lastCall.returnValue).to.equal(expectedString);
+      expect(msgSend.lastCall.returnValue.content).to.equal(expectedString);
     });
     it('Should return help for ping', function() {
       msg.content = '$help ping'
       commands.executeCmd(msg, ['help', 'ping']);
-      var embed = msgSend.lastCall.returnValue.embed;
+      var embed = msgSend.lastCall.returnValue.content.embed;
       /*Test embed
        *TODO stop using hard coded values
        *Title */
@@ -716,7 +897,7 @@ describe('Test commands', function() {
   describe('info', function() {
     it('Should return infos', function() {
       commands.executeCmd(msg, ['info']);
-      var embed = msgSend.lastCall.returnValue.embed;
+      var embed = msgSend.lastCall.returnValue.content.embed;
       var pjson = require('../package.json');
       //Test embed
       expect(embed.fields[0].value).to.have.string(pjson.name);
@@ -729,27 +910,31 @@ describe('Test commands', function() {
   });
   describe('status', function() {
     it('Should change the status in config', function() {
-      var modifyText = sinon.stub(commands, 'modifyText');
+      var status = rewire('../src/modules/general/status.js');
+      var response;
+      status.__set__('modifyText', function(path, oldStatus, newStatus) {
+        response = newStatus;
+      });
 
       msg.content = '$status New status!';
-      commands.executeCmd(msg, ['status', 'New status!']);
+      new status().execute(msg, ['New status!']);
       //Check the API has been called with right argument
-      expect(setGame.lastCall.returnValue).to.equal('New status!');
+      expect(setActivity.lastCall.returnValue).to.equal('New status!');
       //Check if config was "modified" (stub) with righ argument
       //TODO: Better expect here
-      expect(modifyText.lastCall.args[2]).to.equal("currentStatus: 'New status!");
+      expect(response).to.equal("currentStatus: 'New status!");
     });
   });
   describe('say', function() {
     it('Should return the message', function() {
       msg.content = '$say here test';
       commands.executeCmd(msg, ['say', 'here', 'test']);
-      expect(msgSend.lastCall.returnValue).to.equal('test');
+      expect(msgSend.lastCall.returnValue.content).to.equal('test');
     });
     it('Should return missing argument: channel', function() {
       msg.content = '$say test';
       commands.executeCmd(msg, ['say', 'test']);
-      expect(msgSend.lastCall.returnValue).to.equal(lang.error.missingArg.channel);
+      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.missingArg.channel);
     });
     it('Should return the message in the channel with ID 42', function() {
       msg.content = '$say <#42> test';
@@ -759,12 +944,12 @@ describe('Test commands', function() {
     it('Should return missing argument: channel when using wrong channel', function() {
       msg.content = '$say badString test';
       commands.executeCmd(msg, ['say', 'badString', 'test']);
-      expect(msgSend.lastCall.returnValue).to.equal(lang.error.missingArg.channel);
+      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.missingArg.channel);
     });
     it('Should return missing argument: message', function() {
       msg.content = '$say here';
       commands.executeCmd(msg, ['say', 'here']);
-      expect(msgSend.lastCall.returnValue).to.equal(lang.error.missingArg.message);
+      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.missingArg.message);
     })
   });
   describe('avatar', function() {
@@ -790,7 +975,7 @@ describe('Test commands', function() {
     it('Should return the message author\'s (TestUser) profile', async function() {
       msg.content = '$profile';
       await commands.executeCmd(msg, ['profile'])
-      var embed = msgSend.lastCall.returnValue.embed;
+      var embed = msgSend.lastCall.returnValue.content.embed;
       expect(embed.title).to.equal('TestUser\'s profile');
       expect(embed.fields[0].value).to.equal('Emperor ');
       expect(embed.fields[1].value).to.equal('Member');
@@ -802,7 +987,7 @@ describe('Test commands', function() {
       msg.content = '$profile';
       config.superusers = ['041025599435591424'];
       await commands.executeCmd(msg, ['profile']);
-      var embed = msgSend.lastCall.returnValue.embed;
+      var embed = msgSend.lastCall.returnValue.content.embed;
       expect(embed.fields[1].value).to.equal('Superuser, Member');
     });
     it('Should return George\'s profile', async function() {
@@ -814,7 +999,7 @@ describe('Test commands', function() {
       });
       msg.content = `$profile <#${id}>`;
       await commands.executeCmd(msg, ['profile', `<#${id}>`])
-      var embed = msgSend.lastCall.returnValue.embed;
+      var embed = msgSend.lastCall.returnValue.content.embed;
       expect(embed.title).to.equal('George\'s profile');
       expect(embed.fields[0].value).to.equal('Vagabond ');
       expect(embed.fields[1].value).to.equal('Ø');
@@ -854,15 +1039,15 @@ describe('Test commands', function() {
   describe('gif', function() {
     it('Should return a gif', async function() {
       msg.content = '$gif dog';
-      await commands.executeCmd(msg, ['gif', 'dog']);
-      expect(msgSend.lastCall.returnValue).to.equal('A gif');
+      await new giphy.GifCommand().execute(msg, ['dog']);
+      expect(msgSend.lastCall.returnValue.content).to.equal('A gif');
     });
   });
   describe('gifrandom', function() {
     it('Should return a random gif', async function() {
       msg.content = '$gifrandom dog';
-      await commands.executeCmd(msg, ['gifrandom', 'dog']);
-      expect(msgSend.lastCall.returnValue).to.equal('A random gif');
+      await new giphy.GifRandomCommand().execute(msg, ['dog']);
+      expect(msgSend.lastCall.returnValue.content).to.equal('A random gif');
     })
   });
   describe('flipcoin', function() {
@@ -872,36 +1057,52 @@ describe('Test commands', function() {
     });
   });
   describe('roll', function() {
+    function separateValues(string) {
+      var values = string.split(' = ');
+      var dice = values[0].split(' + ');
+      var sum = values[1];
+      return [dice, sum];
+    }
     it('Should return the result of one six faced die', function() {
       msg.content = '$roll 1d6';
-      commands.executeCmd(msg, ['roll', '1d6']);
+      commands.executeCmd(msg, ['roll']);
 
-      result = parseInt(reply.lastCall.returnValue);
-      expect(result).to.be.above(0);
-      expect(result).to.be.below(7);
+      result = separateValues(msgSend.lastCall.returnValue.content);
+      expect(parseInt(result[1])).to.be.above(0);
+      expect(parseInt(result[1])).to.be.below(7);
     });
     it('Should return the result of two 20 faced dice', function() {
       msg.content = '$roll 2d20';
-      commands.executeCmd(msg, ['roll', '2d20']);
-      result = parseInt(reply.lastCall.returnValue);
-      expect(result).to.be.above(0);
-      expect(result).to.be.below(41);
+      commands.executeCmd(msg, ['roll']);
+      result = separateValues(msgSend.lastCall.returnValue.content);
+      expect(parseInt(result[1])).to.be.above(0);
+      expect(parseInt(result[1])).to.be.below(41);
     });
     it('Should return the result of three 12 faced dice + 5', function() {
       msg.content = '$roll 3d12+5';
-      commands.executeCmd(msg, ['roll', '3d12+5']);
-      result = parseInt(reply.lastCall.returnValue);
-      expect(result).to.be.above(4);
-      expect(result).to.be.below(42);
+      commands.executeCmd(msg, ['roll']);
+      result = separateValues(msgSend.lastCall.returnValue.content);
+      expect(parseInt(result[1])).to.be.above(7);
+      expect(parseInt(result[1])).to.be.below(42);
     })
-    it('Should return 0 when using wrong input', function() {
+    it('Should return 1d6 when using wrong input', function() {
       msg.content = '$roll randomString';
-      commands.executeCmd(msg, ['roll', 'randomString']);
-      result = parseInt(reply.lastCall.returnValue);
-      expect(result).to.equal(0);
+      commands.executeCmd(msg, ['roll']);
+
+      result = separateValues(msgSend.lastCall.returnValue.content);
+      expect(parseInt(result[1])).to.be.above(0);
+      expect(parseInt(result[1])).to.be.below(7);
+    });
+    it('Should return 1d6 when using no argument', function() {
+      msg.content = '$roll';
+      commands.executeCmd(msg, ['roll']);
+
+      result = separateValues(msgSend.lastCall.returnValue.content);
+      expect(parseInt(result[1])).to.be.above(0);
+      expect(parseInt(result[1])).to.be.below(7);
     });
   });
-  describe('clearlog' , function() {
+  describe('clearlog', function() {
     it('Should delete nothing', async function() {
       msg.content = '$clearlog 1';
       await commands.executeCmd(msg, ['clearlog', '1']);
@@ -914,6 +1115,53 @@ describe('Test commands', function() {
       var deletedMessages = testMessages.__get__('deletedMessages');
       expect(deletedMessages).to.deep.equal(['$ping', 'this', '$info', '$help help', 'a', '$profile']);
     })
+    it('Should delete message containing "This is a test"', async function() {
+      msg.mentions.users.clear();
+      msg.content = '$clearlog This is a test 10';
+      //Reset deletedMessages
+      testMessages.__set__('deletedMessages', []);
+      await commands.executeCmd(msg, ['clearlog']);
+      var deletedMessages = testMessages.__get__('deletedMessages');
+      expect(deletedMessages).to.deep.equal(['This is a test 123']);
+    })
+    it('Should delete messages by user with id 384633488400140664', async function() {
+      msg.mentions.users.set('384633488400140664', {
+        id: '384633488400140664'
+      });
+      msg.content = '$clearlog <@384633488400140664> 15';
+      //Reset deletedMessages
+      testMessages.__set__('deletedMessages', []);
+      await commands.executeCmd(msg, ['clearlog']);
+      var deletedMessages = testMessages.__get__('deletedMessages');
+      expect(deletedMessages).to.deep.equal(['flower', 'pot']);
+    });
+    it('Should delete messages by user with id 384633488400140664 if changed nickname', async function() {
+      msg.mentions.users.set('384633488400140664', {
+        id: '384633488400140664'
+      });
+      msg.content = '$clearlog <@!384633488400140664> 15';
+      //Reset deletedMessages
+      testMessages.__set__('deletedMessages', []);
+      await commands.executeCmd(msg, ['clearlog']);
+      var deletedMessages = testMessages.__get__('deletedMessages');
+      expect(deletedMessages).to.deep.equal(['flower', 'pot']);
+    });
+    it('Should delete message with flower by user with id 384633488400140664', async function() {
+      msg.content = '$clearlog <@384633488400140664> flower 15';
+      //Reset deletedMessages
+      testMessages.__set__('deletedMessages', []);
+      await commands.executeCmd(msg, ['clearlog']);
+      var deletedMessages = testMessages.__get__('deletedMessages');
+      expect(deletedMessages).to.deep.equal(['flower']);
+    });
+    it('Should delete message with filters inversed', async function() {
+      msg.content = '$clearlog flower <@384633488400140664> 15';
+      //Reset deletedMessages
+      testMessages.__set__('deletedMessages', []);
+      await commands.executeCmd(msg, ['clearlog']);
+      var deletedMessages = testMessages.__get__('deletedMessages');
+      expect(deletedMessages).to.deep.equal(['flower']);
+    });
   });
 });
 
