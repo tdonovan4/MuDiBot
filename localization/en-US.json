@@ -42,6 +42,7 @@
       "rank": "Rank not found",
       "group": "Group not found",
       "rankReward": "No reward found for this rank",
+      "video": "I couldn't find a video matching what you entered. :thinking: Try again with something different!",
       "voiceChannel": "You are not in a voice channel!"
     },
     "tooMuch": {
@@ -50,7 +51,9 @@
     },
     "cmdAlreadyExists": "This command already exists!",
     "groupDuplicate": "This user already is in this group!",
-    "notEnoughPermissions": "Not enough permissions"
+    "notEnoughPermissions": "Not enough permissions",
+    "ytdlError": "This video could not be downloaded (maybe unavailable?).",
+    "notPlaying": "I'm not playing anything!"
   },
   "ranks": {
     "vagabond": "Vagabond",
@@ -73,7 +76,7 @@
     "usage": "Usage:",
     "help": {
       "usages": ["", "<command>"],
-      "msg": "Displays all commands or help for a specific command"
+      "msg": "Display all commands or help for a specific command"
     },
     "ping": {
       "usages": [""],
@@ -81,7 +84,7 @@
     },
     "info": {
       "usages": [""],
-      "msg": "Displays information about the bot"
+      "msg": "Display information about the bot"
     },
     "status": {
       "usages": ["<new status>"],
@@ -113,11 +116,11 @@
     },
     "gif": {
       "usages": ["", "<what to search>"],
-      "msg": "Searches for a gif or sends a trending GIF if there is no argument"
+      "msg": "Searche for a gif or sends a trending GIF if there is no argument"
     },
     "gifrandom": {
       "usages": ["", "<tag>"],
-      "msg": "Sends a random GIF"
+      "msg": "Send a random GIF"
     },
     "flipcoin": {
       "usages": [""],
@@ -141,11 +144,11 @@
     },
     "play": {
       "usages": ["<song url", "tags>"],
-      "msg": "Puts a song in queue and plays it"
+      "msg": "Put a song in queue and play it"
     },
     "stop": {
       "usages": [""],
-      "msg": "Makes the bot leave the voice channel"
+      "msg": "Make the bot leave the voice channel"
     },
     "skip": {
       "usages": [""],
@@ -157,31 +160,32 @@
     },
     "warn": {
       "usages": ["<user>"],
-      "msg": "Puts a warning on user"
+      "msg": "Put a warning on user"
     },
     "unwarn": {
       "usages": ["<user>"],
-      "msg": "Removes a warning from user"
+      "msg": "Remove a warning from user"
     },
     "warnlist": {
       "usages": ["<user>", "all"],
-      "msg": "Lists warnings of an user or all users"
+      "msg": "List warnings of an user or all users"
     },
     "warnpurge": {
       "usages": ["<user>", "all"],
-      "msg": "Removes all warnings from an user or all users"
+      "msg": "Remove all warnings from an user or all users"
     },
     "clearlog": {
-      "usages": ["<messages to check>"],
-      "msg": "Deletes all commands related to the bot"
+      "usages": ["","<message num>", "<user to delete> <message num>",
+        "<string to delete> <message num>", "<user to delete> <string to delete> <message num>"],
+      "msg": "By default, delete bot commands. Can also be used with filters."
     },
     "kill": {
       "usages": [""],
-      "msg": "Kills the process"
+      "msg": "Kill the process"
     },
     "restart": {
       "usages": [""],
-      "msg": "Restarts the bot"
+      "msg": "Restart the bot"
     },
     "setchannel": {
       "usages": [""],
@@ -242,6 +246,9 @@
     "heads": "heads",
     "tails": "tails"
   },
+  "roll": {
+    "invalid": "Wrong usage! Make sure to follow `<# of dice>d<# of faces><modifier>` and keep inputs bellow 50.\n"
+  },
   "custcmd": {
     "cmdAdded": "Command added"
   },
@@ -256,19 +263,17 @@
     "cmdRemoved": "Command removed"
   },
   "play": {
-    "added": {
-      "video": "`{{values.1}}` added to the queue",
-      "playlist": "Playlist added to the queue"
-    },
+    "added": "This video has been added to the queue! :notepad_spiral:  ```css\n{{{title}}} ~ [{{duration}}]\n```",
     "skipped": "Video skipped!",
-    "playing": "Playing: `{{queue.0.1}}` ({{queue.0.2}})",
-    "queue": "**List of videos in queue:**",
+    "playing": "**Playing:** :notes: ```css\n{{{title}}} ~ [{{duration}}]\n```",
+    "queue": "**In queue:** :notepad_spiral:",
     "disconnected": "Disconnected!",
-    "unavailable": "This video is unavailable"
+    "unavailable": "A video was found, but is unavailable"
   },
   "clearlog": {
     "maxNum": "Max number of messages to delete: ",
-    "deleted": "{{deletedMessages}} messages deleted!"
+    "confirm": "You are about to delete {{length}} message(s). :white_check_mark: to confirm or :x: to cancel.",
+    "deleted": "{{length}} message(s) deleted!"
   },
   "warn": {
     "list": "<@{{userId}}>: {{warnings}} warnings",

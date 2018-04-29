@@ -15,7 +15,7 @@ module.exports = {
   channels: new Discord.Collection(),
   user: {
     id: 'testID',
-    setGame: function(game) {
+    setActivity: function(game) {
       return(game)
     }
   }

@@ -7,6 +7,35 @@ var config = require('./args.js').getConfig()[1];
 //For localization
 var lang = require('./localization.js').getLocalization();
 
+module.exports = {
+  printMsg: function(msg, text) {
+    console.log(text);
+    msg.channel.send(text);
+  },
+  client: function() {
+    return client;
+  },
+  Command: class {
+    constructor(commandInfo) {
+      this.name = commandInfo.name;
+      this.aliases = commandInfo.aliases;
+      this.category = commandInfo.category;
+      this.priority = commandInfo.priority;
+      this.permLvl = commandInfo.permLvl;
+    }
+  },
+  Category: class {
+    constructor(categoryInfo) {
+      this.name = categoryInfo.name;
+      this.priority = categoryInfo.priority;
+      this.commands = new Map();
+    }
+    addCommand(command) {
+      this.commands.set(command.name, command);
+    }
+  }
+}
+
 //Log to the discord user  with the token
 var startTime;
 client.login(config.botToken)
@@ -16,10 +45,17 @@ client.login(config.botToken)
     process.exit();
   });
 
+const commands = require('./commands.js')
+
 //Start the bot
 client.on('ready', () => {
   console.log(mustache.render(lang.general.logged, client));
   console.log(lang.general.language);
+
+  //Register stuff
+  commands.registerCategories(config.categories);
+  commands.registerCommands();
+
   //Set status
   client.user.setActivity(config.currentStatus);
   //Display startup time
@@ -29,18 +65,7 @@ client.on('ready', () => {
   }));
 });
 
-module.exports = {
-  printMsg: function(msg, text) {
-    console.log(text);
-    msg.channel.send(text);
-  },
-  client: function() {
-    return client;
-  }
-}
-
-const commands = require('./commands.js')
-const player = require('./audio-player.js');
+const player = require('./modules/music/audio-player.js');
 const levels = require('./levels.js');
 
 /*
@@ -50,7 +75,6 @@ const levels = require('./levels.js');
 client.on('message', msg => {
   //Ignore bot
   if (msg.author.bot) return;
-
   //Check if the author is not the bot
   if (msg.author != client.user) {
     let cmd = msg.content.slice(config.prefix.length);
@@ -59,34 +83,34 @@ client.on('message', msg => {
     }
 
     //Check if message is a command that can be executed
-    var msgValidCmd = commands.checkIfValidCmd(msg, cmd);
+    commands.checkIfValidCmd(msg, cmd).then(msgValidCmd => {
+      if (msgValidCmd) {
+        commands.executeCmd(msg, cmd);
+      } else {
+        //Check if message is a custom command
+        const customCmd = require('./modules/fun/custom-cmd.js');
 
-    if(msgValidCmd) {
-      commands.executeCmd(msg, cmd);
-    } else {
-      //Check if message is a custom command
-      const customCmd = require('./custom-cmd.js');
-
-      customCmd.getCmds(msg).then(custCmds => {
-        var cmd = custCmds.find(x => x.name == msg.content);
-        if (cmd != undefined) {
-          switch (cmd.action) {
-            case 'say':
-              msg.channel.send(cmd.arg);
-              break;
-            case 'play':
-              player.playYoutube(msg, cmd.arg);
-              break;
-            default:
-              console.log(lang.error.invalidArg.cmd);
+        customCmd.getCmds(msg).then(custCmds => {
+          var cmd = custCmds.find(x => x.name == msg.content);
+          if (cmd != undefined) {
+            switch (cmd.action) {
+              case 'say':
+                msg.channel.send(cmd.arg);
+                break;
+              case 'play':
+                player.playYoutube(msg, cmd.arg);
+                break;
+              default:
+                console.log(lang.error.invalidArg.cmd);
+            }
           }
-        }
-      });
-    }
-    if (config.levels.activated == true) {
-      //Add xp
-      levels.newMessage(msg);
-    }
+        });
+      }
+      if (config.levels.activated == true) {
+        //Add xp
+        levels.newMessage(msg);
+      }
+    });
   }
 });
 

@@ -1,6 +1,6 @@
 {
   "name": "MuDiBot",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "A multipurpose Discord bot (MuDiBot) made using discord.js",
   "main": "bot.js",
   "scripts": {
@@ -21,9 +21,9 @@
   },
   "devDependencies": {
     "chai": "^4.1.2",
-    "mocha": "^5.0.4",
+    "mocha": "^5.0.5",
     "rewire": "^3.0.2",
-    "sinon": "^4.4.2"
+    "sinon": "^4.4.9"
   },
   "repository": {
     "type": "git",
