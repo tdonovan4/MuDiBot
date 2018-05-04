@@ -64,10 +64,11 @@ module.exports = {
     }
 
     let user = await storage.getUser(msg, msg.author.id);
+    console.log(user);
 
-    var userGroup = user.groups
+    var userGroup = user.groups;
     if(userGroup != null) {
-      userGroup.split(',').sort(function(a, b) {
+      userGroup = userGroup.split(',').sort(function(a, b) {
         return config.groups.find(x => x.name == a).permLvl <
           config.groups.find(x => x.name == b).permLvl;
       })[0];
