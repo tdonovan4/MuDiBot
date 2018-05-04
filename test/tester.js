@@ -48,7 +48,6 @@ printMsg.returnsArg(1);
 
 //Init commands
 const commands = require('../src/commands.js');
-var checkPerm = sinon.stub(commands, 'checkPerm');
 
 //Register stuff
 commands.registerCategories(config.categories);
@@ -817,6 +816,50 @@ describe('Test default-channel', function() {
     expect(response.id).to.equal('2');
   });
 });
+describe('Test checkPerm', function() {
+  it('Should return true when user has the permLvl', async function() {
+    //Setup
+    msg.mentions.users.set(msg.author.id, {
+      id: msg.author.id
+    });
+    await commands.executeCmd(msg, ['purgegroups']);
+    msg.member.permissions.clear();
+    var response = await commands.checkPerm(msg, 0);
+    expect(response).to.equal(true);
+  });
+  it('Should return false when user don\'t have the permLvl', async function() {
+    var response = await commands.checkPerm(msg, 1);
+    expect(response).to.equal(false);
+  });
+  it('Should return true if user now have permLvl', async function() {
+    await permGroups.setGroup(msg, msg.author, 'Member');
+    var response = await commands.checkPerm(msg, 1);
+    expect(response).to.equal(true);
+  });
+  it('Should return true if user has multiple permGroups', async function() {
+    await permGroups.setGroup(msg, msg.author, 'User');
+    var response = await commands.checkPerm(msg, 1);
+    expect(response).to.equal(true);
+  });
+  it('Should return true if user has ADMINISTRATOR permissions', async function() {
+    msg.member.permissions.set('ADMINISTRATOR');
+    var response = await commands.checkPerm(msg, 3);
+    expect(response).to.equal(true);
+  })
+  it('Should return true if user is a superuser', async function() {
+    msg.member.permissions.clear();
+    config.superusers = [msg.author.id];
+    var response = await commands.checkPerm(msg, 3);
+    expect(response).to.equal(true);
+  });
+  after(async function() {
+    //Clean up
+    config.superusers = [''];
+    await commands.executeCmd(msg, ['purgegroups']);
+  })
+});
+//Future stub
+var checkPerm;
 describe('Validate if message is a command', function() {
   it('Should return false when using a false command', async function() {
     //Change content of message
@@ -830,6 +873,7 @@ describe('Validate if message is a command', function() {
     expect(response).to.equal(false);
   });
   before(function() {
+    checkPerm = sinon.stub(commands, 'checkPerm');
     checkPerm.resolves(true);
   });
   it('Should return true when using a real command', async function() {
@@ -973,6 +1017,8 @@ describe('Test commands', function() {
   });
   describe('profile', function() {
     it('Should return the message author\'s (TestUser) profile', async function() {
+      //Add member to groups
+      await permGroups.setGroup(msg, msg.author, 'Member');
       msg.content = '$profile';
       await commands.executeCmd(msg, ['profile'])
       var embed = msgSend.lastCall.returnValue.content.embed;
