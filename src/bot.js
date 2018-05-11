@@ -66,7 +66,6 @@ client.on('ready', () => {
   }));
 });
 
-const player = require('./modules/music/audio-player.js');
 const levels = require('./levels.js');
 
 /*
@@ -74,7 +73,7 @@ const levels = require('./levels.js');
  *to check if the message is calling a command
  */
 client.on('message', msg => {
-  onMessage(msg).then();
+  onMessage(msg);
 });
 
 async function onMessage(msg) {
@@ -98,16 +97,7 @@ async function onMessage(msg) {
       //The custom command if it exists
       var custCmd = custCmds.find(x => x.name == msg.content);
       if (custCmd != undefined) {
-        switch (cmd.action) {
-          case 'say':
-            msg.channel.send(cmd.arg);
-            break;
-          case 'play':
-            player.playYoutube(msg, cmd.arg);
-            break;
-          default:
-            console.log(lang.error.invalidArg.cmd);
-        }
+        customCmd.executeCmd(msg, custCmd);
       }
     }
     if (config.levels.activated == true) {

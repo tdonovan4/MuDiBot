@@ -2,6 +2,7 @@ const bot = require('../../bot.js');
 const sql = require('sqlite');
 const config = require('../../args.js').getConfig()[1];
 const mustache = require('mustache');
+const player = require('../music/audio-player.js');
 var lang = require('../../localization.js').getLocalization();
 
 function insertCmd(msg, args) {
@@ -192,6 +193,18 @@ module.exports = {
       }
     } else {
       bot.printMsg(msg, lang.custcmdlist.empty);
+    }
+  },
+  executeCmd: function(msg, custCmd) {
+    switch (custCmd.action) {
+      case 'say':
+        msg.channel.send(custCmd.arg);
+        break;
+      case 'play':
+        player.playYoutube(msg, custCmd.arg);
+        break;
+      default:
+        console.log(lang.error.invalidArg.cmd);
     }
   }
 }
