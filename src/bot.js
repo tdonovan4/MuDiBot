@@ -45,7 +45,8 @@ client.login(config.botToken)
     process.exit();
   });
 
-const commands = require('./commands.js')
+const commands = require('./commands.js');
+const customCmd = require('./modules/fun/custom-cmd.js');
 
 //Start the bot
 client.on('ready', () => {
@@ -73,46 +74,48 @@ const levels = require('./levels.js');
  *to check if the message is calling a command
  */
 client.on('message', msg => {
+  onMessage(msg).then();
+});
+
+async function onMessage(msg) {
+  //Just to make it async
   //Ignore bot
   if (msg.author.bot) return;
   //Check if the author is not the bot
   if (msg.author != client.user) {
     let cmd = msg.content.slice(config.prefix.length);
-    if(cmd != undefined) {
+    if (cmd != undefined) {
       cmd = cmd.split(' ');
     }
 
     //Check if message is a command that can be executed
-    commands.checkIfValidCmd(msg, cmd).then(msgValidCmd => {
-      if (msgValidCmd) {
-        commands.executeCmd(msg, cmd);
-      } else {
-        //Check if message is a custom command
-        const customCmd = require('./modules/fun/custom-cmd.js');
-
-        customCmd.getCmds(msg).then(custCmds => {
-          var cmd = custCmds.find(x => x.name == msg.content);
-          if (cmd != undefined) {
-            switch (cmd.action) {
-              case 'say':
-                msg.channel.send(cmd.arg);
-                break;
-              case 'play':
-                player.playYoutube(msg, cmd.arg);
-                break;
-              default:
-                console.log(lang.error.invalidArg.cmd);
-            }
-          }
-        });
+    var msgValidCmd = await commands.checkIfValidCmd(msg, cmd);
+    if (msgValidCmd) {
+      await commands.executeCmd(msg, cmd);
+    } else {
+      //Check if message is a custom command
+      var custCmds = await customCmd.getCmds(msg);
+      //The custom command if it exists
+      var custCmd = custCmds.find(x => x.name == msg.content);
+      if (custCmd != undefined) {
+        switch (cmd.action) {
+          case 'say':
+            msg.channel.send(cmd.arg);
+            break;
+          case 'play':
+            player.playYoutube(msg, cmd.arg);
+            break;
+          default:
+            console.log(lang.error.invalidArg.cmd);
+        }
       }
-      if (config.levels.activated == true) {
-        //Add xp
-        levels.newMessage(msg);
-      }
-    });
+    }
+    if (config.levels.activated == true) {
+      //Add xp
+      await levels.newMessage(msg);
+    }
   }
-});
+}
 
 //Convert roles into mention objects
 function mention(roles, role) {
