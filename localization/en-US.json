@@ -43,7 +43,8 @@
       "group": "Group not found",
       "rankReward": "No reward found for this rank",
       "video": "I couldn't find a video matching what you entered. :thinking: Try again with something different!",
-      "voiceChannel": "You are not in a voice channel!"
+      "voiceChannel": "You are not in a voice channel!",
+      "user": "User not found"
     },
     "tooMuch": {
       "cmds": "There is too much custom commands!",
@@ -113,6 +114,10 @@
     "purgegroups": {
       "usages": ["<user>"],
       "msg": "Purge groups of a user"
+    },
+    "top": {
+      "usages": [""],
+      "msg": "Display local and global leaderboard in terms of XP"
     },
     "gif": {
       "usages": ["", "<what to search>"],
@@ -241,6 +246,14 @@
   },
   "purgegroups": {
     "purged": "Groups purged"
+  },
+  "top": {
+    "title": "__**Leaderboards:**__",
+    "local": "**Local board**",
+    "global": "**Global board**",
+    "experience": "⤷ Level: {{level}} | XP: {{xp}}\n",
+    "count": "***Total of {{count}} users***",
+    "footer": "Request took: {{time}}ms"
   },
   "flipcoin": {
     "heads": "heads",

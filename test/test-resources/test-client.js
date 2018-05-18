@@ -18,6 +18,10 @@ module.exports = {
     setActivity: function(game) {
       return(game)
     }
+  },
+  users: new Discord.Collection(),
+  fetchUser: async function(id) {
+    return id;
   }
 }
 

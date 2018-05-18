@@ -11,7 +11,7 @@ module.exports = {
         name: 'setgroup',
         aliases: [],
         category: 'user',
-        priority: 2,
+        priority: 8,
         permLvl: 3
       });
     }
@@ -25,7 +25,7 @@ module.exports = {
         name: 'unsetgroup',
         aliases: ['ungroup'],
         category: 'user',
-        priority: 1,
+        priority: 7,
         permLvl: 3
       });
     }
@@ -39,7 +39,7 @@ module.exports = {
         name: 'purgegroups',
         aliases: ['gpurge'],
         category: 'user',
-        priority: 0,
+        priority: 6,
         permLvl: 3
       });
     }
