@@ -16,7 +16,8 @@ var config = require('../src/args.js').getConfig()[1];
 
 //Set some stubs and spies
 var client = sinon.stub(Discord, 'Client');
-client.returns(require('./test-resources/test-client.js'));
+var testClient = require('./test-resources/test-client.js');
+client.returns(testClient);
 var msgSend = sinon.spy(msg.channel, 'send')
 var reply = sinon.spy(msg, 'reply')
 const giphy = rewire('../src/modules/fun/giphy-api.js');
@@ -41,6 +42,7 @@ const bot = require('../src/bot.js');
 //Init stuff that need bot
 const customCmd = require('../src/modules/fun/custom-cmd.js');
 const audioPlayer = rewire('../src/modules/music/audio-player.js');
+const top = rewire('../src/modules/user/top.js');
 var setActivity = sinon.spy(bot.client().user, 'setActivity');
 var channelSend = sinon.spy(bot.client().channels.get('42'), 'send');
 var printMsg = sinon.stub(bot, 'printMsg');
@@ -155,6 +157,7 @@ describe('Test permission groups', function() {
     })
   });
 });
+var modifyUserXp = levels.__get__('modifyUserXp');
 describe('Test levels', function() {
   describe('Test getXpForLevel', function() {
     it('Should return 100 XP for level 1', async function() {
@@ -272,7 +275,6 @@ describe('Test levels', function() {
     });
   });
   describe('Test newMessage', function() {
-    var modifyUserXp = levels.__get__('modifyUserXp');
     msg.content = 'test';
     it('User should have more than 0 XP', async function() {
       //To make sure
@@ -336,6 +338,142 @@ describe('Test levels', function() {
       levels.__set__('lastMessages', []);
       await levels.newMessage(msg);
       expect(msg.member.roles.has('2')).to.equal(true);
+    });
+  });
+});
+//Delete all users from the database
+async function purgeUsers() {
+  await sql.open(config.pathDatabase);
+  await sql.run('DELETE FROM users');
+  await sql.close();
+}
+async function insertUser(serverId, userId, xp) {
+  await sql.open(config.pathDatabase);
+  await sql.run('INSERT INTO users (serverId, userId, xp, warnings, groups) VALUES (?, ?, ?, ?, ?)', [serverId, userId, xp, 0, null]);
+  await sql.close();
+  //Add user to collection
+  testClient.users.set(`${userId}`, {
+    username: `The${userId}`
+  });
+}
+async function insertUsers(serverId, num) {
+  await sql.open(config.pathDatabase);
+  //Add users
+  var users = [];
+  for(var i = 0; i < num; i++) {
+    var value = i * 10;
+    //Add to list
+    users.push(`(${serverId}, ${i}, ${value}, ${0}, ${null})`);
+    //Add user to collection
+    testClient.users.set(`${i}`, {
+      username: `The${i}`
+    });
+  }
+  //Bulk insert
+  await sql.run('INSERT INTO users (serverId, userId, xp, warnings, groups) VALUES ' + users.join(', '));
+  await sql.close();
+}
+describe('Test top', function() {
+  var targetUser1 = {
+    userId: '1234567890',
+    xp: 0
+  }
+  var targetUser2 = {
+    userId: '1',
+    xp: 0
+  }
+  describe('Test getInfo', function() {
+    var getInfo = top.__get__('getInfo');
+    it('Should return empty array when no user', async function() {
+      var response = await getInfo([]);
+      expect(response).to.deep.equal([]);
+    });
+    it('Return more info about user', async function() {
+      await insertUser('1234567890', '1234567890', 0);
+      var response = await getInfo([targetUser1]);
+      var expectedResponse = targetUser1;
+      expectedResponse.level = 1;
+      expectedResponse.username = 'The1234567890';
+      expect(response).to.deep.equal([expectedResponse]);
+    });
+    it('Should work with wrong users', async function() {
+      var response = await getInfo([targetUser1, targetUser2]);
+      var expectedResponse = [targetUser1, targetUser2];
+      expectedResponse[0].level = 1;
+      expectedResponse[0].username = 'The1234567890';
+      expect(response).to.deep.equal(expectedResponse);
+    });
+  });
+  describe('Test getTops', function() {
+    getTops = top.__get__('getTops');
+    it('Should return empty tops', async function() {
+      await purgeUsers();
+      var response = await getTops(msg, 10);
+      expect(response.local.length).to.equal(0);
+      expect(response.global.length).to.equal(0);
+    });
+    it('Should return one user in each tops', async function() {
+      await insertUser(msg.guild.id, '01', 0);
+      await insertUser(msg.guild.id, '02', 15);
+      var response = await getTops(msg, 1);
+      var expectedResponse = {
+        "level": 1,
+        "userId": "02",
+        "xp": 15,
+        "username": "The02"
+      }
+      expect(response.local.length).to.equal(1);
+      expect(response.local[0]).to.deep.equal(expectedResponse);
+      expect(response.global.length).to.equal(1);
+      expect(response.global[0]).to.deep.equal(expectedResponse);
+    });
+    it('Should return two user in each tops', async function() {
+      //Also test when not enough users
+      var response = await getTops(msg, 3);
+      expect(response.local.length).to.equal(2);
+      expect(response.global.length).to.equal(2);
+    });
+    it('Global should merge same user', async function() {
+      await insertUser('1', '02', 10);
+      var response = await getTops(msg, 10);
+      expect(response.global[0]).to.deep.equal({
+        "level": 1,
+        "userId": "02",
+        "xp": 25,
+        "username": "The02"
+      });
+    });
+    it('Test ordering of users', async function() {
+      //Add users
+      await insertUsers(msg.guild.id, 20);
+      await insertUsers('2', 20);
+      var response = await getTops(msg, 10);
+      //Check if response is correctly ordered
+      //Local
+      expect(response.local.length).to.equal(10);
+      for(var i = 0; i < response.local.length - 1; i++) {
+        expect(response.local[i].xp > response.local[i + 1].xp).to.equal(true);
+      }
+      //Global
+      expect(response.global.length).to.equal(10);
+      for(var i = 0; i < response.global.length - 1; i++) {
+        expect(response.global[i].xp > response.global[i + 1].xp).to.equal(true);
+      }
+    });
+  });
+  describe('Test getUsersCount', function() {
+    it('Should get users count', async function() {
+      var response = await top.__get__('getUsersCount')(msg);
+      expect(response.local['COUNT(userId)']).to.equal(22);
+      expect(response.global['COUNT(DISTINCT userId)']).to.equal(22);
+    });
+  });
+  describe('Execute the actual command', function() {
+    it('Should return a nice embed', async function() {
+      await commands.executeCmd(msg, ['top']);
+      var embed = msgSend.lastCall.returnValue.content;
+      //Only check for title to check if it was sent
+      expect(embed.title).to.equal('__**Leaderboards:**__');
     });
   });
 });
@@ -765,7 +903,6 @@ describe('Test warnings', function() {
   });
 });
 describe('Test default-channel', function() {
-  var testClient = require('./test-resources/test-client.js');
   var member = {
     guild: {
       id: '357156661105365963'
@@ -1017,6 +1154,8 @@ describe('Test commands', function() {
   });
   describe('profile', function() {
     it('Should return the message author\'s (TestUser) profile', async function() {
+      //Add XP
+      await modifyUserXp(msg, msg.author.id, 11685);
       //Add member to groups
       await permGroups.setGroup(msg, msg.author, 'Member');
       msg.content = '$profile';
