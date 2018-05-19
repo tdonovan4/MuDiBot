@@ -19,9 +19,9 @@ This homemade bot aims to be a highly customizable and versatile bot that can be
 ## Background
 MuDiBot started as a little bot for my Discord server and began to grow with time.
 
-This bot goal is to offer many functionalities for both server moderation and administration, but also fun features like custom commands and practical ones like a video player.
+This bot's goal is to offer many functionalities for both server moderation and administration, but also fun features like custom commands and practical ones like a video player.
 
-Special thanks to [mozico555](https://github.com/mozico555) and Neyo for suggestion, ideas and bug reports.
+Special thanks to [mozico555](https://github.com/mozico555) and Neyo for suggestions, ideas and bug reports.
 
 ## Install
 **This bot require Node.js 8.0.0 or newer. You can get it here: https://nodejs.org/en/**
