@@ -97,7 +97,7 @@ function printCmd(msg, args, cmd) {
     var usages = '';
     for (var i = 0; i < help.usages.length; i++) {
       //Insert usages
-      usages += `${config.prefix + args[0]} ${help.usages[i]}\n`
+      usages += `${config.prefix + args[0]} ${help.usages[i]}\n`;
     }
 
     var embed = new Discord.RichEmbed();
@@ -107,10 +107,10 @@ function printCmd(msg, args, cmd) {
     var aliases = cmd.aliases;
     //Check for aliases
     if (aliases.length > 0) {
-      embed.setDescription(`${lang.help.alias} ${aliases.map(x => `\`$${x[0]}\``).join(' ')}`)
+      embed.setDescription(`${lang.help.alias} ${aliases.map(x => `\`${config.prefix + x}\``).join(' ')}`);
     }
-    embed.addField(name = lang.help.desc, value = help.msg, inline = false)
-    embed.addField(name = lang.help.permLvl, value = cmd.permLvl, inline = true)
+    embed.addField(name = lang.help.desc, value = help.msg, inline = false);
+    embed.addField(name = lang.help.permLvl, value = cmd.permLvl, inline = true);
     embed.addField(name = lang.help.usage, value = usages, inline = true);
     msg.channel.send({
       embed
