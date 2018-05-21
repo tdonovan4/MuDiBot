@@ -29,7 +29,6 @@ module.exports = {
             resolve(row);
           }).catch(error => {
             console.log(error); //Nasty errors...
-
             //Check if table exist
             sql.run(checkTable)
               .then(() => {
