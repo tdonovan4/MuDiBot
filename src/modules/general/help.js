@@ -2,7 +2,6 @@ const config = require('../../args.js').getConfig()[1];
 const bot = require('../../bot.js')
 const mustache = require('mustache');
 const commands = require('../../commands.js');
-var categories = commands.categories;
 var lang = require('../../localization.js').getLocalization();
 
 module.exports = class helpCommand extends bot.Command {
@@ -39,16 +38,24 @@ function printCmds(msg) {
   var columnsFinished = 0;
 
   //Order categories
-  categories = new Map(Array.from(categories).sort((a, b) => {
+  var clone = {... commands.categories};
+  var categories = new Map(Array.from(commands.categories).sort((a, b) => {
     return b[1].priority - a[1].priority
   }));
+  /*//Clone each commands
+  categories.forEach(category => {
+    category.commands.forEach(command => {
+      command = {... command}
+    });
+  });
+  console.log(categories);*/
 
   //Create message
   while (columnsFinished < categories.size) {
     var row = '';
     if (rowNum == 0) {
       //Insert categories
-      categories.forEach(function(category) {
+      categories.forEach(category => {
         var chars = `[${category.name}]`;
         row += chars + Array(numSpace - chars.length).join(" ")
 
@@ -56,22 +63,25 @@ function printCmds(msg) {
         category.commands = new Map(Array.from(category.commands).sort((a, b) => {
           return b[1].priority - a[1].priority
         }));
+        //Add iterator
+        category.iterator = category.commands.values();
+        //Add done
+        category.done = false;
       });
     } else {
       //Insert commands
       //Add a space before (prettier)
       row = ' '
-      categories.forEach(function(category) {
+      categories.forEach(category => {
         var chars = '';
-        var command = category.commands.values().next();
-
+        var command = category.iterator.next();
         if (!command.done) {
-          chars = config.prefix + command.value.name;
-          //Delete command
-          categories.get(category.name).commands.delete(command.value.name);
-          if (category.commands.values().next().done) {
-            //Done
+          var chars = config.prefix + command.value.name;
+        } else {
+          if(!category.done) {
+            //Category/column finished
             columnsFinished++;
+            category.done = true;
           }
         }
         row += chars + Array(numSpace - chars.length).join(' ');
