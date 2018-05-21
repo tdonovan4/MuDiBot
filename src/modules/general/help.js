@@ -38,17 +38,9 @@ function printCmds(msg) {
   var columnsFinished = 0;
 
   //Order categories
-  var clone = {... commands.categories};
   var categories = new Map(Array.from(commands.categories).sort((a, b) => {
     return b[1].priority - a[1].priority
   }));
-  /*//Clone each commands
-  categories.forEach(category => {
-    category.commands.forEach(command => {
-      command = {... command}
-    });
-  });
-  console.log(categories);*/
 
   //Create message
   while (columnsFinished < categories.size) {
