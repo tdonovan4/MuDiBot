@@ -1,8 +1,8 @@
-const storage = require('./storage.js');
 const bot = require('./bot.js');
 const mustache = require('mustache');
 const sql = require('sqlite');
 const permGroups = require('./modules/user/permission-group.js');
+const userDB = require('./modules/user/user-db.js');
 const config = require('./args.js').getConfig()[1];
 const lastMessages = [];
 var lang = require('./localization.js').getLocalization();
@@ -216,8 +216,7 @@ module.exports = {
       })
     }
 
-    var xp = await storage.getUser(msg, msg.author.id);
-    xp = xp.xp;
+    var xp = await userDB.user.getXp(msg.guild.id, msg.author.id);
     if (xp != undefined) {
       //Add 1 per 2 characters
       var extraXp = Math.trunc(msg.content.replace(/\s/g, "").length / 3);

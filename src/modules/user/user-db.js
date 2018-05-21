@@ -15,5 +15,10 @@ module.exports = {
       var permLvl = (await runGetQuery(query, [serverId, userId])).groups;
       return permLvl;
     },
+    getXp: async function(serverId, userId) {
+      var query = 'SELECT xp FROM users WHERE serverId = ? AND userId = ?';
+      var xp = (await runGetQuery(query, [serverId, userId])).xp;
+      return xp;
+    }
   }
 }
