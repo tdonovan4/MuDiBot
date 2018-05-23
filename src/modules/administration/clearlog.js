@@ -9,7 +9,7 @@ module.exports = class ClearlogCommand extends bot.Command {
   constructor() {
     super({
       name: 'clearlog',
-      aliases: [],
+      aliases: ['clearlogs', 'clear'],
       category: 'administration',
       priority: 10,
       permLvl: 3
