@@ -37,13 +37,14 @@ module.exports = {
 }
 
 //Log to the discord user  with the token
-var startTime;
-client.login(config.botToken)
-  .then(startTime = Date.now()).catch(() => {
-    console.log(lang.error.invalidArg.token);
-    process.exitCode = 1;
-    process.exit();
-  });
+var startTime = Date.now()
+try {
+  client.login(config.botToken);
+} catch(e) {
+  console.log(lang.error.invalidArg.token);
+  process.exitCode = 1;
+  process.exit();
+}
 
 const commands = require('./commands.js');
 const customCmd = require('./modules/fun/custom-cmd.js');
