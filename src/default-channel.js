@@ -2,47 +2,46 @@ const sql = require('sqlite');
 const config = require('./args.js').getConfig()[1];
 
 module.exports = {
-  setChannel: function(msg, channel) {
-    return new Promise(function(resolve) {
-      sql.open(config.pathDatabase).then(() => {
-        sql.get(`SELECT * FROM servers WHERE serverId = "${msg.guild.id}"`).then(row => {
-          if (!row) {
-            //Table exist but not row
-            sql.run("INSERT INTO servers (serverId, defaultChannel) VALUES (?, ?)", [msg.guild.id, channel.id]).then(() => {
-              resolve()
-            });
-          } else {
-            sql.run("UPDATE servers SET defaultChannel = ? WHERE serverId = ?", [channel.id, msg.guild.id]).then(() => {
-              resolve()
-            });
-          }
-        }).catch(() => {
-          sql.run("CREATE TABLE IF NOT EXISTS servers (serverId TEXT, defaultChannel TEXT)").then(() => {
-            //Table don't exist
-            sql.run("INSERT INTO servers (serverId, defaultChannel) VALUES (?, ?)", [msg.guild.id, channel.id]);
-          }).catch(error => {
-            console.log(error);
-          });
-          resolve()
-        });
-        sql.close();
-      }).catch(error => {
-        console.log(error);
-        resolve()
-      });
-    });
+  setChannel: async function(msg, channel) {
+    try {
+      await sql.open(config.pathDatabase);
+    } catch (e) {
+      console.error(e);
+    }
+    //Try to get server
+    try {
+      var row = await sql.get(`SELECT * FROM servers WHERE serverId = "${msg.guild.id}"`);
+    } catch (e) {
+      //Error while getting server
+      try {
+        await sql.run("CREATE TABLE IF NOT EXISTS servers (serverId TEXT, defaultChannel TEXT)");
+        await sql.run("INSERT INTO servers (serverId, defaultChannel) VALUES (?, ?)", [msg.guild.id, channel.id]);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    //Got row, trying to update server
+    try {
+      if (!row) {
+        //Table exist but not row
+        await sql.run("INSERT INTO servers (serverId, defaultChannel) VALUES (?, ?)", [msg.guild.id, channel.id]);
+      } else {
+        await sql.run("UPDATE servers SET defaultChannel = ? WHERE serverId = ?", [channel.id, msg.guild.id]);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    await sql.close();
   },
 
   getChannel: async function(client, member) {
     await sql.open(config.pathDatabase)
     try {
       var row = await sql.get("SELECT * FROM servers WHERE serverId = ?", member.guild.id);
-    }
-    catch(error) {
+    } catch (error) {
       try {
         await sql.run("CREATE TABLE IF NOT EXISTS servers (serverId TEXT, defaultChannel TEXT)");
-      }
-      catch(error) {
+      } catch (error) {
         console.log(error);
       }
       sql.run("INSERT INTO servers (serverId, defaultChannel) VALUES (?, ?)", [member.guild.id, null]);
@@ -50,7 +49,7 @@ module.exports = {
 
     if (!row) {
       await sql.run("INSERT INTO servers (serverId, defaultChannel) VALUES (?, ?)", [member.guild.id, null]);
-    } else if(row.defaultChannel != null) {
+    } else if (row.defaultChannel != null) {
       if (client.channels.get(row.defaultChannel) != undefined) {
         sql.close();
         return client.channels.get(row.defaultChannel);

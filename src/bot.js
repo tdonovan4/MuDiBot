@@ -36,7 +36,7 @@ module.exports = {
   }
 }
 
-//Log to the discord user  with the token
+//Log to the discord user with the token
 var startTime = Date.now()
 try {
   client.login(config.botToken);
