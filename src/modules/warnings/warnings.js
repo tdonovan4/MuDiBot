@@ -127,48 +127,24 @@ module.exports = {
   }
 }
 
-function modifyUsersWarnings(msg, value) {
-  return new Promise(function(resolve) {
-    sql.open(config.pathDatabase).then(() => {
-      sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
-        .then(() => {
-          sql.run('UPDATE users SET warnings = ? WHERE serverId = ?', [value, msg.guild.id]).then(() => {
-            resolve();
-          }).catch(error => {
-            console.log(error);
-            resolve();
-          });
-        }).catch(error => {
-          console.log(error);
-          resolve();
-        });
-      sql.close();
-    }).catch(error => {
-      console.log(error);
-      resolve();
-    });
-  });
+async function modifyUsersWarnings(msg, value) {
+  try {
+    await sql.open(config.pathDatabase);
+    await sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
+    await sql.run('UPDATE users SET warnings = ? WHERE serverId = ?', [value, msg.guild.id]);
+    await sql.close();
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 function modifyUserWarnings(msg, userId, value) {
-  return new Promise(function(resolve) {
-    sql.open(config.pathDatabase).then(() => {
-      sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
-        .then(() => {
-          sql.run('UPDATE users SET warnings = ? WHERE serverId = ? AND userId = ?', [value, msg.guild.id, userId]).then(() => {
-            resolve();
-          }).catch(error => {
-            console.log(error);
-            resolve();
-          });
-        }).catch(error => {
-          console.log(error);
-          resolve();
-        });
-      sql.close();
-    }).catch(error => {
-      console.log(error);
-      resolve();
-    });
-  });
+  try {
+    await sql.open(config.pathDatabase);
+    await sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)');
+    await sql.run('UPDATE users SET warnings = ? WHERE serverId = ? AND userId = ?', [value, msg.guild.id, userId]);
+    await sql.close();
+  } catch (e) {
+    console.error(e);
+  }
 }
