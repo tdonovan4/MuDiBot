@@ -5,17 +5,16 @@ const mustache = require('mustache');
 const player = require('../music/audio-player.js');
 var lang = require('../../localization.js').getLocalization();
 
-function insertCmd(msg, args) {
-  return new Promise((resolve, reject) => {
-    sql.run('INSERT INTO customCmds (serverId, userId, name, action, arg) VALUES (?, ?, ?, ?, ?)', [
+async function insertCmd(msg, args) {
+  try {
+    await sql.open(config.pathDatabase);
+    await sql.run('INSERT INTO customCmds (serverId, userId, name, action, arg) VALUES (?, ?, ?, ?, ?)', [
       msg.guild.id, msg.author.id, args[0], args[1], args.slice(2).join(' ')
-    ]).then(() => {
-      resolve();
-    }).catch(error => {
-      console.log(error);
-      resolve();
-    });
-  });
+    ]);
+    await sql.close();
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 module.exports = {
@@ -92,60 +91,51 @@ module.exports = {
       });
     }
     async execute(msg, args) {
-      return new Promise((resolve, reject) => {
-        sql.open(config.pathDatabase).then(() => {
-          sql.all("SELECT * FROM customCmds WHERE serverId = ? AND name = ?", [msg.guild.id, args[0]])
-            .then(row => {
-              if (row.length > 0) {
-                sql.all("DELETE FROM customCmds WHERE serverId = ? AND name = ?", [msg.guild.id, args[0]])
-                  .then(() => {
-                    bot.printMsg(msg, lang.custcmdremove.cmdRemoved);
-                    resolve();
-                  }).catch(error => {
-                    console.log(error);
-                    resolve();
-                  });
-              } else {
-                //Command not found
-                bot.printMsg(msg, lang.error.notFound.cmd);
-                resolve();
-              }
-            }).catch(error => {
-              //Check if table exist
-              sql.run('CREATE TABLE IF NOT EXISTS customCmds (serverId TEXT, userId TEXT, name TEXT, action TEXT, arg TEXT)')
-                .catch(error => {
-                  console.log(error);
-                });
-              resolve();
-            });
-          sql.close();
-        }).catch(error => {
-          console.log(error);
-          resolve();
-        });
-      });
+      try {
+        await sql.open(config.pathDatabase);
+      } catch (e) {
+        console.error(e);
+      }
+      try {
+        var row = await sql.all("SELECT * FROM customCmds WHERE serverId = ? AND name = ?", [msg.guild.id, args[0]]);
+      } catch (e) {
+        try {
+          await sql.run('CREATE TABLE IF NOT EXISTS customCmds (serverId TEXT, userId TEXT, name TEXT, action TEXT, arg TEXT)');
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      if (row.length > 0) {
+        try {
+          await sql.all("DELETE FROM customCmds WHERE serverId = ? AND name = ?", [msg.guild.id, args[0]])
+        } catch (e) {
+          console.error(e);
+        }
+        bot.printMsg(msg, lang.custcmdremove.cmdRemoved);
+      } else {
+        //Command not found
+        bot.printMsg(msg, lang.error.notFound.cmd);
+      }
+      await sql.close();
     }
   },
-  getCmds: function(msg) {
-    return new Promise((resolve, reject) => {
-      sql.open(config.pathDatabase).then(() => {
-        sql.all('SELECT * FROM customCmds WHERE serverId = ?', msg.guild.id)
-          .then(row => {
-            resolve(row);
-          }).catch(error => {
-            //Check if table exist
-            sql.run('CREATE TABLE IF NOT EXISTS customCmds (serverId TEXT, userId TEXT, name TEXT, action TEXT, arg TEXT)')
-              .then(() => {
-                resolve(undefined);
-              }).catch(error => {
-                console.log(error);
-              });
-          });
-        sql.close();
-      }).catch(error => {
-        console.log(error);
-      });
-    });
+  getCmds: async function(msg) {
+    try {
+      await sql.open(config.pathDatabase);
+    } catch (e) {
+      console.error(e);
+    }
+    try {
+      var row = await sql.all('SELECT * FROM customCmds WHERE serverId = ?', msg.guild.id);
+    } catch (e) {
+      try {
+        await sql.run('CREATE TABLE IF NOT EXISTS customCmds (serverId TEXT, userId TEXT, name TEXT, action TEXT, arg TEXT)');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    await sql.close();
+    return row;
   },
   printCmds: async function(msg, args) {
     var cmds = await this.getCmds(msg);
