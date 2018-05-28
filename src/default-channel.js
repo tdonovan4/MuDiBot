@@ -68,7 +68,7 @@ module.exports = {
     }
     //Update
     sql.run("UPDATE servers SET defaultChannel = ? WHERE serverId = ?", [channel.id, member.guild.id])
-    sql.close();
+    await sql.close();
 
     return channel;
   }
