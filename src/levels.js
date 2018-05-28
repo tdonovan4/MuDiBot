@@ -66,44 +66,33 @@ var lastRank = {
   color: 0xff0000
 }
 
-function modifyUserXp(msg, userId, value) {
-  return new Promise((resolve, reject) => {
-    sql.open(config.pathDatabase).then(() => {
-      sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
-        .then(() => {
-          sql.run('UPDATE users SET xp = ? WHERE serverId = ? AND userId = ?', [value, msg.guild.id, userId]).then(() => {
-            resolve();
-          }).catch(error => {
-            console.log(error);
-            reject();
-          });
-        }).catch(error => {
-          console.log(error);
-          reject();
-        });
-      sql.close();
-    }).catch(error => {
-      console.log(error);
-      reject();
-    });
-  });
+async function modifyUserXp(msg, userId, value) {
+  try {
+    await sql.open(config.pathDatabase);
+    await sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)');
+    //Add xp to user
+    await sql.run('UPDATE users SET xp = ? WHERE serverId = ? AND userId = ?', [value, msg.guild.id, userId]);
+    await sql.close();
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 function getRewardInMsg(msg, args) {
   var role = msg.mentions.roles.first();
-  if(args[1] == undefined) {
+  if (args[1] == undefined) {
     bot.printMsg(msg, lang.error.missingArg.reward);
     return;
   }
   var group = args[1].charAt(0).toUpperCase() + args[1].slice(1);
 
   //Check if reward is a role
-  if (role != null ) {
-    if(msg.guild.roles.has(role.id)) {
+  if (role != null) {
+    if (msg.guild.roles.has(role.id)) {
       //Reward is a role
       return role.id;
     }
-  } else if(group == null) {  //Check if reward is a group
+  } else if (group == null) { //Check if reward is a group
     //No reward
     bot.printMsg(msg, lang.error.missingArg.reward);
     return;
@@ -116,7 +105,7 @@ function getRewardInMsg(msg, args) {
 }
 
 async function addReward(msg, reward) {
-  if(config.groups.find(x => x.name == reward) != undefined){
+  if (config.groups.find(x => x.name == reward) != undefined) {
     //Reward is a group
     await permGroups.setGroup(msg, msg.author, reward)
     return reward;
@@ -129,21 +118,25 @@ async function addReward(msg, reward) {
   }
 }
 
-function getReward(msg, rank) {
-  return new Promise((resolve, reject) => {
-    sql.open(config.pathDatabase).then(() => {
-      sql.get("SELECT * FROM rewards WHERE serverId = ? AND rank = ?", [msg.guild.id, rank[0]]).then(row => {
-        resolve(row.reward);
-      }).catch(error => {
-        sql.run("CREATE TABLE IF NOT EXISTS rewards (serverId TEXT, rank TEXT, reward TEXT)").then(() => {
-          resolve();
-        }).catch(error => {
-          console.log(error);
-        });
-      });
-      sql.close();
-    });
-  });
+async function getReward(msg, rank) {
+  try {
+    await sql.open(config.pathDatabase);
+  } catch (e) {
+    console.error(e);
+  }
+  try {
+    var user = await sql.get("SELECT reward FROM rewards WHERE serverId = ? AND rank = ?", [msg.guild.id, rank[0]]);
+  } catch (e) {
+    try {
+      await sql.run("CREATE TABLE IF NOT EXISTS rewards (serverId TEXT, rank TEXT, reward TEXT)");
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  await sql.close();
+  if(user != undefined) {
+    return user.reward;
+  }
 }
 
 module.exports = {
@@ -266,7 +259,7 @@ module.exports = {
       }
     }
   },
-  setReward: function(msg, args) {
+  setReward: async function(msg, args) {
     var rank = args[0];
     //Check if there is a rank in msg
     if (rank == undefined) {
@@ -283,48 +276,38 @@ module.exports = {
     rank = rank.charAt(0).toUpperCase() + rank.slice(1);
 
     //Check if rank exists
-    //TODO: Use await/async
-    return new Promise((resolve, reject) => {
-      if (ranks.find(x => x.name == rank) != undefined) {
-        sql.open(config.pathDatabase).then(() => {
-          sql.get('SELECT * FROM rewards WHERE serverId = ? AND rank = ?', [msg.guild.id, rank]).then(row => {
-            if (!row) {
-              //Table exist but not row
-              sql.run("INSERT INTO rewards (serverId, rank, reward) VALUES (?, ?, ?)", [msg.guild.id, rank, reward]).then(() => {
-                msg.channel.send(lang.setreward.newReward);
-                resolve()
-              });
-            } else {
-              sql.run("UPDATE rewards SET rank = ?, reward = ? WHERE serverId = ?", [rank, reward, msg.guild.id]).then(() => {
-                msg.channel.send(lang.setreward.newReward);
-                resolve()
-              });
-            }
-          }).catch(() => {
-            sql.run("CREATE TABLE IF NOT EXISTS rewards (serverId TEXT, rank TEXT, reward TEXT)").then(() => {
-              //Table don't
-              sql.run("INSERT INTO rewards (serverId, rank, reward) VALUES (?, ?, ?)", [msg.guild.id, rank, reward]).then(() => {
-                msg.channel.send(lang.setreward.newReward);
-                resolve();
-              });
-            }).catch(error => {
-              console.log(error);
-              reject();
-            });
-          });
-          sql.close();
-        }).catch(error => {
-          console.log(error);
-          reject();
-        });
-      } else {
-        //Rank don't exists
-        bot.printMsg(msg, lang.error.notFound.rank);
-        resolve();
+    if (ranks.find(x => x.name == rank) != undefined) {
+      try {
+        await sql.open(config.pathDatabase);
+      } catch (e) {
+        console.error(e);
       }
-    });
+      try {
+        var row = await sql.get('SELECT * FROM rewards WHERE serverId = ? AND rank = ?', [msg.guild.id, rank]);
+      } catch (e) {
+        try {
+          await sql.run("CREATE TABLE IF NOT EXISTS rewards (serverId TEXT, rank TEXT, reward TEXT)");
+          await sql.run("INSERT INTO rewards (serverId, rank, reward) VALUES (?, ?, ?)", [msg.guild.id, rank, reward]);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      //Got row
+      if (!row) {
+        //Table exist but not row
+        await sql.run("INSERT INTO rewards (serverId, rank, reward) VALUES (?, ?, ?)", [msg.guild.id, rank, reward]);
+      } else {
+        await sql.run("UPDATE rewards SET rank = ?, reward = ? WHERE serverId = ?", [rank, reward, msg.guild.id]);
+      }
+      msg.channel.send(lang.setreward.newReward);
+      await sql.close();
+      return row;
+    } else {
+      //Rank don't exists
+      bot.printMsg(msg, lang.error.notFound.rank);
+    }
   },
-  unsetReward: function(msg, args) {
+  unsetReward: async function(msg, args) {
     var rank = args[0];
     //Check if there is a rank in msg
     if (rank == undefined) {
@@ -335,43 +318,36 @@ module.exports = {
     //Put first character of rank in uppercase
     rank = rank.charAt(0).toUpperCase() + rank.slice(1);
 
-    return new Promise((resolve, reject) => {
-      sql.open(config.pathDatabase).then(() => {
-        sql.all("SELECT * FROM rewards WHERE serverId = ? AND rank = ?", [msg.guild.id, rank])
-          .then(row => {
-            if (row.length > 0) {
-              sql.all("DELETE FROM rewards WHERE serverId = ? AND rank = ?", [msg.guild.id, rank])
-                .then(() => {
-                  bot.printMsg(msg, lang.unsetreward.rewardUnset);
-                  resolve()
-                }).catch(error => {
-                  console.log(error);
-                  reject()
-                });
-            } else {
-              if (ranks.find(x => x.name == rank) != undefined) {
-                //Reward not found
-                bot.printMsg(msg, lang.error.notFound.rankReward);
-              } else {
-                //Rank not found
-                bot.printMsg(msg, lang.error.notFound.rank);
-              }
-              resolve()
-            }
-          }).catch(error => {
-            //Check if table exist
-            sql.run("CREATE TABLE IF NOT EXISTS rewards (serverId TEXT, rank TEXT, reward TEXT)").then(() => {
-              resolve()
-            }).catch(error => {
-              console.log(error);
-              reject()
-            });
-          });
-        sql.close();
-      }).catch(error => {
-        console.log(error);
-        reject()
-      });
-    });
+    try {
+      await sql.open(config.pathDatabase);
+    } catch (e) {
+      console.error(e);
+    }
+    try {
+      var row = await sql.all("SELECT * FROM rewards WHERE serverId = ? AND rank = ?", [msg.guild.id, rank]);
+    } catch (e) {
+      try {
+        await sql.run("CREATE TABLE IF NOT EXISTS rewards (serverId TEXT, rank TEXT, reward TEXT)");
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    if (row.length > 0) {
+      try {
+        await sql.all("DELETE FROM rewards WHERE serverId = ? AND rank = ?", [msg.guild.id, rank]);
+      } catch (e) {
+        console.error(e);
+      }
+      bot.printMsg(msg, lang.unsetreward.rewardUnset);
+    } else {
+      if (ranks.find(x => x.name == rank) != undefined) {
+        //Reward not found
+        bot.printMsg(msg, lang.error.notFound.rankReward);
+      } else {
+        //Rank not found
+        bot.printMsg(msg, lang.error.notFound.rank);
+      }
+    }
+    await sql.close();
   }
 }
