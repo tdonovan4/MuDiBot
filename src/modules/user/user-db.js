@@ -10,6 +10,11 @@ async function runGetQuery(query, args) {
 
 module.exports = {
   user: {
+    getAll: async function(serverId, userId) {
+      var query = 'SELECT * FROM users WHERE serverId = ? AND userId = ?';
+      var user = await runGetQuery(query, [serverId, userId]);
+      return user;
+    },
     getPermGroups: async function(serverId, userId) {
       var query = 'SELECT userId,groups FROM users WHERE serverId = ? AND userId = ?';
       var response = await runGetQuery(query, [serverId, userId]);
