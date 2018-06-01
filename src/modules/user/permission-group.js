@@ -1,5 +1,5 @@
 const bot = require('../../bot.js');
-const storage = require('../../storage.js');
+const userDB = require('./user-db.js');
 const sql = require('sqlite');
 const config = require('../../args.js').getConfig()[1];
 var lang = require('../../localization.js').getLocalization();
@@ -69,21 +69,16 @@ module.exports = {
     //Check if group exists
     if (groups.find(x => x.name == group) != undefined) {
       //Get existing groups
-      var row = await storage.getUser(msg, user.id);
-      existingGroups = (row.groups != null) ? row.groups.split(',') : [];
+      var userGroups = await userDB.user.getPermGroups(msg.guild.id, msg.author.id);
 
-      //Check for duplicate
-      if (existingGroups.find(x => x == group)) {
-        bot.printMsg(msg, lang.error.groupDuplicate);
-        return;
-      }
       //Open database
       try {
         await sql.open(config.pathDatabase)
       } catch (e) {
         console.error(e);
       }
-      if (!row) {
+      //Check if query returned something
+      if (userGroups == null) {
         //Row doesn't exist
         try {
           await sql.run('INSERT INTO users (serverId, userId, xp, warnings, groups) VALUES (?, ?, ?, ?, ?)', [msg.guild.id, user.id, 0, 0, group]);
@@ -91,10 +86,21 @@ module.exports = {
           console.error(e);
         }
       } else {
+        //Split groups
+        userGroups = userGroups.split(',');
+        //TODO: remove
+        if (userGroups[0] == 'empty') {
+          userGroups.splice(0, 1);
+        }
+        //Check for duplicate
+        if (userGroups.find(x => x == group)) {
+          bot.printMsg(msg, lang.error.groupDuplicate);
+          return;
+        }
         //Update row
-        existingGroups.push(group);
+        userGroups.push(group);
         try {
-          await sql.run("UPDATE users SET groups = ? WHERE serverId = ? AND userId = ?", [existingGroups.toString(), msg.guild.id, user.id]);
+          await sql.run("UPDATE users SET groups = ? WHERE serverId = ? AND userId = ?", [userGroups.toString(), msg.guild.id, user.id]);
         } catch (e) {
           console.error(e);
         }
@@ -128,15 +134,14 @@ module.exports = {
     //Check if group exists
     if (groups.find(x => x.name == group) != undefined) {
       //Get existing groups
-      var row = await storage.getUser(msg, user.id);
-      existingGroups = (row.groups != null) ? row.groups.split(',') : [];
+      var userGroups = await userDB.user.getPermGroups(msg.guild.id, msg.author.id);
       //Open database
       try {
         await sql.open(config.pathDatabase);
       } catch (e) {
         console.error(e);
       }
-      if (!row) {
+      if (userGroups == null) {
         //Row doesn't exist
         try {
           await sql.run('INSERT INTO users (serverId, userId, xp, warnings, groups) VALUES (?, ?, ?, ?, ?)', [msg.guild.id, user.id, 0, 0, groups[0].name]);
@@ -145,18 +150,20 @@ module.exports = {
           console.error(e);
         }
       } else {
+        //Split groups
+        userGroups = userGroups.split(',');
         //Remove group
-        let index = existingGroups.indexOf(group);
+        let index = userGroups.indexOf(group);
         if (index > -1) {
-          existingGroups.splice(index, 1)
-          if (existingGroups.length < 2 && existingGroups[0] == '') {
+          userGroups.splice(index, 1);
+          if (userGroups.length < 2 && userGroups[0] == '') {
             //No group
-            existingGroups = null;
+            userGroups = null;
           } else {
-            existingGroups = existingGroups.toString()
+            userGroups = userGroups.toString()
           }
           try {
-            await sql.run("UPDATE users SET groups = ? WHERE serverId = ? AND userId = ?", [existingGroups, msg.guild.id, user.id]);
+            await sql.run("UPDATE users SET groups = ? WHERE serverId = ? AND userId = ?", [userGroups, msg.guild.id, user.id]);
             bot.printMsg(msg, lang.unsetgroup.removed);
           } catch (e) {
             console.error(e);

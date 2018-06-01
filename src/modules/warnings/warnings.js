@@ -138,7 +138,7 @@ async function modifyUsersWarnings(msg, value) {
   }
 }
 
-function modifyUserWarnings(msg, userId, value) {
+async function modifyUserWarnings(msg, userId, value) {
   try {
     await sql.open(config.pathDatabase);
     await sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)');
