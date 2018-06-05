@@ -1,5 +1,5 @@
 //Handle warnings
-const storage = require('../../storage.js');
+const userDB = require('../user/user-db.js');
 const bot = require('../../bot.js');
 const mustache = require('mustache');
 const sql = require('sqlite');
@@ -46,9 +46,10 @@ module.exports = {
       });
     }
     async execute(msg, args) {
+      var mention = msg.mentions.users.first();
       if (args.length == 0) {
         //List all users warnings
-        var users = await storage.getUsers(msg);
+        var users = await userDB.users.getWarnings(msg.guild.id);
 
         var output = '';
         for (i = 0; i < users.length; i++) {
@@ -63,12 +64,15 @@ module.exports = {
           output = lang.warn.noWarns;
         }
         bot.printMsg(msg, output);
-      } else if (msg.mentions.users.first() != undefined) {
+      } else if (mention != undefined) {
         //List the user's warnings
-        var user = await storage.getUser(msg, msg.mentions.users.first().id);
+        var warnings = await userDB.user.getWarnings(msg.guild.id, mention.id);
 
         if (user != undefined) {
-          bot.printMsg(msg, mustache.render(lang.warn.list, user));
+          bot.printMsg(msg, mustache.render(lang.warn.list, {
+            userId: mention.id,
+            warnings: warnings
+          }));
         } else {
           bot.printMsg(msg, lang.error.invalidArg.user);
         }
@@ -94,10 +98,11 @@ module.exports = {
         bot.printMsg(msg, lang.warn.usersCleared);
       } else if (msg.mentions.users.first() != undefined) {
         //Purge the user
-        var user = await storage.getUser(msg, msg.mentions.users.first().id);
+        var mention = msg.mentions.users.first();
+        var userExists = await userDB.user.exists(msg.guild.id, mention.id);
 
-        if (user != undefined) {
-          await modifyUserWarnings(msg, user.userId, 0)
+        if (userExists) {
+          await modifyUserWarnings(msg, mention.id, 0)
           bot.printMsg(msg, lang.warn.userCleared);
         } else {
           bot.printMsg(msg, lang.error.invalidArg.user);
@@ -108,19 +113,20 @@ module.exports = {
     }
   },
   warn: async function(msg, num) {
-    if (msg.mentions.users.first() != undefined) {
+    var mention = msg.mentions.users.first();
+    if (mention != undefined) {
       //There is a mention
-      var user = await storage.getUser(msg, msg.mentions.users.first().id);
-      var warnings = user.warnings
-      if (warnings != undefined) {
-        //User warnings found!
-        warnings = warnings + num;
-        await modifyUserWarnings(msg, user.userId, warnings);
-        user.warnings = warnings;
-        bot.printMsg(msg, mustache.render(lang.warn.list, user));
-      } else {
-        bot.printMsg(msg, lang.error.invalidArg.user);
+      var warnings = await userDB.user.getWarnings(msg.guild.id, mention.id);
+      if (warnings == undefined) {
+        //Default
+        warnings = 0;
       }
+      //User warnings found!
+      warnings += num;
+      await modifyUserWarnings(msg, mention.id, warnings);
+      bot.printMsg(msg, mustache.render(lang.warn.list, {
+        warnings: warnings
+      }));
     } else {
       bot.printMsg(msg, lang.error.usage);
     }
@@ -140,9 +146,16 @@ async function modifyUsersWarnings(msg, value) {
 
 async function modifyUserWarnings(msg, userId, value) {
   try {
+    var userExists = await userDB.user.exists(msg.guild.id, userId);
     await sql.open(config.pathDatabase);
     await sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)');
-    await sql.run('UPDATE users SET warnings = ? WHERE serverId = ? AND userId = ?', [value, msg.guild.id, userId]);
+    if (userExists) {
+      //User exists, update
+      await sql.run('UPDATE users SET warnings = ? WHERE serverId = ? AND userId = ?', [value, msg.guild.id, userId]);
+    } else {
+      //Insert user
+      await sql.run('INSERT INTO users (serverId, userId, xp, warnings, groups) VALUES (?, ?, ?, ?, ?)', [msg.guild.id, userId, 0, value, config.groups[0]]);
+    }
     await sql.close();
   } catch (e) {
     console.error(e);
