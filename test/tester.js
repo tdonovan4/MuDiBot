@@ -31,6 +31,7 @@ giphy.__set__({
 })
 
 const storage = require('../src/storage.js');
+const userDB = require('../src/modules/user/user-db.js');
 const levels = rewire('../src/levels.js');
 const permGroups = rewire('../src/modules/user/permission-group.js');
 const warnings = require('../src/modules/warnings/warnings.js');
@@ -157,7 +158,6 @@ describe('Test permission groups', function() {
     })
   });
 });
-var modifyUserXp = levels.__get__('modifyUserXp');
 describe('Test levels', function() {
   describe('Test getXpForLevel', function() {
     it('Should return 100 XP for level 1', async function() {
@@ -278,15 +278,16 @@ describe('Test levels', function() {
     msg.content = 'test';
     it('User should have more than 0 XP', async function() {
       //To make sure
-      await modifyUserXp(msg, '041025599435591424', 0);
+      await userDB.user.updateXP(msg.guild.id, '041025599435591424', 0);
       await levels.newMessage(msg);
       var user = await storage.getUser(msg, '041025599435591424');
+      console.log(user);
       expect(user.xp).to.be.above(0);
     });
     it('XP should not augment if spamming', async function() {
       /*This should be executed while the XP is still
         in cooldown because of the test before */
-      await modifyUserXp(msg, '041025599435591424', 0);
+      await userDB.user.updateXP(msg.guild.id, '041025599435591424', 0);
       for (var i = 0; i < 5; i++) {
         await levels.newMessage(msg);
       }
@@ -294,7 +295,7 @@ describe('Test levels', function() {
       expect(user.xp).to.be.equal(0);
     });
     it('Should return that the user has leveled up', async function() {
-      await modifyUserXp(msg, '041025599435591424', 99);
+      await userDB.user.updateXP(msg.guild.id, '041025599435591424', 99);
       //Remove cooldown
       levels.__set__('lastMessages', []);
       await levels.newMessage(msg);
@@ -304,7 +305,7 @@ describe('Test levels', function() {
       }));
     });
     it('Should return that the user ranked up', async function() {
-      await modifyUserXp(msg, '041025599435591424', 989);
+      await userDB.user.updateXP(msg.guild.id, '041025599435591424', 989);
       //Remove cooldown
       levels.__set__('lastMessages', []);
       await levels.newMessage(msg);
@@ -320,7 +321,7 @@ describe('Test levels', function() {
     it('Should set the reward for the user (permission group)', async function() {
       //Set the reward for warrior
       await levels.setReward(msg, ['warrior', 'Member']);
-      await modifyUserXp(msg, '041025599435591424', 2529);
+      await userDB.user.updateXP(msg.guild.id, '041025599435591424', 2529);
       //Remove cooldown
       levels.__set__('lastMessages', []);
       await levels.newMessage(msg);
@@ -328,7 +329,7 @@ describe('Test levels', function() {
       expect(response.groups).to.equal('Member');
     })
     it('Should set the reward for the user (role)', async function() {
-      await modifyUserXp(msg, '041025599435591424', 11684);
+      await userDB.user.updateXP(msg.guild.id, '041025599435591424', 11684);
       //Add roles
       msg.guild.roles.set('2', {
         id: '2',
@@ -1155,7 +1156,7 @@ describe('Test commands', function() {
   describe('profile', function() {
     it('Should return the message author\'s (TestUser) profile', async function() {
       //Add XP
-      await modifyUserXp(msg, msg.author.id, 11685);
+      await userDB.user.updateXP(msg.guild.id, msg.author.id, 11685);
       //Add member to groups
       await permGroups.setGroup(msg, msg.author, 'Member');
       msg.content = '$profile';
