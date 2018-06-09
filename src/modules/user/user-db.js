@@ -32,7 +32,7 @@ async function runUpdateQuery(query, serverId, userId, newValue) {
     await sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)');
     //If user don't exist, insert
     await sql.run(`INSERT OR IGNORE INTO users (serverId, userId, xp, warnings, groups) VALUES (?, ?, ?, ?, ?)`, [
-     serverId, userId, 0, 0, config.groups[0]
+     serverId, userId, 0, 0, config.groups[0].name
     ]);
     //Update user
     await sql.run(query, [newValue, serverId, userId]);
@@ -55,11 +55,13 @@ module.exports = {
       return user;
     },
     getPermGroups: async function(serverId, userId) {
-      var query = 'SELECT userId,groups FROM users WHERE serverId = ? AND userId = ?';
+      var query = 'SELECT groups FROM users WHERE serverId = ? AND userId = ?';
       var response = await runGetQuery(query, [serverId, userId]);
-      //Since groups can be null, check if user exists (temporary)
-      if (response.userId != null && response.groups == null) {
-        response.groups = 'empty';
+      //Add default group
+      if (response == null || response.groups == null) {
+        response.groups = config.groups[0].name;
+        //Update db
+        await this.updatePermGroups(serverId, userId, response.groups);
       }
       return response.groups;
     },
@@ -79,8 +81,13 @@ module.exports = {
       }
       return response;
     },
+    updatePermGroups: async function(serverId, userId, groups) {
+      //Update user's permission groups
+      var query = 'UPDATE users SET groups = (?) WHERE serverId = ? AND userId = ?';
+      await runUpdateQuery(query, serverId, userId, groups);
+    },
     updateXP: async function(serverId, userId, newXP) {
-      //Add xp to user
+      //Update user's xp
       var query = 'UPDATE users SET xp = ? WHERE serverId = ? AND userId = ?';
       await runUpdateQuery(query, serverId, userId, newXP);
     }
