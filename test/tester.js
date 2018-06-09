@@ -154,7 +154,7 @@ describe('Test permission groups', function() {
       });
       await permGroups.__get__('purgeGroups')(msg);
       var response = await storage.getUser(msg, '041025599435591424');
-      expect(response.groups).to.equal(null);
+      expect(response.groups).to.equal('User');
     })
   });
 });
@@ -326,7 +326,7 @@ describe('Test levels', function() {
       levels.__set__('lastMessages', []);
       await levels.newMessage(msg);
       var response = await storage.getUser(msg, '041025599435591424');
-      expect(response.groups).to.equal('Member');
+      expect(response.groups).to.equal('User,Member');
     })
     it('Should set the reward for the user (role)', async function() {
       await userDB.user.updateXP(msg.guild.id, '041025599435591424', 11684);
@@ -1164,7 +1164,7 @@ describe('Test commands', function() {
       var embed = msgSend.lastCall.returnValue.content.embed;
       expect(embed.title).to.equal('TestUser\'s profile');
       expect(embed.fields[0].value).to.equal('Emperor ');
-      expect(embed.fields[1].value).to.equal('Member');
+      expect(embed.fields[1].value).to.equal('Member, User');
       expect(embed.fields[2].value).to.exist;
       expect(embed.fields[3].value).to.exist;
       expect(embed.fields[4].value).to.equal('0');
@@ -1174,7 +1174,7 @@ describe('Test commands', function() {
       config.superusers = ['041025599435591424'];
       await commands.executeCmd(msg, ['profile']);
       var embed = msgSend.lastCall.returnValue.content.embed;
-      expect(embed.fields[1].value).to.equal('Superuser, Member');
+      expect(embed.fields[1].value).to.equal('Superuser, Member, User');
     });
     it('Should return George\'s profile', async function() {
       var id = '357156661105365963';
@@ -1195,15 +1195,15 @@ describe('Test commands', function() {
     });
   });
   describe('setgroup', function() {
-    it('Should add "User" to the list of groups of TestUser', async function() {
+    it('Should add "Mod" to the list of groups of TestUser', async function() {
       msg.mentions.users.clear();
       msg.mentions.users.set('041025599435591424', {
         id: '041025599435591424'
       });
-      msg.content = '$setgroup <#041025599435591424> User'
-      await commands.executeCmd(msg, ['setgroup', '<#041025599435591424>', 'User']);
+      msg.content = '$setgroup <#041025599435591424> Mod'
+      await commands.executeCmd(msg, ['setgroup']);
       var response = await storage.getUser(msg, '041025599435591424');
-      expect(response.groups).to.equal('Member,User');
+      expect(response.groups).to.equal('User,Member,Mod');
     });
   });
   describe('unsetgroup', function() {
@@ -1211,15 +1211,15 @@ describe('Test commands', function() {
       msg.content = '$unsetgroup <#041025599435591424> User'
       await commands.executeCmd(msg, ['unsetgroup', '<#041025599435591424>', 'User']);
       var response = await storage.getUser(msg, '041025599435591424');
-      expect(response.groups).to.equal('Member');
+      expect(response.groups).to.equal('Member,Mod');
     });
   });
   describe('purgegroups', function() {
-    it('Should remove all groups from TestUser', async function() {
+    it('Should get TestUser back to User', async function() {
       msg.content = '$purgegroups <#041025599435591424>'
       await commands.executeCmd(msg, ['purgegroups', '<#041025599435591424>']);
       var response = await storage.getUser(msg, '041025599435591424');
-      expect(response.groups).to.equal(null);
+      expect(response.groups).to.equal('User');
     });
   });
   describe('gif', function() {
