@@ -66,18 +66,6 @@ var lastRank = {
   color: 0xff0000
 }
 
-async function modifyUserXp(msg, userId, value) {
-  try {
-    await sql.open(config.pathDatabase);
-    await sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)');
-    //Add xp to user
-    await sql.run('UPDATE users SET xp = ? WHERE serverId = ? AND userId = ?', [value, msg.guild.id, userId]);
-    await sql.close();
-  } catch (e) {
-    console.error(e);
-  }
-}
-
 function getRewardInMsg(msg, args) {
   var role = msg.mentions.roles.first();
   if (args[1] == undefined) {
@@ -215,7 +203,7 @@ module.exports = {
       var extraXp = Math.trunc(msg.content.replace(/\s/g, "").length / 3);
       //Get a random number from 1 to 3 and add extra xp (max is 20);
       xpGained = Math.min(20, (Math.floor(Math.random() * 3) + 1) + extraXp);
-      await modifyUserXp(msg, msg.author.id, xp + xpGained);
+      await userDB.user.updateXP(msg.guild.id, msg.author.id, xp + xpGained);
 
       let progression = this.getProgression(xp);
       let xpForNextLevel = this.getXpForLevel(progression[0]) - progression[1];
