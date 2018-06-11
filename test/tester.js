@@ -281,7 +281,6 @@ describe('Test levels', function() {
       await userDB.user.updateXP(msg.guild.id, '041025599435591424', 0);
       await levels.newMessage(msg);
       var user = await storage.getUser(msg, '041025599435591424');
-      console.log(user);
       expect(user.xp).to.be.above(0);
     });
     it('XP should not augment if spamming', async function() {
@@ -1188,7 +1187,7 @@ describe('Test commands', function() {
       var embed = msgSend.lastCall.returnValue.content.embed;
       expect(embed.title).to.equal('George\'s profile');
       expect(embed.fields[0].value).to.equal('Vagabond ');
-      expect(embed.fields[1].value).to.equal('Ø');
+      expect(embed.fields[1].value).to.equal('User');
       expect(embed.fields[2].value).to.exist;
       expect(embed.fields[3].value).to.exist;
       expect(embed.fields[4].value).to.equal('0');

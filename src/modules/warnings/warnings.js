@@ -50,7 +50,6 @@ module.exports = {
       if (args.length == 0) {
         //List all users warnings
         var users = await userDB.users.getWarnings(msg.guild.id);
-
         var output = '';
         for (i = 0; i < users.length; i++) {
           if (users[i].warnings > 0) {
@@ -94,7 +93,7 @@ module.exports = {
     async execute(msg, args) {
       if (args == 'all') {
         //Purge all users
-        await modifyUsersWarnings(msg, 0)
+        await userDB.users.updateWarnings(msg.guild.id, 0);
         bot.printMsg(msg, lang.warn.usersCleared);
       } else if (msg.mentions.users.first() != undefined) {
         //Purge the user
@@ -102,7 +101,7 @@ module.exports = {
         var userExists = await userDB.user.exists(msg.guild.id, mention.id);
 
         if (userExists) {
-          await modifyUserWarnings(msg, mention.id, 0)
+          await userDB.users.updateWarnings(msg.guild.id, 0);
           bot.printMsg(msg, lang.warn.userCleared);
         } else {
           bot.printMsg(msg, lang.error.invalidArg.user);
@@ -123,41 +122,12 @@ module.exports = {
       }
       //User warnings found!
       warnings += num;
-      await modifyUserWarnings(msg, mention.id, warnings);
+      await userDB.user.updateWarnings(msg.guild.id, mention.id, warnings);
       bot.printMsg(msg, mustache.render(lang.warn.list, {
         warnings: warnings
       }));
     } else {
       bot.printMsg(msg, lang.error.usage);
     }
-  }
-}
-
-async function modifyUsersWarnings(msg, value) {
-  try {
-    await sql.open(config.pathDatabase);
-    await sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
-    await sql.run('UPDATE users SET warnings = ? WHERE serverId = ?', [value, msg.guild.id]);
-    await sql.close();
-  } catch (e) {
-    console.error(e);
-  }
-}
-
-async function modifyUserWarnings(msg, userId, value) {
-  try {
-    var userExists = await userDB.user.exists(msg.guild.id, userId);
-    await sql.open(config.pathDatabase);
-    await sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)');
-    if (userExists) {
-      //User exists, update
-      await sql.run('UPDATE users SET warnings = ? WHERE serverId = ? AND userId = ?', [value, msg.guild.id, userId]);
-    } else {
-      //Insert user
-      await sql.run('INSERT INTO users (serverId, userId, xp, warnings, groups) VALUES (?, ?, ?, ?, ?)', [msg.guild.id, userId, 0, value, config.groups[0]]);
-    }
-    await sql.close();
-  } catch (e) {
-    console.error(e);
   }
 }
