@@ -1,5 +1,8 @@
 const sql = require('sqlite');
 const config = require('../../args.js').getConfig()[1];
+const checkTable = 'CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT,' +
+  `xp INTEGER DEFAULT 0, warnings INTEGER DEFAULT 0, groups TEXT DEFAULT "${config.groups[0].name}",` +
+  'CONSTRAINT users_unique UNIQUE (serverId, userId))';
 
 async function runGetQuery(query, args) {
   try {
@@ -25,17 +28,30 @@ async function runAllQuery(query, args) {
   return response;
 }
 
-async function runUpdateQuery(query, serverId, userId, newValue) {
+async function runUpdateQueryUser(query, serverId, userId, newValue) {
   try {
     await sql.open(config.pathDatabase);
     //Make sure table exists
-    await sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)');
+    await sql.run(checkTable);
     //If user don't exist, insert
-    await sql.run(`INSERT OR IGNORE INTO users (serverId, userId, xp, warnings, groups) VALUES (?, ?, ?, ?, ?)`, [
-     serverId, userId, 0, 0, config.groups[0].name
+    await sql.run(`INSERT OR IGNORE INTO users (serverId, userId) VALUES (?, ?)`, [
+      serverId, userId
     ]);
     //Update user
     await sql.run(query, [newValue, serverId, userId]);
+    await sql.close();
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+async function runUpdateQueryUsers(query, userId, newValue) {
+  try {
+    await sql.open(config.pathDatabase);
+    //Make sure table exists
+    await sql.run(checkTable);
+    //Update user
+    await sql.run(query, [newValue, userId]);
     await sql.close();
   } catch (e) {
     console.error(e);
@@ -84,18 +100,27 @@ module.exports = {
     updatePermGroups: async function(serverId, userId, groups) {
       //Update user's permission groups
       var query = 'UPDATE users SET groups = (?) WHERE serverId = ? AND userId = ?';
-      await runUpdateQuery(query, serverId, userId, groups);
+      await runUpdateQueryUser(query, serverId, userId, groups);
     },
     updateXP: async function(serverId, userId, newXP) {
       //Update user's xp
       var query = 'UPDATE users SET xp = ? WHERE serverId = ? AND userId = ?';
-      await runUpdateQuery(query, serverId, userId, newXP);
+      await runUpdateQueryUser(query, serverId, userId, newXP);
+    },
+    updateWarnings: async function(serverId, userId, newWarnings) {
+      //Update user's warnings
+      var query = 'UPDATE users SET warnings = ? WHERE serverId = ? AND userId = ?';
+      await runUpdateQueryUser(query, serverId, userId, newWarnings);
     }
   },
   users: {
     getWarnings: async function(serverId) {
       var query = 'SELECT userId, warnings FROM users WHERE serverId = ?';
       return await runAllQuery(query, serverId);
+    },
+    updateWarnings: async function(serverId, newWarnings) {
+      var query = 'UPDATE users SET warnings = ? WHERE serverId = ?';
+      await runUpdateQueryUsers(query, serverId, newWarnings);
     }
   }
 }

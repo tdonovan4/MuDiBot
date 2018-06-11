@@ -1,7 +1,9 @@
 //Handle SQL
 const sql = require('sqlite');
 const config = require('./args.js').getConfig()[1];
-const checkTable = 'CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)';
+const checkTable = 'CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT,' +
+  `xp INTEGER DEFAULT 0, warnings INTEGER DEFAULT 0, groups TEXT DEFAULT "${config.groups[0].name}",` +
+  'CONSTRAINT users_unique UNIQUE (serverId, userId))';
 
 function insertUser(msg, userId) {
   return new Promise((resolve, reject) => {
