@@ -30,7 +30,6 @@ giphy.__set__({
   }
 })
 
-const storage = require('../src/storage.js');
 const userDB = require('../src/modules/user/user-db.js');
 const levels = rewire('../src/levels.js');
 const permGroups = rewire('../src/modules/user/permission-group.js');
@@ -63,37 +62,6 @@ function deleteDatabase() {
     fs.unlinkSync(path);
   }
 }
-
-describe('Test storage', function() {
-  describe('Test getUser', function() {
-    it('Should insert TestUser in the empty database and return it', async function() {
-      //Should be deleted, but just to be sure
-      deleteDatabase();
-      var response = await storage.getUser(msg, '041025599435591424');
-      expect(response.serverId).to.equal('357156661105365963');
-      expect(response.userId).to.equal('041025599435591424');
-    });
-    it('Should get TestUser from the database and return it', async function() {
-      var response = await storage.getUser(msg, '041025599435591424');
-      expect(response.serverId).to.equal('357156661105365963');
-      expect(response.userId).to.equal('041025599435591424');
-    });
-  });
-  describe('Test getUsers', function() {
-    it('Should return an array of users in the guild', async function() {
-      //Add another user. TODO: better way to add users
-      storage.getUser(msg, '287350581898558262');
-      var response = await storage.getUsers(msg);
-
-      //Test the array
-      expectedUserId = ['041025599435591424', '287350581898558262'];
-      for (let i = 0; i < response.length; i++) {
-        expect(response[i].serverId).to.equal('357156661105365963');
-        expect(response[i].userId).to.equal(expectedUserId[i]);
-      }
-    });
-  });
-});
 describe('Test permission groups', function() {
   describe('Test setGroup', function() {
     it('Should return invalid user', function() {
@@ -110,13 +78,13 @@ describe('Test permission groups', function() {
     });
     it('Should add "User" to the list of groups of TestUser', async function() {
       await permGroups.setGroup(msg, msg.author, 'User');
-      var response = await storage.getUser(msg, '041025599435591424');
-      expect(response.groups).to.equal('User');
+      var response = await userDB.user.getPermGroups(msg.guild.id, '041025599435591424');
+      expect(response).to.equal('User');
     });
     it('Should add "Member" to the list of groups of TestUser', async function() {
       await permGroups.setGroup(msg, msg.author, 'Member');
-      var response = await storage.getUser(msg, '041025599435591424');
-      expect(response.groups).to.equal('User,Member');
+      var response = await userDB.user.getPermGroups(msg.guild.id, '041025599435591424');
+      expect(response).to.equal('User,Member');
     });
   });
   describe('Test unsetGroup', function() {
@@ -134,8 +102,8 @@ describe('Test permission groups', function() {
     });
     it('Should remove "User" from the list of groups of TestUser', async function() {
       await permGroups.unsetGroup(msg, msg.author, 'User');
-      var response = await storage.getUser(msg, '041025599435591424');
-      expect(response.groups).to.equal('Member');
+      var response = await userDB.user.getPermGroups(msg.guild.id, '041025599435591424');
+      expect(response).to.equal('Member');
     });
     it('Should return that the user is not in this group', async function() {
       await permGroups.unsetGroup(msg, msg.author, 'Admin');
@@ -153,8 +121,8 @@ describe('Test permission groups', function() {
         id: '041025599435591424'
       });
       await permGroups.__get__('purgeGroups')(msg);
-      var response = await storage.getUser(msg, '041025599435591424');
-      expect(response.groups).to.equal('User');
+      var response = await userDB.user.getPermGroups(msg.guild.id, '041025599435591424');
+      expect(response).to.equal('User');
     })
   });
 });
@@ -280,8 +248,8 @@ describe('Test levels', function() {
       //To make sure
       await userDB.user.updateXP(msg.guild.id, '041025599435591424', 0);
       await levels.newMessage(msg);
-      var user = await storage.getUser(msg, '041025599435591424');
-      expect(user.xp).to.be.above(0);
+      var xp = await userDB.user.getXp(msg.guild.id, '041025599435591424');
+      expect(xp).to.be.above(0);
     });
     it('XP should not augment if spamming', async function() {
       /*This should be executed while the XP is still
@@ -290,8 +258,8 @@ describe('Test levels', function() {
       for (var i = 0; i < 5; i++) {
         await levels.newMessage(msg);
       }
-      var user = await storage.getUser(msg, '041025599435591424');
-      expect(user.xp).to.be.equal(0);
+      var xp = await userDB.user.getXp(msg.guild.id, '041025599435591424');
+      expect(xp).to.be.equal(0);
     });
     it('Should return that the user has leveled up', async function() {
       await userDB.user.updateXP(msg.guild.id, '041025599435591424', 99);
@@ -324,8 +292,8 @@ describe('Test levels', function() {
       //Remove cooldown
       levels.__set__('lastMessages', []);
       await levels.newMessage(msg);
-      var response = await storage.getUser(msg, '041025599435591424');
-      expect(response.groups).to.equal('User,Member');
+      var response = await userDB.user.getPermGroups(msg.guild.id, '041025599435591424');
+      expect(response).to.equal('User,Member');
     })
     it('Should set the reward for the user (role)', async function() {
       await userDB.user.updateXP(msg.guild.id, '041025599435591424', 11684);
@@ -836,13 +804,13 @@ describe('Test warnings', function() {
         id: '041025599435591424'
       });
       await warnings.warn(msg, 1);
-      var response = await storage.getUser(msg, '041025599435591424');
-      expect(response.warnings).to.equal(1);
+      var response = await userDB.user.getWarnings(msg.guild.id, '041025599435591424');
+      expect(response).to.equal(1);
     });
     it('Should decrease TestUser\'s warnings by one', async function() {
       await warnings.warn(msg, -1);
-      var response = await storage.getUser(msg, '041025599435591424');
-      expect(response.warnings).to.equal(0);
+      var response = await userDB.user.getWarnings(msg.guild.id, '041025599435591424');
+      expect(response).to.equal(0);
     });
   });
   describe('Test list', function() {
@@ -889,14 +857,14 @@ describe('Test warnings', function() {
       });
       msg.content = '$warnpurge';
       await commands.executeCmd(msg, ['warnpurge']);
-      var response = await storage.getUser(msg, '041025599435591424');
-      expect(response.warnings).to.equal(0);
+      var response = await userDB.user.getWarnings(msg.guild.id, '041025599435591424');
+      expect(response).to.equal(0);
     });
     it('Should purge all', async function() {
       await warnings.warn(msg, 1);
       msg.content = '$warnpurge all';
       await commands.executeCmd(msg, ['warnpurge']);
-      var response = await storage.getUsers(msg);
+      var response = await userDB.users.getWarnings(msg.guild.id);
       expect(response[0].warnings).to.equal(0);
       expect(response[1].warnings).to.equal(0);
     });
@@ -1201,24 +1169,24 @@ describe('Test commands', function() {
       });
       msg.content = '$setgroup <#041025599435591424> Mod'
       await commands.executeCmd(msg, ['setgroup']);
-      var response = await storage.getUser(msg, '041025599435591424');
-      expect(response.groups).to.equal('User,Member,Mod');
+      var response = await userDB.user.getPermGroups(msg.guild.id, '041025599435591424');
+      expect(response).to.equal('User,Member,Mod');
     });
   });
   describe('unsetgroup', function() {
     it('Should remove "User" from the list of groups of TestUser', async function() {
       msg.content = '$unsetgroup <#041025599435591424> User'
       await commands.executeCmd(msg, ['unsetgroup', '<#041025599435591424>', 'User']);
-      var response = await storage.getUser(msg, '041025599435591424');
-      expect(response.groups).to.equal('Member,Mod');
+      var response = await userDB.user.getPermGroups(msg.guild.id, '041025599435591424');
+      expect(response).to.equal('Member,Mod');
     });
   });
   describe('purgegroups', function() {
     it('Should get TestUser back to User', async function() {
       msg.content = '$purgegroups <#041025599435591424>'
       await commands.executeCmd(msg, ['purgegroups', '<#041025599435591424>']);
-      var response = await storage.getUser(msg, '041025599435591424');
-      expect(response.groups).to.equal('User');
+      var response = await userDB.user.getPermGroups(msg.guild.id, '041025599435591424');
+      expect(response).to.equal('User');
     });
   });
   describe('gif', function() {

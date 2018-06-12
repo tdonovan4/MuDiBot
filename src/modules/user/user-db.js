@@ -75,6 +75,7 @@ module.exports = {
       var response = await runGetQuery(query, [serverId, userId]);
       //Add default group
       if (response == null || response.groups == null) {
+        response = {};
         response.groups = config.groups[0].name;
         //Update db
         await this.updatePermGroups(serverId, userId, response.groups);
