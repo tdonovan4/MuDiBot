@@ -72,7 +72,7 @@ describe('Test user-db', function() {
       expect(response).to.equal(undefined);
     });
     it('user.getXp() should return 0', async function() {
-      var response = await userDB.user.getXp('1', '2');
+      var response = await userDB.user.getXP('1', '2');
       expect(response).to.equal(0);
     });
     it('user.getWarnings() should return 0', async function() {
@@ -104,7 +104,7 @@ describe('Test user-db', function() {
     });
     it('user.updateXP() should change XP to 10000', async function() {
       await userDB.user.updateXP('1', '3', 10000);
-      var response = await userDB.user.getXp('1', '3');
+      var response = await userDB.user.getXP('1', '3');
       expect(response).to.equal(10000);
     });
     it('user.updateWarnings() should change warnings to 4', async function() {
@@ -134,7 +134,7 @@ describe('Test user-db', function() {
       });
       it('user.updateXP() should change XP to 15000', async function() {
         await userDB.user.updateXP('1', '3', 15000);
-        var response = await userDB.user.getXp('1', '3');
+        var response = await userDB.user.getXP('1', '3');
         expect(response).to.equal(15000);
       });
       it('user.updateWarnings() should change warnings to 2', async function() {
@@ -345,7 +345,7 @@ describe('Test levels', function() {
       //To make sure
       await userDB.user.updateXP(msg.guild.id, '041025599435591424', 0);
       await levels.newMessage(msg);
-      var xp = await userDB.user.getXp(msg.guild.id, '041025599435591424');
+      var xp = await userDB.user.getXP(msg.guild.id, '041025599435591424');
       expect(xp).to.be.above(0);
     });
     it('XP should not augment if spamming', async function() {
@@ -355,7 +355,7 @@ describe('Test levels', function() {
       for (var i = 0; i < 5; i++) {
         await levels.newMessage(msg);
       }
-      var xp = await userDB.user.getXp(msg.guild.id, '041025599435591424');
+      var xp = await userDB.user.getXP(msg.guild.id, '041025599435591424');
       expect(xp).to.be.equal(0);
     });
     it('Should return that the user has leveled up', async function() {

@@ -197,7 +197,7 @@ module.exports = {
       })
     }
 
-    var xp = await userDB.user.getXp(msg.guild.id, msg.author.id);
+    var xp = await userDB.user.getXP(msg.guild.id, msg.author.id);
     if (xp != undefined) {
       //Add 1 per 2 characters
       var extraXp = Math.trunc(msg.content.replace(/\s/g, "").length / 3);

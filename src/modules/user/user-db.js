@@ -86,7 +86,7 @@ module.exports = {
       }
       return response.groups;
     },
-    getXp: async function(serverId, userId) {
+    getXP: async function(serverId, userId) {
       var query = 'SELECT xp FROM users WHERE serverId = ? AND userId = ?';
       var response = await runGetQuery(query, [serverId, userId]);
       if (response == null || response.xp == null) {
