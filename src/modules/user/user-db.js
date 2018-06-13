@@ -7,6 +7,8 @@ const checkTable = 'CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT
 async function runGetQuery(query, args) {
   try {
     await sql.open(config.pathDatabase);
+    //Make sure table exists
+    await sql.run(checkTable);
     var response = await sql.get(query, args);
     await sql.close();
   } catch (e) {
@@ -19,6 +21,8 @@ async function runGetQuery(query, args) {
 async function runAllQuery(query, args) {
   try {
     await sql.open(config.pathDatabase);
+    //Make sure table exists
+    await sql.run(checkTable);
     var response = await sql.all(query, args);
     await sql.close();
   } catch (e) {
@@ -85,18 +89,20 @@ module.exports = {
     getXp: async function(serverId, userId) {
       var query = 'SELECT xp FROM users WHERE serverId = ? AND userId = ?';
       var response = await runGetQuery(query, [serverId, userId]);
-      if (response != undefined) {
-        response = response.xp;
+      if (response == null || response.xp == null) {
+        response = {};
+        response.xp = 0;
       }
-      return response;
+      return response.xp;
     },
     getWarnings: async function(serverId, userId) {
       var query = 'SELECT warnings FROM users WHERE serverId = ? AND userId = ?';
       var response = await runGetQuery(query, [serverId, userId]);
-      if (response != undefined) {
-        response = response.warnings;
+      if (response == null || response.warnings == null) {
+        response = {};
+        response.warnings = 0;
       }
-      return response;
+      return response.warnings;
     },
     updatePermGroups: async function(serverId, userId, groups) {
       //Update user's permission groups

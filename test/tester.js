@@ -62,6 +62,103 @@ function deleteDatabase() {
     fs.unlinkSync(path);
   }
 }
+describe('Test user-db', function() {
+  it('Should delete database', async function() {
+    await deleteDatabase();
+  });
+  describe('Test get queries with empty responses', function() {
+    it('user.getAll() should return undefined', async function() {
+      var response = await userDB.user.getAll('1', '2');
+      expect(response).to.equal(undefined);
+    });
+    it('user.getXp() should return 0', async function() {
+      var response = await userDB.user.getXp('1', '2');
+      expect(response).to.equal(0);
+    });
+    it('user.getWarnings() should return 0', async function() {
+      var response = await userDB.user.getWarnings('1', '2');
+      expect(response).to.equal(0);
+    });
+    it('users.getWarnings() should return empty array', async function() {
+      var response = await userDB.users.getWarnings('1');
+      expect(response).to.be.empty;
+    });
+    it('user.exists() should return false', async function() {
+      var response = await userDB.user.exists('1', '2');
+      expect(response).to.equal(false);
+    });
+    //Last because it does an insert if response is null
+    it('user.getPermGroups() should return default role', async function() {
+      var response = await userDB.user.getPermGroups('1', '2');
+      expect(response).to.equal(config.groups[0].name);
+    });
+  });
+  it('Should delete database again', async function() {
+    await deleteDatabase();
+  });
+  describe('Test update queries with empty database', async function() {
+    it('user.updatePermGroups() should change group to Member', async function() {
+      await userDB.user.updatePermGroups('1', '2', 'Member');
+      var response = await userDB.user.getPermGroups('1', '2');
+      expect(response).to.equal('Member');
+    });
+    it('user.updateXP() should change XP to 10000', async function() {
+      await userDB.user.updateXP('1', '3', 10000);
+      var response = await userDB.user.getXp('1', '3');
+      expect(response).to.equal(10000);
+    });
+    it('user.updateWarnings() should change warnings to 4', async function() {
+      await userDB.user.updateWarnings('1', '4', 4);
+      var response = await userDB.user.getWarnings('1', '4');
+      expect(response).to.equal(4);
+    })
+    it('users.updateWarnings() should change warnings to 1', async function() {
+      await userDB.users.updateWarnings('1', 1);
+      var response = await userDB.users.getWarnings('1');
+      expect(response).to.deep.equal([{
+        "userId": "2",
+        "warnings": 1
+      }, {
+        "userId": "3",
+        "warnings": 1
+      }, {
+        "userId": "4",
+        "warnings": 1
+      }]);
+    });
+    describe('Test updating existing users', function() {
+      it('user.updatePermGroups() should change group to Mod', async function() {
+        await userDB.user.updatePermGroups('1', '2', 'Mod');
+        var response = await userDB.user.getPermGroups('1', '2');
+        expect(response).to.equal('Mod');
+      });
+      it('user.updateXP() should change XP to 15000', async function() {
+        await userDB.user.updateXP('1', '3', 15000);
+        var response = await userDB.user.getXp('1', '3');
+        expect(response).to.equal(15000);
+      });
+      it('user.updateWarnings() should change warnings to 2', async function() {
+        await userDB.user.updateWarnings('1', '4', 2);
+        var response = await userDB.user.getWarnings('1', '4');
+        expect(response).to.equal(2);
+      })
+      it('users.updateWarnings() should change warnings to 0', async function() {
+        await userDB.users.updateWarnings('1', 0);
+        var response = await userDB.users.getWarnings('1');
+        expect(response).to.deep.equal([{
+          "userId": "2",
+          "warnings": 0
+        }, {
+          "userId": "3",
+          "warnings": 0
+        }, {
+          "userId": "4",
+          "warnings": 0
+        }]);
+      });
+    });
+  });
+});
 describe('Test permission groups', function() {
   describe('Test setGroup', function() {
     it('Should return invalid user', function() {
@@ -328,7 +425,7 @@ async function insertUsers(serverId, num) {
   await sql.open(config.pathDatabase);
   //Add users
   var users = [];
-  for(var i = 0; i < num; i++) {
+  for (var i = 0; i < num; i++) {
     var value = i * 10;
     //Add to list
     users.push(`(${serverId}, ${i}, ${value}, ${0}, ${null})`);
@@ -419,12 +516,12 @@ describe('Test top', function() {
       //Check if response is correctly ordered
       //Local
       expect(response.local.length).to.equal(10);
-      for(var i = 0; i < response.local.length - 1; i++) {
+      for (var i = 0; i < response.local.length - 1; i++) {
         expect(response.local[i].xp > response.local[i + 1].xp).to.equal(true);
       }
       //Global
       expect(response.global.length).to.equal(10);
-      for(var i = 0; i < response.global.length - 1; i++) {
+      for (var i = 0; i < response.global.length - 1; i++) {
         expect(response.global[i].xp > response.global[i + 1].xp).to.equal(true);
       }
     });
@@ -772,7 +869,7 @@ describe('Test the audio player', function() {
     it('Should send only the first 20 videos (+ the one playing)', function() {
       guildQueue.queue = [];
       //Add lot of videos
-      for(var i = 0; i < 25; i++) {
+      for (var i = 0; i < 25; i++) {
         guildQueue.queue.push({
           id: 'test' + i,
           title: 'test' + i,
