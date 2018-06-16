@@ -1,5 +1,5 @@
 //Handle warnings
-const userDB = require('../user/user-db.js');
+const db = require('../database/database.js');
 const bot = require('../../bot.js');
 const mustache = require('mustache');
 const sql = require('sqlite');
@@ -49,7 +49,7 @@ module.exports = {
       var mention = msg.mentions.users.first();
       if (args.length == 0) {
         //List all users warnings
-        var users = await userDB.users.getWarnings(msg.guild.id);
+        var users = await db.users.getWarnings(msg.guild.id);
         var output = '';
         for (i = 0; i < users.length; i++) {
           if (users[i].warnings > 0) {
@@ -65,7 +65,7 @@ module.exports = {
         bot.printMsg(msg, output);
       } else if (mention != undefined) {
         //List the user's warnings
-        var warnings = await userDB.user.getWarnings(msg.guild.id, mention.id);
+        var warnings = await db.users.user.getWarnings(msg.guild.id, mention.id);
 
         if (user != undefined) {
           bot.printMsg(msg, mustache.render(lang.warn.list, {
@@ -93,15 +93,15 @@ module.exports = {
     async execute(msg, args) {
       if (args == 'all') {
         //Purge all users
-        await userDB.users.updateWarnings(msg.guild.id, 0);
+        await db.users.updateWarnings(msg.guild.id, 0);
         bot.printMsg(msg, lang.warn.usersCleared);
       } else if (msg.mentions.users.first() != undefined) {
         //Purge the user
         var mention = msg.mentions.users.first();
-        var userExists = await userDB.user.exists(msg.guild.id, mention.id);
+        var userExists = await db.users.user.exists(msg.guild.id, mention.id);
 
         if (userExists) {
-          await userDB.users.updateWarnings(msg.guild.id, 0);
+          await db.users.updateWarnings(msg.guild.id, 0);
           bot.printMsg(msg, lang.warn.userCleared);
         } else {
           bot.printMsg(msg, lang.error.invalidArg.user);
@@ -115,14 +115,14 @@ module.exports = {
     var mention = msg.mentions.users.first();
     if (mention != undefined) {
       //There is a mention
-      var warnings = await userDB.user.getWarnings(msg.guild.id, mention.id);
+      var warnings = await db.users.user.getWarnings(msg.guild.id, mention.id);
       if (warnings == undefined) {
         //Default
         warnings = 0;
       }
       //User warnings found!
       warnings += num;
-      await userDB.user.updateWarnings(msg.guild.id, mention.id, warnings);
+      await db.users.user.updateWarnings(msg.guild.id, mention.id, warnings);
       bot.printMsg(msg, mustache.render(lang.warn.list, {
         warnings: warnings
       }));

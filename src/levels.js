@@ -2,7 +2,7 @@ const bot = require('./bot.js');
 const mustache = require('mustache');
 const sql = require('sqlite');
 const permGroups = require('./modules/user/permission-group.js');
-const userDB = require('./modules/user/user-db.js');
+const db = require('./modules/database/database.js');
 const config = require('./args.js').getConfig()[1];
 const lastMessages = [];
 var lang = require('./localization.js').getLocalization();
@@ -197,13 +197,13 @@ module.exports = {
       })
     }
 
-    var xp = await userDB.user.getXP(msg.guild.id, msg.author.id);
+    var xp = await db.users.user.getXP(msg.guild.id, msg.author.id);
     if (xp != undefined) {
       //Add 1 per 2 characters
       var extraXp = Math.trunc(msg.content.replace(/\s/g, "").length / 3);
       //Get a random number from 1 to 3 and add extra xp (max is 20);
       xpGained = Math.min(20, (Math.floor(Math.random() * 3) + 1) + extraXp);
-      await userDB.user.updateXP(msg.guild.id, msg.author.id, xp + xpGained);
+      await db.users.user.updateXP(msg.guild.id, msg.author.id, xp + xpGained);
 
       let progression = this.getProgression(xp);
       let xpForNextLevel = this.getXpForLevel(progression[0]) - progression[1];

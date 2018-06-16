@@ -1,6 +1,6 @@
 const Discord = require("discord.js");
 const bot = require('../../bot.js');
-const userDB = require('./user-db.js');
+const db = require('../database/database.js');
 const levels = require('../../levels.js');
 const mustache = require('mustache');
 var config = require('../../args.js').getConfig()[1];
@@ -23,7 +23,7 @@ module.exports = class ProfileCommand extends bot.Command {
       user = msg.author;
     }
 
-    let userData = await userDB.user.getAll(msg.guild.id, user.id);
+    let userData = await db.users.user.getAll(msg.guild.id, user.id);
     let progression = levels.getProgression(userData.xp);
     let level = progression[0];
     let xpToNextLevel = `${progression[1]}/${levels.getXpForLevel(level)}`;

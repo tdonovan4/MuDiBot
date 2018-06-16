@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
 const bot = require('./bot.js');
 const fs = require('fs');
-const userDB = require('./modules/user/user-db.js');
+const db = require('./modules/database/database.js');
 var client = bot.client();
 var args = require('./args.js');
 var config = args.getConfig()[1];
@@ -63,7 +63,7 @@ module.exports = {
       return true;
     }
 
-    var userGroup = await userDB.user.getPermGroups(msg.guild.id, msg.author.id);
+    var userGroup = await db.users.user.getPermGroups(msg.guild.id, msg.author.id);
     if(userGroup != null && userGroup != 'empty') {
       userGroup = userGroup.split(',').sort(function(a, b) {
         return config.groups.find(x => x.name == a).permLvl <
