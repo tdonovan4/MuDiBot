@@ -43,7 +43,7 @@ module.exports.check = async function() {
   //Check if each tables exists
   for(table of tables) {
     //Table don't exist, creating
-    await sql.run(`CREATE TABLE ${table.name} (${table.values.join(', ')})`);
+    await sql.run(`CREATE TABLE IF NOT EXISTS ${table.name} (${table.values.join(', ')})`);
   }
   //Wait for all promises
   await sql.close();

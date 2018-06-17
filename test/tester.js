@@ -86,6 +86,9 @@ describe('Test users-db', function() {
       expect(tables[4].name).to.equal('customCmds');
       expect(tables.length).to.equal(5);
     });
+    it('Should not attempt to create an existing table', async function() {
+      await db.checker.check();
+    });
   })
   describe('Test get queries with empty responses', function() {
     it('user.getAll() should return undefined', async function() {
