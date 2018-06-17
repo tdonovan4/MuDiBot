@@ -1,4 +1,3 @@
-const sql = require('sqlite');
 const config = require('../../args.js').getConfig()[1];
 var queries = require('./queries.js');
 

@@ -2,6 +2,7 @@
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const defaultChannel = require('./default-channel.js');
+const db = require('./modules/database/database.js');
 const mustache = require('mustache');
 var config = require('./args.js').getConfig()[1];
 //For localization
@@ -50,9 +51,12 @@ const commands = require('./commands.js');
 const customCmd = require('./modules/fun/custom-cmd.js');
 
 //Start the bot
-client.on('ready', () => {
+client.on('ready', async () => {
   console.log(mustache.render(lang.general.logged, client));
   console.log(lang.general.language);
+
+  //Check database
+  await db.checker.check();
 
   //Register stuff
   commands.registerCategories(config.categories);

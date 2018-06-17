@@ -62,10 +62,31 @@ function deleteDatabase() {
     fs.unlinkSync(path);
   }
 }
+
+async function checkTables() {
+  await sql.open(config.pathDatabase);
+  var tables = await sql.all('SELECT name FROM sqlite_master WHERE type="table"');
+  await sql.close();
+  return tables;
+}
+
 describe('Test users-db', function() {
-  it('Should delete database', async function() {
-    await deleteDatabase();
-  });
+  describe('Test database checker', function() {
+    it('Should create table when they don\'t exist', async function() {
+      //Just to be sure
+      deleteDatabase();
+      //Check database
+      await db.checker.check();
+      //Check if all tables exists
+      var tables = await checkTables();
+      expect(tables[0].name).to.equal('database_settings');
+      expect(tables[1].name).to.equal('users');
+      expect(tables[2].name).to.equal('servers');
+      expect(tables[3].name).to.equal('rewards');
+      expect(tables[4].name).to.equal('customCmds');
+      expect(tables.length).to.equal(5);
+    });
+  })
   describe('Test get queries with empty responses', function() {
     it('user.getAll() should return undefined', async function() {
       var response = await db.users.user.getAll('1', '2');
@@ -92,9 +113,6 @@ describe('Test users-db', function() {
       var response = await db.users.user.getPermGroups('1', '2');
       expect(response).to.equal(config.groups[0].name);
     });
-  });
-  it('Should delete database again', async function() {
-    await deleteDatabase();
   });
   describe('Test update queries with empty database', async function() {
     it('user.updatePermGroups() should change group to Member', async function() {
@@ -126,36 +144,36 @@ describe('Test users-db', function() {
         "warnings": 1
       }]);
     });
-    describe('Test updating existing users', function() {
-      it('user.updatePermGroups() should change group to Mod', async function() {
-        await db.users.user.updatePermGroups('1', '2', 'Mod');
-        var response = await db.users.user.getPermGroups('1', '2');
-        expect(response).to.equal('Mod');
-      });
-      it('user.updateXP() should change XP to 15000', async function() {
-        await db.users.user.updateXP('1', '3', 15000);
-        var response = await db.users.user.getXP('1', '3');
-        expect(response).to.equal(15000);
-      });
-      it('user.updateWarnings() should change warnings to 2', async function() {
-        await db.users.user.updateWarnings('1', '4', 2);
-        var response = await db.users.user.getWarnings('1', '4');
-        expect(response).to.equal(2);
-      })
-      it('users.updateWarnings() should change warnings to 0', async function() {
-        await db.users.updateWarnings('1', 0);
-        var response = await db.users.getWarnings('1');
-        expect(response).to.deep.equal([{
-          "userId": "2",
-          "warnings": 0
-        }, {
-          "userId": "3",
-          "warnings": 0
-        }, {
-          "userId": "4",
-          "warnings": 0
-        }]);
-      });
+  });
+  describe('Test updating existing users', function() {
+    it('user.updatePermGroups() should change group to Mod', async function() {
+      await db.users.user.updatePermGroups('1', '2', 'Mod');
+      var response = await db.users.user.getPermGroups('1', '2');
+      expect(response).to.equal('Mod');
+    });
+    it('user.updateXP() should change XP to 15000', async function() {
+      await db.users.user.updateXP('1', '3', 15000);
+      var response = await db.users.user.getXP('1', '3');
+      expect(response).to.equal(15000);
+    });
+    it('user.updateWarnings() should change warnings to 2', async function() {
+      await db.users.user.updateWarnings('1', '4', 2);
+      var response = await db.users.user.getWarnings('1', '4');
+      expect(response).to.equal(2);
+    })
+    it('users.updateWarnings() should change warnings to 0', async function() {
+      await db.users.updateWarnings('1', 0);
+      var response = await db.users.getWarnings('1');
+      expect(response).to.deep.equal([{
+        "userId": "2",
+        "warnings": 0
+      }, {
+        "userId": "3",
+        "warnings": 0
+      }, {
+        "userId": "4",
+        "warnings": 0
+      }]);
     });
   });
 });
