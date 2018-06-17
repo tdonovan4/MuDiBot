@@ -1,2 +1,2 @@
 //Module for the users table
-module.exports.users = require('./user-db.js');
+module.exports.users = require('./users-db.js');

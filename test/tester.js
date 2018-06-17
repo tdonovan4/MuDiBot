@@ -62,7 +62,7 @@ function deleteDatabase() {
     fs.unlinkSync(path);
   }
 }
-describe('Test user-db', function() {
+describe('Test users-db', function() {
   it('Should delete database', async function() {
     await deleteDatabase();
   });
