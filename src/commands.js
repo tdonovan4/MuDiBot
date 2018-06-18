@@ -11,7 +11,7 @@ module.exports = {
   commands: new Map(),
   categories: new Map(),
   registerCategories: function(categories) {
-    for(category of categories) {
+    for (category of categories) {
       //Add the category
       var category = new bot.Category(category);
       this.categories.set(category.name, category);
@@ -23,22 +23,27 @@ module.exports = {
     for (var module of modules) {
       var files = fs.readdirSync(`./src/modules/${module}`);
       for (var file of files) {
-        var keys = require(`./modules/${module}/${file}`);
-        //Check if object
-        if(typeof keys != 'object') {
-          keys = {keys}
-        }
-        for (key in keys) {
-          //Check if the key is a subclass of Command
-          if (keys[key].prototype instanceof bot.Command) {
-            var command = new keys[key]();
-            if (!this.categories.has(module)) {
-              this.registerCategories([module]);
+        //Check if really a file
+        if (fs.statSync(`./src/modules/${module}/${file}`).isFile()) {
+          var keys = require(`./modules/${module}/${file}`);
+          //Check if object
+          if (typeof keys != 'object') {
+            keys = {
+              keys
             }
-            //Add command to the list of commands
-            this.commands.set(command.name, command);
-            //Add command to the category
-            this.categories.get(module).addCommand(command);
+          }
+          for (key in keys) {
+            //Check if the key is a subclass of Command
+            if (keys[key].prototype instanceof bot.Command) {
+              var command = new keys[key]();
+              if (!this.categories.has(module)) {
+                this.registerCategories([module]);
+              }
+              //Add command to the list of commands
+              this.commands.set(command.name, command);
+              //Add command to the category
+              this.categories.get(module).addCommand(command);
+            }
           }
         }
       }
@@ -48,7 +53,7 @@ module.exports = {
    *Check if the message author has permission
    *to do the command, return true or false
    */
-  checkPerm: async function (msg, permLevel) {
+  checkPerm: async function(msg, permLevel) {
     //Exceptions
     //Check if user is superuser
     for (i = 0; i < config.superusers.length; i++) {
@@ -64,7 +69,7 @@ module.exports = {
     }
 
     var userGroup = await db.users.user.getPermGroups(msg.guild.id, msg.author.id);
-    if(userGroup != null && userGroup != 'empty') {
+    if (userGroup != null && userGroup != 'empty') {
       userGroup = userGroup.split(',').sort(function(a, b) {
         return config.groups.find(x => x.name == a).permLvl <
           config.groups.find(x => x.name == b).permLvl;
@@ -91,7 +96,7 @@ module.exports = {
 
       //Check if user has permission
       result = await this.checkPerm(msg, command.permLvl)
-      if(result) {
+      if (result) {
         //Valid command that can be used by the user
         return true
       };
@@ -107,10 +112,10 @@ module.exports = {
 
 function getCmd(arg) {
   var command = module.exports.commands.get(arg);
-  if(!command) {
+  if (!command) {
     //Search if alias
     module.exports.commands.forEach(function(aCommand) {
-      if(aCommand.aliases.includes(arg)) {
+      if (aCommand.aliases.includes(arg)) {
         command = aCommand;
         return;
       }
@@ -118,7 +123,7 @@ function getCmd(arg) {
   }
   //Check if activated
   var cmdActivated = config[arg] != undefined ? config[arg].activated : true;
-  if(cmdActivated) {
+  if (cmdActivated) {
     return command;
   }
 }
