@@ -3,6 +3,7 @@
     "logged": "Connecté en tant que {{user.username}}!",
     "language": "Langue sélectionnée: français",
     "startupTime": "Le démarrage a pris {{time}}ms",
+    "dbChecking": "Vérification de la base de donnée...",
     "stopping": "Fermeture...",
     "restarting": "Redémarrage...",
     "member": {
@@ -55,6 +56,11 @@
     "notEnoughPermissions": "Permissions insuffisantes",
     "ytdlError": "Cette vidéo n'a pas pu être télécharger (peut-être indisponible?).",
     "notPlaying": "Aucune vidéo ne joue!"
+  },
+  "database": {
+    "table": {
+      "added": "{{num}} table(s) manquante(s) ajoutée(s)!"
+    }
   },
   "ranks": {
     "vagabond": "Vagabond",

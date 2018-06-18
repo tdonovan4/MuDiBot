@@ -3,6 +3,7 @@
     "logged": "Logged in as {{user.username}}!",
     "language": "Selected language: English",
     "startupTime": "Startup took {{time}}ms",
+    "dbChecking": "Checking the database...",
     "stopping": "Shutting down...",
     "restarting": "Restarting...",
     "member": {
@@ -55,6 +56,11 @@
     "notEnoughPermissions": "Not enough permissions",
     "ytdlError": "This video could not be downloaded (maybe unavailable?).",
     "notPlaying": "I'm not playing anything!"
+  },
+  "database": {
+    "table": {
+      "added": "{{num}} missing table(s) added!"
+    }
   },
   "ranks": {
     "vagabond": "Vagabond",

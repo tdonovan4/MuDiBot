@@ -1,5 +1,7 @@
 const sql = require('sqlite');
+const mustache = require('mustache');
 const config = require('../../args.js').getConfig()[1];
+var lang = require('../../localization.js').getLocalization();
 
 var Table = class {
   constructor(name, values) {
@@ -41,10 +43,22 @@ var tables = [
 module.exports.check = async function() {
   await sql.open(config.pathDatabase);
   //Check if each tables exists
-  for(table of tables) {
-    //Table don't exist, creating
-    await sql.run(`CREATE TABLE IF NOT EXISTS ${table.name} (${table.values.join(', ')})`);
+  var tablesToVerify = tables;
+  for (var i = 0; i < tables.length; i++) {
+    var count = await sql.get(`SELECT count(*) FROM sqlite_master WHERE type='table' AND name='${tables[i].name}'`);
+    if (count['count(*)'] == 0) {
+      //Table don't exist, creating
+      await sql.run(`CREATE TABLE IF NOT EXISTS ${tables[i].name} (${tables[i].values.join(', ')})`);
+      //Mark to be removed (no need to test)
+      tablesToVerify[i] = null
+    }
   }
+  //Remove null values
+  tablesToVerify = tablesToVerify.filter(x => x != null);
+  //Display number of tables added
+  console.log(mustache.render(lang.database.table.added, {
+    num: tables.length - tablesToVerify.length
+  }));
   //Wait for all promises
   await sql.close();
 }
