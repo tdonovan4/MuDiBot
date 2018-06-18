@@ -55,6 +55,7 @@ client.on('ready', async () => {
   console.log(mustache.render(lang.general.logged, client));
   console.log(lang.general.language);
 
+  console.log(lang.general.dbChecking);
   //Check database
   await db.checker.check();
 
