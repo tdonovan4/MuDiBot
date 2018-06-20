@@ -57,18 +57,38 @@ commands.registerCommands();
 
 function deleteDatabase() {
   //Delete the test database if it exists
-  var path = './test/test-resources/test-database.db';
-  if (fs.existsSync(path)) {
-    fs.unlinkSync(path);
+  var db = './test/test-resources/test-database.db';
+  if (fs.existsSync(db)) {
+    fs.unlinkSync(db);
+  }
+  //Delete the backup database if it exists
+  var backup = './test/test-resources/database-backup-v000.db';
+  if (fs.existsSync(backup)) {
+    fs.unlinkSync(backup);
   }
 }
 
-async function checkTables() {
+async function getTables() {
   await sql.open(config.pathDatabase);
-  var tables = await sql.all('SELECT name FROM sqlite_master WHERE type="table"');
+  var tables = await sql.all('SELECT * FROM sqlite_master WHERE type="table"');
   await sql.close();
   return tables;
 }
+
+async function getRowCount(path) {
+  var count = 0;
+  await sql.open(path);
+  //Get all tables
+  var tables = await sql.all('SELECT name FROM sqlite_master WHERE type="table"');
+  for(table of tables) {
+    count += (await sql.get(`SELECT count(*) FROM ${table.name}`))['count(*)'];
+  }
+  await sql.close();
+  return count;
+}
+
+//Make console.log a spy
+var spyLog = sinon.spy(console, 'log');
 
 describe('Test users-db', function() {
   describe('Test database checker', function() {
@@ -78,7 +98,7 @@ describe('Test users-db', function() {
       //Check database
       await db.checker.check();
       //Check if all tables exists
-      var tables = await checkTables();
+      var tables = await getTables();
       expect(tables[0].name).to.equal('database_settings');
       expect(tables[1].name).to.equal('users');
       expect(tables[2].name).to.equal('servers');
@@ -87,6 +107,38 @@ describe('Test users-db', function() {
       expect(tables.length).to.equal(5);
     });
     it('Should not attempt to create an existing table', async function() {
+      //If there is an attempt there will be an error
+      await db.checker.check();
+      expect(spyLog.lastCall.args[0]).to.equal(mustache.render(lang.database.tableAdded, {
+        num: 0
+      }));
+    });
+    it('Should update database to version 001', async function() {
+      //Delete old database
+      deleteDatabase();
+      //Copy and paste the test database
+      var dbFile = fs.readFileSync('./test/test-resources/legacy-v000-database.db');
+      fs.writeFileSync('./test/test-resources/test-database.db', dbFile);
+      //Update database
+      await db.checker.check();
+      //Check backup
+      var backup = './test/test-resources/database-backup-v000.db';
+      expect(fs.existsSync(backup)).to.equal(true);
+      expect(await getRowCount(backup)).to.equal(10);
+      //Check db
+      var tables = await getTables();
+      expect(tables.length).to.equal(5);
+      //Quick and dirty way
+      expect(tables.filter(x => x.name == 'users')[0].sql).to.equal(
+        'CREATE TABLE users(\r\n  serverID TEXT,\r\n  userId TEXT,\r\n  ' +
+        'xp INTEGER DEFAULT 0,\r\n  warnings INTEGER DEFAULT 0,\r\n  ' +
+        'groups TEXT DEFAULT "User",\r\n  CONSTRAINT users_unique UNIQUE (serverID,\r\n  userID))');
+      expect(await getRowCount(config.pathDatabase)).to.equal(9);
+    });
+    it('Should make a fresh new database for rest of tests', async function() {
+      //Delete old database
+      deleteDatabase();
+      //Create tables
       await db.checker.check();
     });
   })

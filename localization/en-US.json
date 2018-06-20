@@ -58,9 +58,9 @@
     "notPlaying": "I'm not playing anything!"
   },
   "database": {
-    "table": {
-      "added": "{{num}} missing table(s) added!"
-    }
+    "tableAdded": "{{num}} missing table(s) added!",
+    "newVersion": "Database version outdated. Updating from version {{current}} to version {{new}}",
+    "updated": "Updated to version {{version}} successfully"
   },
   "ranks": {
     "vagabond": "Vagabond",
