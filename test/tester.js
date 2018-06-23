@@ -30,16 +30,15 @@ giphy.__set__({
   }
 })
 
-const db = require('../src/modules/database/database.js');
 const levels = rewire('../src/levels.js');
 const permGroups = rewire('../src/modules/user/permission-group.js');
 const warnings = require('../src/modules/warnings/warnings.js');
-const defaultChannel = require('../src/default-channel.js');
 
 //Init bot
 const bot = require('../src/bot.js');
 
 //Init stuff that need bot
+const db = require('../src/modules/database/database.js');
 const customCmd = require('../src/modules/fun/custom-cmd.js');
 const audioPlayer = rewire('../src/modules/music/audio-player.js');
 const top = rewire('../src/modules/user/top.js');
@@ -90,58 +89,58 @@ async function getRowCount(path) {
 //Make console.log a spy
 var spyLog = sinon.spy(console, 'log');
 
+describe('Test database checker', function() {
+  it('Should create table when they don\'t exist', async function() {
+    //Just to be sure
+    deleteDatabase();
+    //Check database
+    await db.checker.check();
+    //Check if all tables exists
+    var tables = await getTables();
+    expect(tables[0].name).to.equal('database_settings');
+    expect(tables[1].name).to.equal('users');
+    expect(tables[2].name).to.equal('servers');
+    expect(tables[3].name).to.equal('rewards');
+    expect(tables[4].name).to.equal('customCmds');
+    expect(tables.length).to.equal(5);
+  });
+  it('Should not attempt to create an existing table', async function() {
+    //If there is an attempt there will be an error
+    await db.checker.check();
+    expect(spyLog.lastCall.args[0]).to.equal(mustache.render(lang.database.tableAdded, {
+      num: 0
+    }));
+  });
+  it('Should update database to version 001', async function() {
+    //Delete old database
+    deleteDatabase();
+    //Copy and paste the test database
+    var dbFile = fs.readFileSync('./test/test-resources/legacy-v000-database.db');
+    fs.writeFileSync('./test/test-resources/test-database.db', dbFile);
+    //Update database
+    await db.checker.check();
+    //Check backup
+    var backup = './test/test-resources/database-backup-v000.db';
+    expect(fs.existsSync(backup)).to.equal(true);
+    expect(await getRowCount(backup)).to.equal(10);
+    //Check db
+    var tables = await getTables();
+    expect(tables.length).to.equal(5);
+    //Quick and dirty way
+    expect(tables.filter(x => x.name == 'users')[0].sql).to.equal(
+      'CREATE TABLE users(\r\n  serverID TEXT,\r\n  userId TEXT,\r\n  ' +
+      'xp INTEGER DEFAULT 0,\r\n  warnings INTEGER DEFAULT 0,\r\n  ' +
+      'groups TEXT DEFAULT "User",\r\n  CONSTRAINT users_unique UNIQUE (serverID,\r\n  userID))');
+    expect(await getRowCount(config.pathDatabase)).to.equal(9);
+  });
+  it('Should make a fresh new database for rest of tests', async function() {
+    //Delete old database
+    deleteDatabase();
+    //Create tables
+    await db.checker.check();
+  });
+});
 describe('Test users-db', function() {
-  describe('Test database checker', function() {
-    it('Should create table when they don\'t exist', async function() {
-      //Just to be sure
-      deleteDatabase();
-      //Check database
-      await db.checker.check();
-      //Check if all tables exists
-      var tables = await getTables();
-      expect(tables[0].name).to.equal('database_settings');
-      expect(tables[1].name).to.equal('users');
-      expect(tables[2].name).to.equal('servers');
-      expect(tables[3].name).to.equal('rewards');
-      expect(tables[4].name).to.equal('customCmds');
-      expect(tables.length).to.equal(5);
-    });
-    it('Should not attempt to create an existing table', async function() {
-      //If there is an attempt there will be an error
-      await db.checker.check();
-      expect(spyLog.lastCall.args[0]).to.equal(mustache.render(lang.database.tableAdded, {
-        num: 0
-      }));
-    });
-    it('Should update database to version 001', async function() {
-      //Delete old database
-      deleteDatabase();
-      //Copy and paste the test database
-      var dbFile = fs.readFileSync('./test/test-resources/legacy-v000-database.db');
-      fs.writeFileSync('./test/test-resources/test-database.db', dbFile);
-      //Update database
-      await db.checker.check();
-      //Check backup
-      var backup = './test/test-resources/database-backup-v000.db';
-      expect(fs.existsSync(backup)).to.equal(true);
-      expect(await getRowCount(backup)).to.equal(10);
-      //Check db
-      var tables = await getTables();
-      expect(tables.length).to.equal(5);
-      //Quick and dirty way
-      expect(tables.filter(x => x.name == 'users')[0].sql).to.equal(
-        'CREATE TABLE users(\r\n  serverID TEXT,\r\n  userId TEXT,\r\n  ' +
-        'xp INTEGER DEFAULT 0,\r\n  warnings INTEGER DEFAULT 0,\r\n  ' +
-        'groups TEXT DEFAULT "User",\r\n  CONSTRAINT users_unique UNIQUE (serverID,\r\n  userID))');
-      expect(await getRowCount(config.pathDatabase)).to.equal(9);
-    });
-    it('Should make a fresh new database for rest of tests', async function() {
-      //Delete old database
-      deleteDatabase();
-      //Create tables
-      await db.checker.check();
-    });
-  })
   describe('Test get queries with empty responses', function() {
     it('user.getAll() should return undefined', async function() {
       var response = await db.users.user.getAll('1', '2');
@@ -230,6 +229,58 @@ describe('Test users-db', function() {
         "warnings": 0
       }]);
     });
+  });
+});
+//Setting channels
+testClient.channels.set('1', {
+  position: 0,
+  name: '1',
+  guild: {
+    id: msg.guild.id
+  },
+  id: '1',
+  type: 'text'
+});
+testClient.channels.set('2', {
+  position: 1,
+  name: 'general',
+  guild: {
+    id: '1234567890'
+  },
+  id: '2',
+  type: 'text'
+});
+testClient.channels.set('3', {
+  position: 1,
+  name: 'test',
+  guild: {
+    id: '1234567890'
+  },
+  id: '3',
+  type: 'text'
+});
+describe('Test config-db', function() {
+  describe('Test get queries with empty responses', function() {
+    it('Should return first channel if no general', async function() {
+      var response = await db.config.getDefaultChannel(msg.guild.id);
+      expect(response.position).to.equal(0);
+    });
+    it('Should return general', async function() {
+      var response = await db.config.getDefaultChannel('1234567890');
+      expect(response.name).to.equal('general');
+    })
+  });
+  describe('Test update queries', function() {
+    it('Should insert channel into empty table', async function() {
+      await db.config.updateDefaultChannel('1234567890', {id: '3'});
+      var response = await db.config.getDefaultChannel('1234567890');
+      expect(response.name).to.equal('test');
+    })
+    it('Should modify existing row', async function() {
+      await db.config.updateDefaultChannel('1234567890', {id: '2'});
+      var response = await db.config.getDefaultChannel('1234567890');
+      expect(response.name).to.equal('general');
+    })
   });
 });
 describe('Test permission groups', function() {
@@ -1038,57 +1089,6 @@ describe('Test warnings', function() {
       expect(response[0].warnings).to.equal(0);
       expect(response[1].warnings).to.equal(0);
     });
-  });
-});
-describe('Test default-channel', function() {
-  var member = {
-    guild: {
-      id: '357156661105365963'
-    }
-  }
-  it('Should return first channel as default channel', async function() {
-    testClient.channels.set('1', {
-      position: 0,
-      name: '1',
-      guild: {
-        id: '357156661105365963'
-      },
-      id: '1',
-      type: 'text'
-    });
-    var response = await defaultChannel.getChannel(testClient, member);
-    expect(response.position).to.equal(0);
-  })
-  it('Should return general as default channel', async function() {
-    //Delete old defaultChannel
-    await sql.open(config.pathDatabase);
-    await sql.run("DELETE FROM servers WHERE serverId = 357156661105365963 AND defaultChannel = '1'");
-    sql.close();
-    testClient.channels.set('2', {
-      position: 1,
-      name: 'general',
-      guild: {
-        id: '357156661105365963'
-      },
-      id: '2',
-      type: 'text'
-    });
-    var response = await defaultChannel.getChannel(testClient, member);
-    expect(response.name).to.equal('general');
-  });
-  it('Should set channel1 as default channel', async function() {
-    await defaultChannel.setChannel(msg, {
-      id: '1'
-    });
-    var response = await defaultChannel.getChannel(testClient, member);
-    expect(response.id).to.equal('1');
-  });
-  it('Should set general as default channel', async function() {
-    await defaultChannel.setChannel(msg, {
-      id: '2'
-    });
-    var response = await defaultChannel.getChannel(testClient, member);
-    expect(response.id).to.equal('2');
   });
 });
 describe('Test checkPerm', function() {
