@@ -24,21 +24,21 @@ module.exports = {
     }
     return response;
   },
-  runUpdateQueryUser: async function(query, serverId, userId, newValue) {
+  runInsertUpdateQuery: async function(insertQuery, updateQuery, args, newValue) {
     try {
       await sql.open(config.pathDatabase);
       //If user don't exist, insert
-      await sql.run(`INSERT OR IGNORE INTO users (serverId, userId) VALUES (?, ?)`, [
-        serverId, userId
-      ]);
+      await sql.run(insertQuery, args);
+      //Add the new value at the beginning of the args
+      args.unshift(newValue);
       //Update user
-      await sql.run(query, [newValue, serverId, userId]);
+      await sql.run(updateQuery, args);
       await sql.close();
     } catch (e) {
       console.error(e);
     }
   },
-  runUpdateQueryUsers: async function(query, userId, newValue) {
+  runUpdateQuery: async function(query, userId, newValue) {
     try {
       await sql.open(config.pathDatabase);
       //Update user
