@@ -1,6 +1,8 @@
 const config = require('../../args.js').getConfig()[1];
 var queries = require('./queries.js');
 
+const insertQuery = 'INSERT OR IGNORE INTO users (serverId, userId) VALUES (?, ?)'
+
 module.exports = {
   user: {
     exists: async function(serverId, userId) {
@@ -45,18 +47,21 @@ module.exports = {
     },
     updatePermGroups: async function(serverId, userId, groups) {
       //Update user's permission groups
-      var query = 'UPDATE users SET groups = (?) WHERE serverId = ? AND userId = ?';
-      await queries.runUpdateQueryUser(query, serverId, userId, groups);
+      var updateQuery = 'UPDATE users SET groups = (?) WHERE serverId = ? AND userId = ?';
+      var args = [serverId, userId];
+      await queries.runInsertUpdateQuery(insertQuery, updateQuery, args, groups);
     },
     updateXP: async function(serverId, userId, newXP) {
       //Update user's xp
-      var query = 'UPDATE users SET xp = ? WHERE serverId = ? AND userId = ?';
-      await queries.runUpdateQueryUser(query, serverId, userId, newXP);
+      var updateQuery = 'UPDATE users SET xp = ? WHERE serverId = ? AND userId = ?';
+      var args = [serverId, userId];
+      await queries.runInsertUpdateQuery(insertQuery, updateQuery, args, newXP);
     },
     updateWarnings: async function(serverId, userId, newWarnings) {
       //Update user's warnings
-      var query = 'UPDATE users SET warnings = ? WHERE serverId = ? AND userId = ?';
-      await queries.runUpdateQueryUser(query, serverId, userId, newWarnings);
+      var updateQuery = 'UPDATE users SET warnings = ? WHERE serverId = ? AND userId = ?';
+      var args = [serverId, userId];
+      await queries.runInsertUpdateQuery(insertQuery, updateQuery, args, newWarnings);
     }
   },
   getWarnings: async function(serverId) {
@@ -65,6 +70,6 @@ module.exports = {
   },
   updateWarnings: async function(serverId, newWarnings) {
     var query = 'UPDATE users SET warnings = ? WHERE serverId = ?';
-    await queries.runUpdateQueryUsers(query, serverId, newWarnings);
+    await queries.runUpdateQuery(query, serverId, newWarnings);
   }
 }
