@@ -1,8 +1,6 @@
 //Main class
 const Discord = require("discord.js");
 const client = new Discord.Client();
-const defaultChannel = require('./default-channel.js');
-const db = require('./modules/database/database.js');
 const mustache = require('mustache');
 var config = require('./args.js').getConfig()[1];
 //For localization
@@ -49,6 +47,7 @@ try {
 
 const commands = require('./commands.js');
 const customCmd = require('./modules/fun/custom-cmd.js');
+const db = require('./modules/database/database.js');
 
 //Start the bot
 client.on('ready', async () => {
@@ -127,7 +126,7 @@ function mention(roles, role) {
 }
 
 async function sendDefaultChannel(member, text) {
-  let channel = await defaultChannel.getChannel(client, member);
+  let channel = await db.config.getDefaultChannel(member.guild.id);
   channel.send(text);
 }
 
