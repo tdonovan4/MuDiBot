@@ -17,7 +17,11 @@ This homemade bot aims to be a highly customizable and versatile bot that can be
 - [License](#license)
 
 ## Background
-MuDiBot started as a little bot for my Discord server and began to grow with time. Special thanks to [mozico555](https://github.com/mozico555) for suggestions and ideas.
+MuDiBot started as a little bot for my Discord server and began to grow with time.
+
+This bot's goal is to offer many functionalities for both server moderation and administration, but also fun features like custom commands and practical ones like a video player.
+
+Special thanks to [mozico555](https://github.com/mozico555) and Neyo for suggestions, ideas and bug reports.
 
 ## Install
 **This bot require Node.js 8.0.0 or newer. You can get it here: https://nodejs.org/en/**
@@ -41,7 +45,7 @@ You can then write `$help` (by default) to display all the available commands.
 
 ## Contribute
 Feel free to report any issues [here](https://github.com/tdonovan4/MuDiBot/issues) or submit a pull request!
-I still learning and I would love feedbacks.
+I'm still learning and I would love feedbacks.
 
 ## License
 [MIT](LICENSE) © Thomas Donovan
