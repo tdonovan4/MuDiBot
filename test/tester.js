@@ -126,11 +126,13 @@ describe('Test database checker', function() {
     //Check db
     var tables = await getTables();
     expect(tables.length).to.equal(5);
+    //Remove line breaks
+    var statement = tables.filter(x => x.name == 'users')[0].sql.replace(/\r?\n?/g, '');
     //Quick and dirty way
-    expect(tables.filter(x => x.name == 'users')[0].sql).to.equal(
-      'CREATE TABLE users(\r\n  serverID TEXT,\r\n  userId TEXT,\r\n  ' +
-      'xp INTEGER DEFAULT 0,\r\n  warnings INTEGER DEFAULT 0,\r\n  ' +
-      'groups TEXT DEFAULT "User",\r\n  CONSTRAINT users_unique UNIQUE (serverID,\r\n  userID))');
+    expect(statement).to.equal(
+      'CREATE TABLE users(  serverID TEXT,  userId TEXT,  ' +
+      'xp INTEGER DEFAULT 0,  warnings INTEGER DEFAULT 0,  ' +
+      'groups TEXT DEFAULT "User",  CONSTRAINT users_unique UNIQUE (serverID,  userID))');
     expect(await getRowCount(config.pathDatabase)).to.equal(9);
   });
   it('Should make a fresh new database for rest of tests', async function() {
