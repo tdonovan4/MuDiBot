@@ -16,7 +16,7 @@
     "erlpack": "github:hammerandchisel/erlpack",
     "mustache": "^2.3.0",
     "node-opus": "^0.2.9",
-    "sodium": "github:paixaop/node-sodium",
+    "sodium": "github:general-programming/node-sodium",
     "sqlite": "^2.9.2",
     "sqlite3": "^3.1.13",
     "uws": "^0.14.5",
