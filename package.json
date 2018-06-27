@@ -4,7 +4,8 @@
   "description": "A multipurpose Discord bot (MuDiBot) made using discord.js",
   "main": "bot.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha --reporter spec --exit"
+    "test": "./node_modules/.bin/mocha --reporter spec --exit",
+    "lint": "node_modules/.bin/eslint ./src/"
   },
   "author": "tdonovan4",
   "license": "MIT",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "chai": "^4.1.2",
+    "eslint": "^5.0.1",
     "mocha": "^5.2.0",
     "rewire": "^3.0.2",
     "sinon": "^4.5.0"
