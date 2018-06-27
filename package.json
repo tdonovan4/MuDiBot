@@ -5,7 +5,7 @@
   "main": "bot.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha --reporter spec --exit",
-    "lint": "node_modules/.bin/eslint ./src/"
+    "lint": "node_modules/.bin/eslint ./"
   },
   "author": "tdonovan4",
   "license": "MIT",
