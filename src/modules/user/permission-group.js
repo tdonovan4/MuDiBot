@@ -42,7 +42,7 @@ module.exports = {
         permLvl: 3
       });
     }
-    async execute(msg, args) {
+    async execute(msg) {
       await purgeGroups(msg);
     }
   },

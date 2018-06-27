@@ -98,8 +98,8 @@ async function getMsgToDelete(msg, strings, users, num, filter) {
 
   //Filter message by author and content
   messages = messages.filter(message => {
-    containsUser = users.some(user => user == message.author.id);
-    containsString = strings.some(string => message.content.startsWith(string));
+    var containsUser = users.some(user => user == message.author.id);
+    var containsString = strings.some(string => message.content.startsWith(string));
     if (filter) {
       return (containsUser || users.length == 0) &&
         (containsString || strings.length == 0);

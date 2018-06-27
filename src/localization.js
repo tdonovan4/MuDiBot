@@ -3,6 +3,7 @@ var config = require('./args.js').getConfig()[1];
 module.exports = {
   getLocalization: function() {
     var language = require(`../localization/${config.locale}.json`);
+    var localization;
     if (language != undefined) {
       localization = language;
     } else {

@@ -1,3 +1,4 @@
+/*eslint no-underscore-dangle: "off", */
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const Discord = require('discord.js');
@@ -79,7 +80,7 @@ async function getRowCount(path) {
   await sql.open(path);
   //Get all tables
   var tables = await sql.all('SELECT name FROM sqlite_master WHERE type="table"');
-  for(table of tables) {
+  for(var table of tables) {
     count += (await sql.get(`SELECT count(*) FROM ${table.name}`))['count(*)'];
   }
   await sql.close();
@@ -170,7 +171,7 @@ describe('Test users-db', function() {
       expect(response).to.equal(config.groups[0].name);
     });
   });
-  describe('Test update queries with empty database', async function() {
+  describe('Test update queries with empty database', function() {
     it('user.updatePermGroups() should change group to Member', async function() {
       await db.users.user.updatePermGroups('1', '2', 'Member');
       var response = await db.users.user.getPermGroups('1', '2');
@@ -419,7 +420,7 @@ describe('Test levels', function() {
     });
     it('Should set the reward for king (permission group) and create table', async function() {
       await levels.setReward(msg, ['king', 'Member']);
-      response = await levels.__get__('getReward')(msg, ['King']);
+      var response = await levels.__get__('getReward')(msg, ['King']);
       expect(response).to.equal('Member');
     });
     it('Should set the reward for emperor (role)', async function() {
@@ -431,7 +432,7 @@ describe('Test levels', function() {
         id: '1'
       });
       await levels.setReward(msg, ['emperor', '<#1>']);
-      response = await levels.__get__('getReward')(msg, ['Emperor']);
+      var response = await levels.__get__('getReward')(msg, ['Emperor']);
       expect(response).to.equal('1');
     });
     it('Should update the reward for emperor', async function() {
@@ -446,7 +447,7 @@ describe('Test levels', function() {
         id: '2'
       });
       await levels.setReward(msg, ['emperor', '<#2>']);
-      response = await levels.__get__('getReward')(msg, ['Emperor']);
+      var response = await levels.__get__('getReward')(msg, ['Emperor']);
       expect(response).to.equal('2');
     });
     after(function() {
@@ -461,7 +462,7 @@ describe('Test levels', function() {
     });
     it('Should remove the reward for emperor', async function() {
       await levels.unsetReward(msg, ['king']);
-      response = await levels.__get__('getReward')(msg, ['King']);
+      var response = await levels.__get__('getReward')(msg, ['King']);
       expect(response).to.equal(undefined);
     });
   });
@@ -596,7 +597,7 @@ describe('Test top', function() {
     });
   });
   describe('Test getTops', function() {
-    getTops = top.__get__('getTops');
+    var getTops = top.__get__('getTops');
     it('Should return empty tops', async function() {
       await purgeUsers();
       var response = await getTops(msg, 10);
@@ -647,7 +648,7 @@ describe('Test top', function() {
       }
       //Global
       expect(response.global.length).to.equal(10);
-      for (var i = 0; i < response.global.length - 1; i++) {
+      for (i = 0; i < response.global.length - 1; i++) {
         expect(response.global[i].xp > response.global[i + 1].xp).to.equal(true);
       }
     });
@@ -677,6 +678,7 @@ describe('Test the custom commands', function() {
     });
     it('getCmds should return empty array', async function() {
       var response = await customCmd.getCmds(msg);
+      expect(response.length).to.equal(0);
     });
     it('custcmd should add the command to the database', async function() {
       msg.content = '$custcmd testCmd1 say This is a test';
@@ -917,7 +919,9 @@ describe('Test the audio player', function() {
     });
     it('Should disconnect from voice channel', function() {
       guildQueue.connection = {
-        disconnect: function() {}
+        disconnect: function() {
+          return;
+        }
       };
       new audioPlayer.StopCommand().execute(msg, ['']);
       expect(guildQueue.connection).to.equal(undefined);
@@ -1231,14 +1235,14 @@ describe('Test commands', function() {
   });
   describe('status', function() {
     it('Should change the status in config', function() {
-      var status = rewire('../src/modules/general/status.js');
+      var Status = rewire('../src/modules/general/status.js');
       var response;
-      status.__set__('modifyText', function(path, oldStatus, newStatus) {
+      Status.__set__('modifyText', function(path, oldStatus, newStatus) {
         response = newStatus;
       });
 
       msg.content = '$status New status!';
-      new status().execute(msg, ['New status!']);
+      new Status().execute(msg, ['New status!']);
       //Check the API has been called with right argument
       expect(setActivity.lastCall.returnValue).to.equal('New status!');
       //Check if config was "modified" (stub) with righ argument
@@ -1392,21 +1396,21 @@ describe('Test commands', function() {
       msg.content = '$roll 1d6';
       commands.executeCmd(msg, ['roll']);
 
-      result = separateValues(msgSend.lastCall.returnValue.content);
+      var result = separateValues(msgSend.lastCall.returnValue.content);
       expect(parseInt(result[1])).to.be.above(0);
       expect(parseInt(result[1])).to.be.below(7);
     });
     it('Should return the result of two 20 faced dice', function() {
       msg.content = '$roll 2d20';
       commands.executeCmd(msg, ['roll']);
-      result = separateValues(msgSend.lastCall.returnValue.content);
+      var result = separateValues(msgSend.lastCall.returnValue.content);
       expect(parseInt(result[1])).to.be.above(0);
       expect(parseInt(result[1])).to.be.below(41);
     });
     it('Should return the result of three 12 faced dice + 5', function() {
       msg.content = '$roll 3d12+5';
       commands.executeCmd(msg, ['roll']);
-      result = separateValues(msgSend.lastCall.returnValue.content);
+      var result = separateValues(msgSend.lastCall.returnValue.content);
       expect(parseInt(result[1])).to.be.above(7);
       expect(parseInt(result[1])).to.be.below(42);
     })
@@ -1414,7 +1418,7 @@ describe('Test commands', function() {
       msg.content = '$roll randomString';
       commands.executeCmd(msg, ['roll']);
 
-      result = separateValues(msgSend.lastCall.returnValue.content);
+      var result = separateValues(msgSend.lastCall.returnValue.content);
       expect(parseInt(result[1])).to.be.above(0);
       expect(parseInt(result[1])).to.be.below(7);
     });
@@ -1422,7 +1426,7 @@ describe('Test commands', function() {
       msg.content = '$roll';
       commands.executeCmd(msg, ['roll']);
 
-      result = separateValues(msgSend.lastCall.returnValue.content);
+      var result = separateValues(msgSend.lastCall.returnValue.content);
       expect(parseInt(result[1])).to.be.above(0);
       expect(parseInt(result[1])).to.be.below(7);
     });

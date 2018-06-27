@@ -12,7 +12,7 @@ module.exports = {
         permLvl: 0
       });
     }
-    execute(msg, args) {
+    execute(msg) {
       msg.reply(Math.floor(Math.random() * 2) == 0 ? lang.flipcoin.heads : lang.flipcoin.tails);
     }
   },
@@ -33,7 +33,7 @@ module.exports = {
         if(string == /\s/g.test(string)) {
           return false;
         }
-        result = isNaN(string) || string > 50 || string < 1;
+        var result = isNaN(string) || string > 50 || string < 1;
         return !result;
       }
       //Get values
@@ -53,7 +53,7 @@ module.exports = {
       }
       //RNG
       var dice = [];
-      for (var i = 0; i < values[0]; i++) {
+      for (var n = 0; n < values[0]; n++) {
         dice.push(Math.floor(Math.random() * values[1]) + 1);
       }
       //Make message

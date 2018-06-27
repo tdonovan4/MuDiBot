@@ -112,19 +112,6 @@ async function onMessage(msg) {
   }
 }
 
-//Convert roles into mention objects
-function mention(roles, role) {
-  if (role === 'everyone') {
-    return '@everyone';
-  } else if (role === "roleMember") {
-    return roles.find("name", config.roleMember);
-  } else if (role === "roleModo") {
-    return roles.find("name", config.roleModo);
-  } else {
-    return null;
-  }
-}
-
 async function sendDefaultChannel(member, text) {
   let channel = await db.config.getDefaultChannel(member.guild.id);
   channel.send(text);

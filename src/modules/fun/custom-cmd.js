@@ -148,25 +148,26 @@ module.exports = {
         var embed = new Discord.RichEmbed();
         embed.title = cmd.name;
         embed.color = 0x3aa00a;
-        embed.addField(name = lang.custcmdlist.action, value = cmd.action, inline = true)
-        embed.addField(name = lang.custcmdlist.creator, value = msg.guild.members.get(cmd.userId).user.username, inline = true)
-        embed.addField(name = lang.custcmdlist.arg, value = cmd.arg, inline = false);
+        embed.addField(lang.custcmdlist.action, cmd.action, true)
+        embed.addField(lang.custcmdlist.creator, msg.guild.members.get(cmd.userId).user.username, true)
+        embed.addField(lang.custcmdlist.arg, cmd.arg, false);
         msg.channel.send({
           embed
         });
       } else {
+        var names;
         if (args.length == 0) {
           //All commands
-          var names = cmds.map(x => x.name);
+          names = cmds.map(x => x.name);
         } else {
           //User's commands
-          var names = cmds.filter(x => x.userId == msg.mentions.users.first().id).map(x => x.name);
+          names = cmds.filter(x => x.userId == msg.mentions.users.first().id).map(x => x.name);
         }
         if (names != undefined) {
           var output = '';
           var spaces = 25;
 
-          for (i = 0; i < names.length; i++) {
+          for (var i = 0; i < names.length; i++) {
             output += names[i] + Array(spaces - names[i].length).join(" ");
             if ((i + 1) % 5 == 0) {
               output += '\n';

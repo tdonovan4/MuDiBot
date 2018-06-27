@@ -17,7 +17,7 @@ module.exports = class TopCommand extends bot.Command {
       permLvl: 0
     });
   }
-  async execute(msg, args) {
+  async execute(msg) {
     //Start measuring time
     var start = process.hrtime();
     //Get leaderboards
@@ -87,7 +87,7 @@ async function getUsersCount(msg) {
 async function getInfo(users) {
   var discordUsers = [];
   //Fetch users
-  for (user of users) {
+  for (var user of users) {
     discordUsers.push(client.fetchUser(user.userId));
   }
   await Promise.all(discordUsers);
@@ -117,7 +117,7 @@ async function getTops(msg, num) {
     //Get top of all users
     tops.global = await sql.all('SELECT userId, SUM(xp) FROM users GROUP BY userId ORDER BY SUM(xp) DESC LIMIT ?', [num]);
     //Convert SUM(xp) to xp
-    for (user of tops.global) {
+    for (var user of tops.global) {
       user.xp = user['SUM(xp)'];
       delete user['SUM(xp)'];
     }

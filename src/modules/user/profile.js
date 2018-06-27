@@ -16,7 +16,7 @@ module.exports = class ProfileCommand extends bot.Command {
       permLvl: 0
     });
   }
-  async execute(msg, args) {
+  async execute(msg) {
     let user = msg.mentions.users.first();
     if (user == undefined) {
       //There is no mentions

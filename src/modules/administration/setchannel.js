@@ -12,7 +12,7 @@ module.exports = class SetChannelCommand extends bot.Command {
       permLvl: 3
     });
   }
-  execute(msg, args) {
+  execute(msg) {
     var botChannel = msg.channel;
     //Modify default channel in database
     db.config.updateDefaultChannel(msg.guild.id, botChannel);

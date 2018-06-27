@@ -2,7 +2,7 @@
 //Please fill the fields
 module.exports = {
   /*===============
-  	-Credentials-
+    -Credentials-
   ===============*/
   //The token of the bot
   botToken: '',
@@ -12,7 +12,7 @@ module.exports = {
   giphyAPIKey: '',
 
   /*===============
-  	-General-
+    -General-
   ===============*/
   //The prefix for a command (for example $help)
   prefix: '$',
@@ -26,7 +26,7 @@ module.exports = {
   superusers: [''],
 
   /*===============
-  	-Permission groups-
+    -Permission groups-
   ===============*/
   /*
   The groups used for permission
@@ -51,7 +51,7 @@ module.exports = {
     permLvl: 3
   }],
   /*===============
-  	-Modules-
+    -Modules-
   ===============*/
 
   /*---------------
@@ -79,15 +79,14 @@ module.exports = {
   },
 
   /*===============
-  	-Commands-
+    -Commands-
   ===============*/
 
   /*Configuration for individual command.
   They also can be activated or deactivated.
   All commands are activated by default.*/
 
-  categories: [
-    {
+  categories: [{
       name: 'general',
       priority: 5
     },

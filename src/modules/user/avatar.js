@@ -11,7 +11,7 @@ module.exports = class AvatarCommand extends bot.Command {
       permLvl: 0
     });
   }
-  execute(msg, args) {
+  execute(msg) {
     var user = msg.mentions.users.first()
     if (user != undefined && user != null) {
       bot.printMsg(msg, user.avatarURL);

@@ -202,7 +202,7 @@ module.exports = {
       //Add 1 per 2 characters
       var extraXp = Math.trunc(msg.content.replace(/\s/g, "").length / 3);
       //Get a random number from 1 to 3 and add extra xp (max is 20);
-      xpGained = Math.min(20, (Math.floor(Math.random() * 3) + 1) + extraXp);
+      var xpGained = Math.min(20, (Math.floor(Math.random() * 3) + 1) + extraXp);
       await db.users.user.updateXP(msg.guild.id, msg.author.id, xp + xpGained);
 
       let progression = this.getProgression(xp);
@@ -216,7 +216,7 @@ module.exports = {
         });
         //Check if users has ranked up
         if ((progression[0] + 1) % 10 == 0) {
-          rank = this.getRank(progression[2] + 1)
+          var rank = this.getRank(progression[2] + 1)
           message += '\n' + mustache.render(lang.general.member.rankUp, {
             rank: `${rank[0]}${(rank[1] > 0) ? ` (${rank[1]}:star:)` : ''}`
           });
