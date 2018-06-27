@@ -1,0 +1,24 @@
+image: node:8
+
+stages:
+  - build
+  - test
+
+build:
+  stage: build
+  script:
+  - npm install
+  artifacts:
+    paths: [node_modules/]
+    expire_in: 1 day
+
+lint:
+  stage: test
+  script:
+    - npm run lint
+  allow_failure: true
+
+unit_tests:
+  stage: test
+  script:
+   - npm run test
