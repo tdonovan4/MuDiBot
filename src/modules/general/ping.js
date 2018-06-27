@@ -11,7 +11,7 @@ module.exports = class PingCommand extends bot.Command {
       permLvl: 0
     });
   }
-  execute(msg, args) {
+  execute(msg) {
     msg.reply(lang.ping.pong);
     console.log(lang.ping.pong);
   }

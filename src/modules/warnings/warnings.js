@@ -2,8 +2,6 @@
 const db = require('../database/database.js');
 const bot = require('../../bot.js');
 const mustache = require('mustache');
-const sql = require('sqlite');
-const config = require('../../args.js').getConfig()[1];
 var lang = require('../../localization.js').getLocalization();
 
 module.exports = {
@@ -17,7 +15,7 @@ module.exports = {
         permLvl: 2
       });
     }
-    execute(msg, args) {
+    execute(msg) {
       module.exports.warn(msg, 1);
     }
   },
@@ -31,7 +29,7 @@ module.exports = {
         permLvl: 2
       });
     }
-    execute(msg, args) {
+    execute(msg) {
       module.exports.warn(msg, -1);
     }
   },
@@ -51,7 +49,7 @@ module.exports = {
         //List all users warnings
         var users = await db.users.getWarnings(msg.guild.id);
         var output = '';
-        for (i = 0; i < users.length; i++) {
+        for (var i = 0; i < users.length; i++) {
           if (users[i].warnings > 0) {
             if (output.length > 0) {
               output += '\n';
@@ -67,14 +65,10 @@ module.exports = {
         //List the user's warnings
         var warnings = await db.users.user.getWarnings(msg.guild.id, mention.id);
 
-        if (user != undefined) {
-          bot.printMsg(msg, mustache.render(lang.warn.list, {
-            userId: mention.id,
-            warnings: warnings
-          }));
-        } else {
-          bot.printMsg(msg, lang.error.invalidArg.user);
-        }
+        bot.printMsg(msg, mustache.render(lang.warn.list, {
+          userId: mention.id,
+          warnings: warnings
+        }));
       } else {
         bot.printMsg(msg, lang.error.usage);
       }

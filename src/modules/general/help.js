@@ -68,7 +68,7 @@ function printCmds(msg) {
         var chars = '';
         var command = category.iterator.next();
         if (!command.done) {
-          var chars = config.prefix + command.value.name;
+          chars = config.prefix + command.value.name;
         } else {
           if(!category.done) {
             //Category/column finished
@@ -111,9 +111,9 @@ function printCmd(msg, args, cmd) {
     if (aliases.length > 0) {
       embed.setDescription(`${lang.help.alias} ${aliases.map(x => `\`${config.prefix + x}\``).join(' ')}`);
     }
-    embed.addField(name = lang.help.desc, value = help.msg, inline = false);
-    embed.addField(name = lang.help.permLvl, value = cmd.permLvl, inline = true);
-    embed.addField(name = lang.help.usage, value = usages, inline = true);
+    embed.addField(lang.help.desc, help.msg, false);
+    embed.addField(lang.help.permLvl, cmd.permLvl, true);
+    embed.addField(lang.help.usage, usages, true);
     msg.channel.send({
       embed
     });

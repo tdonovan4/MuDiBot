@@ -1,8 +1,6 @@
-const Discord = require("discord.js");
 const bot = require('./bot.js');
 const fs = require('fs');
 const db = require('./modules/database/database.js');
-var client = bot.client();
 var args = require('./args.js');
 var config = args.getConfig()[1];
 var lang = require('./localization.js').getLocalization();
@@ -32,7 +30,7 @@ module.exports = {
               keys
             }
           }
-          for (key in keys) {
+          for (var key in keys) {
             //Check if the key is a subclass of Command
             if (keys[key].prototype instanceof bot.Command) {
               var command = new keys[key]();
@@ -56,7 +54,7 @@ module.exports = {
   checkPerm: async function(msg, permLevel) {
     //Exceptions
     //Check if user is superuser
-    for (i = 0; i < config.superusers.length; i++) {
+    for (var i = 0; i < config.superusers.length; i++) {
       if (msg.author.id === config.superusers[i]) {
         return true;
       }
@@ -95,14 +93,14 @@ module.exports = {
       console.log(msg.author.username + ' - ' + msg.content);
 
       //Check if user has permission
-      result = await this.checkPerm(msg, command.permLvl)
+      var result = await this.checkPerm(msg, command.permLvl);
       if (result) {
         //Valid command that can be used by the user
-        return true
-      };
+        return true;
+      }
     }
     //The command was not found or didn't execute
-    return false
+    return false;
   },
   executeCmd: async function(msg, args) {
     //Execute the commandd

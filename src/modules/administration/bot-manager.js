@@ -12,7 +12,7 @@ module.exports = {
         permLvl: 3
       });
     }
-    execute(msg, args) {
+    execute() {
       console.log(lang.general.stopping);
       process.exitCode = 0;
       process.exit();
@@ -28,7 +28,7 @@ module.exports = {
         permLvl: 3
       });
     }
-    execute(msg, args) {
+    execute() {
       //Spawn new process
       var spawn = require('child_process').spawn;
 

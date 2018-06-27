@@ -15,7 +15,7 @@ module.exports = class InfoCommand extends bot.Command {
       permLvl: 0
     });
   }
-  execute(msg, args) {
+  execute(msg) {
     var info = lang.info;
 
     var embed = new Discord.RichEmbed();

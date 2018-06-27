@@ -9,7 +9,7 @@ exports.msg1 = {
     id: '041025599435591424'
   },
   member: {
-    addRole: function(role, reason) {
+    addRole: function(role) {
       return new Promise(resolve => {
         this.roles.set(role, {
           id: 2
@@ -35,12 +35,12 @@ exports.msg1 = {
         }
       },
     },
-    permissions: new Discord.Collection,
-    roles: new Discord.Collection
+    permissions: new Discord.Collection(),
+    roles: new Discord.Collection()
   },
   guild: {
     id: '357156661105365963',
-    roles: new Discord.Collection,
+    roles: new Discord.Collection(),
     members: {
       get: function(id) {
         var username = 'TestUser';
@@ -76,10 +76,13 @@ exports.msg1 = {
             }
           }
         },
-        delete: function() {}
+        delete: function() {
+          //We don't actually delete
+          return;
+        }
       }
     },
-    fetchMessages: async function(args) {
+    fetchMessages: function(args) {
       var predefinedMsg = [{
         content: 'Hello',
         author: {
@@ -154,7 +157,7 @@ exports.msg1 = {
         }
         returnedMsg[i] = predefinedMsg[i]
       }
-      var returnedCollection = new Discord.Collection;
+      var returnedCollection = new Discord.Collection();
       returnedCollection.array = function() {
         return returnedMsg;
       }
@@ -162,7 +165,7 @@ exports.msg1 = {
     }
   },
   mentions: {
-    users: new Discord.Collection,
-    roles: new Discord.Collection
+    users: new Discord.Collection(),
+    roles: new Discord.Collection()
   },
 }

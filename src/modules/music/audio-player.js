@@ -157,7 +157,7 @@ module.exports = {
         permLvl: 0
       });
     }
-    execute(msg, args) {
+    execute(msg) {
       var guildQueue = getQueue(msg.guild.id);
       if (guildQueue.connection != undefined) {
         //Disconnect from channel
@@ -183,7 +183,7 @@ module.exports = {
         permLvl: 0
       });
     }
-    execute(msg, args) {
+    execute(msg) {
       var guildQueue = getQueue(msg.guild.id);
       if (guildQueue.connection != undefined) {
         //Must print before so that it is in order
@@ -206,7 +206,7 @@ module.exports = {
         permLvl: 0
       });
     }
-    execute(msg, args) {
+    execute(msg) {
       var queue = getQueue(msg.guild.id).queue;
       var num = Math.min(queue.length, 21);
       printVideos(msg, queue, num);
@@ -231,11 +231,7 @@ module.exports = {
     //Check if url to video
     if (ytdl.validateURL(args[0])) {
       //Direct link to video
-      var videoId = ytdl.getURLVideoID(args[0]);
-      //If case not valid
-      if (videoId != null) {
-        videoId = videoId;
-      }
+      videoId = ytdl.getURLVideoID(args[0]);
     } else {
       //Search the video with the YouTube API
       var response = await get('https://www.googleapis.com/youtube/v3/search?part=snippet' +

@@ -20,7 +20,7 @@ module.exports = {
     }
   },
   users: new Discord.Collection(),
-  fetchUser: async function(id) {
+  fetchUser: function(id) {
     return id;
   }
 }
