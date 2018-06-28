@@ -263,7 +263,7 @@ testClient.channels.set('3', {
   type: 'text'
 });
 describe('Test config-db', function() {
-  describe('Test get queries with empty responses', function() {
+  describe('Test getDefaultChannel with empty responses', function() {
     it('Should return first channel if no general', async function() {
       var response = await db.config.getDefaultChannel(msg.guild.id);
       expect(response.position).to.equal(0);
@@ -273,7 +273,7 @@ describe('Test config-db', function() {
       expect(response.name).to.equal('general');
     })
   });
-  describe('Test update queries', function() {
+  describe('Test updateDefaultChannel', function() {
     it('Should insert channel into empty table', async function() {
       await db.config.updateDefaultChannel('1234567890', {id: '3'});
       var response = await db.config.getDefaultChannel('1234567890');
@@ -284,6 +284,33 @@ describe('Test config-db', function() {
       var response = await db.config.getDefaultChannel('1234567890');
       expect(response.name).to.equal('general');
     })
+  });
+});
+describe('rewards-db.js', function() {
+  describe('Test getRankReward with empty response', function() {
+    it('Should return undefined if rank doesn\'t have a reward', async function() {
+      var response = await db.rewards.getRankReward(msg.guild.id, 'random');
+      expect(response).to.equal(undefined);
+    });
+  });
+  describe('Test updateRankReward', function() {
+    it('Should add reward to rank', async function() {
+      await db.rewards.updateRankReward(msg.guild.id, 'King', 'Member');
+      var response = await db.rewards.getRankReward(msg.guild.id, 'King');
+      expect(response).to.equal('Member');
+    });
+    it('Should update the reward', async function() {
+      await db.rewards.updateRankReward(msg.guild.id, 'King', 'Mod');
+      var response = await db.rewards.getRankReward(msg.guild.id, 'King');
+      expect(response).to.equal('Mod');
+    });
+  });
+  describe('Test deleteRankReward', function() {
+    it('Should remove reward', async function() {
+      await db.rewards.deleteRankReward(msg.guild.id, 'King');
+      var response = await db.rewards.getRankReward(msg.guild.id, 'King');
+      expect(response).to.equal(undefined);
+    });
   });
 });
 describe('Test permission groups', function() {
@@ -401,71 +428,6 @@ describe('Test levels', function() {
       expect(response).to.deep.equal(['Vagabond', 10, 8421504]);
     });
   });
-  describe('Test setReward', function() {
-    it('Should return missing argument: rank', function() {
-      levels.setReward(msg, []);
-      expect(printMsg.lastCall.returnValue).to.equal(lang.error.missingArg.rank);
-    })
-    it('Should return missing argument: reward', function() {
-      levels.setReward(msg, ['farmer']);
-      expect(printMsg.lastCall.returnValue).to.equal(lang.error.missingArg.reward);
-    });
-    it('Should return invalid reward', function() {
-      levels.setReward(msg, ['test', 'string']);
-      expect(printMsg.lastCall.returnValue).to.equal(lang.error.invalidArg.reward);
-    });
-    it('Should return rank not found', function() {
-      levels.setReward(msg, ['test', 'Member']);
-      expect(printMsg.lastCall.returnValue).to.equal(lang.error.notFound.rank);
-    });
-    it('Should set the reward for king (permission group) and create table', async function() {
-      await levels.setReward(msg, ['king', 'Member']);
-      var response = await levels.__get__('getReward')(msg, ['King']);
-      expect(response).to.equal('Member');
-    });
-    it('Should set the reward for emperor (role)', async function() {
-      //Add roles
-      msg.guild.roles.set('1', {
-        id: '1'
-      });
-      msg.mentions.roles.set('1', {
-        id: '1'
-      });
-      await levels.setReward(msg, ['emperor', '<#1>']);
-      var response = await levels.__get__('getReward')(msg, ['Emperor']);
-      expect(response).to.equal('1');
-    });
-    it('Should update the reward for emperor', async function() {
-      //Clear collections
-      msg.guild.roles.clear();
-      msg.mentions.roles.clear();
-      //Add roles
-      msg.guild.roles.set('2', {
-        id: '2'
-      });
-      msg.mentions.roles.set('2', {
-        id: '2'
-      });
-      await levels.setReward(msg, ['emperor', '<#2>']);
-      var response = await levels.__get__('getReward')(msg, ['Emperor']);
-      expect(response).to.equal('2');
-    });
-    after(function() {
-      msg.guild.roles.clear();
-      msg.mentions.roles.clear();
-    });
-  });
-  describe('Test unsetReward', function() {
-    it('Should return missing argument: rank', function() {
-      levels.unsetReward(msg, []);
-      expect(printMsg.lastCall.returnValue).to.equal(lang.error.missingArg.rank);
-    });
-    it('Should remove the reward for emperor', async function() {
-      await levels.unsetReward(msg, ['king']);
-      var response = await levels.__get__('getReward')(msg, ['King']);
-      expect(response).to.equal(undefined);
-    });
-  });
   describe('Test newMessage', function() {
     msg.content = 'test';
     it('User should have more than 0 XP', async function() {
@@ -511,7 +473,7 @@ describe('Test levels', function() {
     });
     it('Should set the reward for the user (permission group)', async function() {
       //Set the reward for warrior
-      await levels.setReward(msg, ['warrior', 'Member']);
+      await db.rewards.updateRankReward(msg.guild.id, 'Warrior', 'Member');
       await db.users.user.updateXP(msg.guild.id, '041025599435591424', 2529);
       //Remove cooldown
       levels.__set__('lastMessages', []);
@@ -526,6 +488,8 @@ describe('Test levels', function() {
         id: '2',
         name: 'guildMember'
       });
+      //Set the reward for emperor
+      await db.rewards.updateRankReward(msg.guild.id, 'Emperor', '2');
       //Remove cooldown
       levels.__set__('lastMessages', []);
       await levels.newMessage(msg);
@@ -1490,6 +1454,89 @@ describe('Test commands', function() {
       await commands.executeCmd(msg, ['clearlog']);
       var deletedMessages = testMessages.__get__('deletedMessages');
       expect(deletedMessages).to.deep.equal(['flower']);
+    });
+  });
+  describe('Test setreward', function() {
+    it('Should return missing argument: rank', async function() {
+      msg.content = 'setreward';
+      await commands.executeCmd(msg, ['setreward']);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.missingArg.rank);
+    })
+    it('Should return missing argument: reward', async function() {
+      msg.content = 'setreward farmer';
+      await commands.executeCmd(msg, ['setreward']);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.missingArg.reward);
+    });
+    it('Should return invalid reward', async function() {
+      msg.content = 'setreward test string';
+      await commands.executeCmd(msg, ['setreward']);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.invalidArg.reward);
+    });
+    it('Should return rank not found', async function() {
+      msg.content = 'setreward test member';
+      await commands.executeCmd(msg, ['setreward']);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.notFound.rank);
+    });
+    it('Should set the reward for king (permission group) and create table', async function() {
+      msg.content = 'setreward king member';
+      await commands.executeCmd(msg, ['setreward']);
+      var response = await db.rewards.getRankReward(msg.guild.id, 'King');
+      expect(response).to.equal('Member');
+    });
+    it('Should set the reward for emperor (role)', async function() {
+      //Add roles
+      msg.guild.roles.set('1', {
+        id: '1'
+      });
+      msg.mentions.roles.set('1', {
+        id: '1'
+      });
+      msg.content = 'setreward emperor <#1>';
+      await commands.executeCmd(msg, ['setreward']);
+      var response = await db.rewards.getRankReward(msg.guild.id, 'Emperor');
+      expect(response).to.equal('1');
+    });
+    it('Should update the reward for emperor', async function() {
+      msg.guild.roles.clear();
+      msg.mentions.roles.clear();
+      //Add roles
+      msg.guild.roles.set('2', {
+        id: '2'
+      });
+      msg.mentions.roles.set('2', {
+        id: '2'
+      });
+      msg.content = 'setreward emperor <#2>';
+      await commands.executeCmd(msg, ['setreward']);
+      var response = await db.rewards.getRankReward(msg.guild.id, 'Emperor');
+      expect(response).to.equal('2');
+    });
+    after(function() {
+      msg.guild.roles.clear();
+      msg.mentions.roles.clear();
+    });
+  });
+  describe('Test unsetreward', function() {
+    it('Should return missing argument: rank', async function() {
+      msg.content = 'unsetreward';
+      await commands.executeCmd(msg, ['unsetreward']);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.missingArg.rank);
+    });
+    it('Should return rank not found', async function() {
+      msg.content = 'unsetreward random';
+      await commands.executeCmd(msg, ['unsetreward']);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.notFound.rank);
+    });
+    it('Should return rank reward not found', async function() {
+      msg.content = 'unsetreward farmer';
+      await commands.executeCmd(msg, ['unsetreward']);
+      expect(printMsg.lastCall.returnValue).to.equal(lang.error.notFound.rankReward);
+    });
+    it('Should remove the reward for emperor', async function() {
+      msg.content = 'unsetreward emperor';
+      await commands.executeCmd(msg, ['unsetreward']);
+      var response = await db.rewards.getRankReward(msg.guild.id, 'Emperor');
+      expect(response).to.equal(undefined);
     });
   });
 });

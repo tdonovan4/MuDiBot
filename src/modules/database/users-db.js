@@ -49,19 +49,19 @@ module.exports = {
       //Update user's permission groups
       var updateQuery = 'UPDATE users SET groups = (?) WHERE serverId = ? AND userId = ?';
       var args = [serverId, userId];
-      await queries.runInsertUpdateQuery(insertQuery, updateQuery, args, groups);
+      await queries.runInsertUpdateQuery(insertQuery, updateQuery, args, [groups]);
     },
     updateXP: async function(serverId, userId, newXP) {
       //Update user's xp
       var updateQuery = 'UPDATE users SET xp = ? WHERE serverId = ? AND userId = ?';
       var args = [serverId, userId];
-      await queries.runInsertUpdateQuery(insertQuery, updateQuery, args, newXP);
+      await queries.runInsertUpdateQuery(insertQuery, updateQuery, args, [newXP]);
     },
     updateWarnings: async function(serverId, userId, newWarnings) {
       //Update user's warnings
       var updateQuery = 'UPDATE users SET warnings = ? WHERE serverId = ? AND userId = ?';
       var args = [serverId, userId];
-      await queries.runInsertUpdateQuery(insertQuery, updateQuery, args, newWarnings);
+      await queries.runInsertUpdateQuery(insertQuery, updateQuery, args, [newWarnings]);
     }
   },
   getWarnings: async function(serverId) {
