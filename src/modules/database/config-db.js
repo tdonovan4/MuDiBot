@@ -2,7 +2,7 @@ var queries = require('./queries.js');
 var bot = require('../../bot.js');
 var client = bot.client();
 
-const insertQuery = 'INSERT OR IGNORE INTO servers (serverId) VALUES (?)'
+const insertQuery = 'INSERT OR IGNORE INTO servers (serverId) VALUES (?)';
 
 function getBackupChannel(serverId) {
   var channel;
@@ -40,6 +40,6 @@ module.exports = {
   },
   updateDefaultChannel: async function(serverId, channel) {
     var updateQuery = 'UPDATE servers SET defaultChannel = ? WHERE serverId = ?';
-    await queries.runInsertUpdateQuery(insertQuery, updateQuery, [serverId], channel.id);
+    await queries.runInsertUpdateQuery(insertQuery, updateQuery, [serverId], [channel.id]);
   }
 }
