@@ -40,7 +40,6 @@ const bot = require('../src/bot.js');
 
 //Init stuff that need bot
 const db = require('../src/modules/database/database.js');
-const customCmd = require('../src/modules/fun/custom-cmd.js');
 const audioPlayer = rewire('../src/modules/music/audio-player.js');
 const top = rewire('../src/modules/user/top.js');
 var setActivity = sinon.spy(bot.client().user, 'setActivity');
@@ -286,7 +285,7 @@ describe('Test config-db', function() {
     })
   });
 });
-describe('rewards-db.js', function() {
+describe('Test rewards-db.js', function() {
   describe('Test getRankReward with empty response', function() {
     it('Should return undefined if rank doesn\'t have a reward', async function() {
       var response = await db.rewards.getRankReward(msg.guild.id, 'random');
@@ -306,12 +305,56 @@ describe('rewards-db.js', function() {
     });
   });
   describe('Test deleteRankReward', function() {
-    it('Should remove reward', async function() {
+    it('Should delete reward', async function() {
       await db.rewards.deleteRankReward(msg.guild.id, 'King');
       var response = await db.rewards.getRankReward(msg.guild.id, 'King');
       expect(response).to.equal(undefined);
     });
   });
+});
+describe('Test custom-cmd-db.js', function() {
+  describe('Test get queries with empty responses', function() {
+    it('getCmd should return undefined', async function() {
+      var response = await db.customCmds.getCmd(msg.guild.id, 'test');
+      expect(response).to.equal(undefined);
+    });
+    it('getCmds should return empty array', async function() {
+      var response = await db.customCmds.getCmds(msg.guild.id);
+      expect(response.length).to.equal(0);
+    });
+  });
+  describe('Test insertCmd', function() {
+    it('Should insert new cmd', async function() {
+      await db.customCmds.insertCmd(msg.guild.id, msg.author.id, 'test1', 'say', 'test1');
+      var cmd = await db.customCmds.getCmd(msg.guild.id, 'test1');
+      var cmds = await db.customCmds.getCmds(msg.guild.id);
+      expect(cmd.arg).to.equal('test1');
+      expect(cmds.length).to.equal(1);
+    });
+    it('Should insert another cmd', async function() {
+      await db.customCmds.insertCmd(msg.guild.id, msg.author.id, 'test2', 'say', 'test2');
+      var cmd = await db.customCmds.getCmd(msg.guild.id, 'test2');
+      var cmds = await db.customCmds.getCmds(msg.guild.id);
+      expect(cmd.arg).to.equal('test2');
+      expect(cmds.length).to.equal(2);
+    });
+    it('Should insert cmd in another guild', async function() {
+      await db.customCmds.insertCmd('1', msg.author.id, 'test1', 'say', 'test1');
+      var cmd = await db.customCmds.getCmd('1', 'test1');
+      var cmds = await db.customCmds.getCmds('1');
+      expect(cmd.arg).to.equal('test1');
+      expect(cmds.length).to.equal(1);
+    })
+  });
+  describe('Test deleteCmd', function() {
+    it('Should delete cmd', async function() {
+      await db.customCmds.deleteCmd(msg.guild.id, 'test1');
+      var cmd = await db.customCmds.getCmd(msg.guild.id, 'test1');
+      var cmds = await db.customCmds.getCmds(msg.guild.id);
+      expect(cmd).to.equal(undefined);
+      expect(cmds.length).to.equal(1);
+    });
+  })
 });
 describe('Test permission groups', function() {
   describe('Test setGroup', function() {
@@ -634,31 +677,19 @@ describe('Test top', function() {
   });
 });
 describe('Test the custom commands', function() {
-  describe('Test custcmd and getCmds', function() {
+  describe('Test custcmd', function() {
     it('custcmd should return wrong usage', async function() {
       msg.content = '$custcmd';
       await commands.executeCmd(msg, ['custcmd']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.usage);
     });
-    it('getCmds should return empty array', async function() {
-      var response = await customCmd.getCmds(msg);
-      expect(response.length).to.equal(0);
-    });
     it('custcmd should add the command to the database', async function() {
       msg.content = '$custcmd testCmd1 say This is a test';
       await commands.executeCmd(msg, ['custcmd']);
+      var response = await db.customCmds.getCmd(msg.guild.id, 'testCmd1');
+      expect(response.name).to.equal('testCmd1');
       expect(printMsg.lastCall.returnValue).to.equal(lang.custcmd.cmdAdded);
     });
-    it('getCmds should return testCmd1', async function() {
-      var response = await customCmd.getCmds(msg);
-      expect(response).to.deep.equal([{
-        action: 'say',
-        arg: 'This is a test',
-        name: 'testCmd1',
-        serverId: '357156661105365963',
-        userId: '041025599435591424',
-      }]);
-    })
     it('custcmd should return wrong usage when using a too long name', async function() {
       msg.content = '$custcmd thisNameIsReallyTooLongToBeACustomCmd say This is a test';
       await commands.executeCmd(msg, ['custcmd']);
@@ -675,28 +706,14 @@ describe('Test the custom commands', function() {
       await commands.executeCmd(msg, ['custcmd']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.error.tooMuch.cmdsUser);
     });
-    it('custcmd should add the commandd to the database when using an administrator', async function() {
+    it('custcmd should add the command to the database when using an administrator', async function() {
       msg.content = '$custcmd testCmd2 say This is a test';
       msg.member.permissions.set('ADMINISTRATOR');
       await commands.executeCmd(msg, ['custcmd']);
+      var response = await db.customCmds.getCmd(msg.guild.id, 'testCmd2');
+      expect(response.name).to.equal('testCmd2');
       expect(printMsg.lastCall.returnValue).to.equal(lang.custcmd.cmdAdded);
     });
-    it('getCmds should return testCmd1 and testCmd2', async function() {
-      var response = await customCmd.getCmds(msg);
-      expect(response).to.deep.equal([{
-        action: 'say',
-        arg: 'This is a test',
-        name: 'testCmd1',
-        serverId: '357156661105365963',
-        userId: '041025599435591424',
-      }, {
-        action: 'say',
-        arg: 'This is a test',
-        name: 'testCmd2',
-        serverId: '357156661105365963',
-        userId: '041025599435591424',
-      }]);
-    })
   });
   describe('Test removeCmd', function() {
     it('Should return command not found', async function() {
@@ -707,20 +724,15 @@ describe('Test the custom commands', function() {
     it('Should remove testCmd2', async function() {
       msg.content = '$custcmd testCmd2';
       await commands.executeCmd(msg, ['custcmdremove']);
-      var response = await customCmd.getCmds(msg);
+      var response = await db.customCmds.getCmd(msg.guild.id, 'testCmd2');
+      expect(response).to.equal(undefined);
       expect(printMsg.lastCall.returnValue).to.equal(lang.custcmdremove.cmdRemoved);
-      expect(response).to.deep.equal([{
-        action: 'say',
-        arg: 'This is a test',
-        name: 'testCmd1',
-        serverId: '357156661105365963',
-        userId: '041025599435591424',
-      }]);
     });
   });
-  describe('Test printCmds', function() {
+  describe('Test custcmdlist', function() {
     it('Should return info about testCmd1', async function() {
-      await customCmd.printCmds(msg, ['testCmd1']);
+      msg.content = '$custcmdlist testCmd1';
+      await commands.executeCmd(msg, ['custcmdlist']);
       var embed = msgSend.lastCall.returnValue.content.embed;
       expect(embed.title).to.equal('testCmd1');
       expect(embed.fields[0].value).to.equal('say');
@@ -729,30 +741,32 @@ describe('Test the custom commands', function() {
     });
     it('Should return all custom commands', async function() {
       msg.author.id = '357156661105365963';
-      msg.content = '$custcmd testCmd2 say This is a test';
-      await commands.executeCmd(msg, ['custcmd']);
+      //Add another custom cmd
+      await db.customCmds.insertCmd(msg.guild.id, msg.author.id, 'testCmd2', 'say', '2');
       msg.author.id = '041025599435591424';
-      await customCmd.printCmds(msg, []);
+      msg.content = '$custcmdlist';
+      await commands.executeCmd(msg, ['custcmdlist']);
       var response = msgSend.getCall(msgSend.callCount - 2).returnValue.content;
+      console.log(response);
       expect(response).to.have.string('testCmd1');
       expect(response).to.have.string('testCmd2');
     })
     it('Should return all TestUser\'s custom commands', async function() {
-      msg.content = '$custcmd testCmd3 say This is a test';
-      await commands.executeCmd(msg, ['custcmd']);
-      await customCmd.printCmds(msg, ['']);
+      //Add another custom cmd
+      await db.customCmds.insertCmd(msg.guild.id, msg.author.id, 'testCmd3', 'say', '3');
+      msg.content = '$custcmdlist';
+      await commands.executeCmd(msg, ['custcmdlist']);
       var response = msgSend.getCall(msgSend.callCount - 2).returnValue.content;
       expect(response).to.have.string('testCmd1');
       expect(response).to.have.string('testCmd3');
     });
     it('Should return that the list is empty', async function() {
-      msg.content = '$custcmdremove testCmd1';
-      await commands.executeCmd(msg, ['custcmdremove']);
-      msg.content = '$custcmdremove testCmd2';
-      await commands.executeCmd(msg, ['custcmdremove']);
-      msg.content = '$custcmdremove testCmd3';
-      await commands.executeCmd(msg, ['custcmdremove']);
-      await customCmd.printCmds(msg, ['']);
+      //Remove all inside of table
+      await sql.open(config.pathDatabase);
+      await sql.run('DELETE FROM customCmds');
+      await sql.close();
+      msg.content = '$custcmdlist';
+      await commands.executeCmd(msg, ['custcmdlist']);
       expect(printMsg.lastCall.returnValue).to.equal(lang.custcmdlist.empty);
     });
   });
