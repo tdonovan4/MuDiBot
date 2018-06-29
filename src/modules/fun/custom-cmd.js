@@ -1,19 +1,55 @@
 const bot = require('../../bot.js');
-const sql = require('sqlite');
 const config = require('../../args.js').getConfig()[1];
 const mustache = require('mustache');
+const db = require('../database/database.js');
 const player = require('../music/audio-player.js');
 var lang = require('../../localization.js').getLocalization();
 
-async function insertCmd(msg, args) {
-  try {
-    await sql.open(config.pathDatabase);
-    await sql.run('INSERT INTO customCmds (serverId, userId, name, action, arg) VALUES (?, ?, ?, ?, ?)', [
-      msg.guild.id, msg.author.id, args[0], args[1], args.slice(2).join(' ')
-    ]);
-    await sql.close();
-  } catch (e) {
-    console.error(e);
+function printSingleCmd(msg, cmd) {
+  const Discord = require("discord.js");
+
+  var embed = new Discord.RichEmbed();
+  embed.title = cmd.name;
+  embed.color = 0x3aa00a;
+  embed.addField(lang.custcmdlist.action, cmd.action, true)
+  embed.addField(lang.custcmdlist.creator, msg.guild.members.get(cmd.userId).user.username, true)
+  embed.addField(lang.custcmdlist.arg, cmd.arg, false);
+  msg.channel.send({
+    embed
+  });
+}
+
+async function printAllCmds(msg, args) {
+  var cmds = await db.customCmds.getCmds(msg.guild.id);
+  if (cmds.length > 0) {
+    var names;
+    if (args.length == 0) {
+      //All commands
+      names = cmds.map(x => x.name);
+    } else {
+      //User's commands
+      names = cmds.filter(x => x.userId == msg.mentions.users.first().id).map(x => x.name);
+    }
+    if (names != undefined) {
+      var output = '';
+      var spaces = 25;
+
+      for (var i = 0; i < names.length; i++) {
+        output += names[i] + Array(spaces - names[i].length).join(" ");
+        if ((i + 1) % 5 == 0) {
+          output += '\n';
+        }
+      }
+      msg.channel.send(output, {
+        code: 'css'
+      });
+      //Little message
+      msg.channel.send(mustache.render(lang.custcmdlist.msg, {
+        config
+      }))
+    }
+  } else {
+    bot.printMsg(msg, lang.custcmdlist.empty);
   }
 }
 
@@ -29,7 +65,7 @@ module.exports = {
       });
     }
     async execute(msg, args) {
-      var cmds = await module.exports.getCmds(msg);
+      var cmds = await db.customCmds.getCmds(msg.guild.id);
       if (cmds == undefined) {
         cmds = [];
       }
@@ -47,7 +83,12 @@ module.exports = {
             if (args.length >= 3 && args[0].length < 25) {
               //Add command to db
               if (args[1] == 'say' || args[1] == 'play') {
-                await insertCmd(msg, args);
+                await db.customCmds.insertCmd(
+                  msg.guild.id,
+                  msg.author.id,
+                  args[0],
+                  args[1],
+                  args.slice(2).join(' '));
                 bot.printMsg(msg, lang.custcmd.cmdAdded);
                 return;
               }
@@ -75,8 +116,14 @@ module.exports = {
         permLvl: 1
       });
     }
-    execute(msg, args) {
-      module.exports.printCmds(msg, args);
+    async execute(msg, args) {
+      var cmd = await db.customCmds.getCmd(msg.guild.id, args[0]);
+      if (cmd != undefined) {
+        //Print info about the command
+        printSingleCmd(msg, cmd);
+      } else {
+        await printAllCmds(msg, args);
+      }
     }
   },
   CustCmdRemoveCommand: class extends bot.Command {
@@ -91,99 +138,16 @@ module.exports = {
       });
     }
     async execute(msg, args) {
-      try {
-        await sql.open(config.pathDatabase);
-      } catch (e) {
-        console.error(e);
-      }
-      try {
-        var row = await sql.all("SELECT * FROM customCmds WHERE serverId = ? AND name = ?", [msg.guild.id, args[0]]);
-      } catch (e) {
-        try {
-          await sql.run('CREATE TABLE IF NOT EXISTS customCmds (serverId TEXT, userId TEXT, name TEXT, action TEXT, arg TEXT)');
-        } catch (e) {
-          console.error(e);
-        }
-      }
-      if (row.length > 0) {
-        try {
-          await sql.all("DELETE FROM customCmds WHERE serverId = ? AND name = ?", [msg.guild.id, args[0]])
-        } catch (e) {
-          console.error(e);
-        }
+      var name = args[0]
+      var cmd = await db.customCmds.getCmd(msg.guild.id, name);
+      if (cmd != undefined) {
+        //Command exist, deleting
+        await db.customCmds.deleteCmd(msg.guild.id, name);
         bot.printMsg(msg, lang.custcmdremove.cmdRemoved);
       } else {
         //Command not found
         bot.printMsg(msg, lang.error.notFound.cmd);
       }
-      await sql.close();
-    }
-  },
-  getCmds: async function(msg) {
-    try {
-      await sql.open(config.pathDatabase);
-    } catch (e) {
-      console.error(e);
-    }
-    try {
-      var row = await sql.all('SELECT * FROM customCmds WHERE serverId = ?', msg.guild.id);
-    } catch (e) {
-      try {
-        await sql.run('CREATE TABLE IF NOT EXISTS customCmds (serverId TEXT, userId TEXT, name TEXT, action TEXT, arg TEXT)');
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    await sql.close();
-    return row;
-  },
-  printCmds: async function(msg, args) {
-    var cmds = await this.getCmds(msg);
-    if (cmds.length > 0) {
-      var cmd = cmds.find(x => x.name == args[0]);
-      if (cmd != undefined) {
-        //Print info about the command
-        const Discord = require("discord.js");
-
-        var embed = new Discord.RichEmbed();
-        embed.title = cmd.name;
-        embed.color = 0x3aa00a;
-        embed.addField(lang.custcmdlist.action, cmd.action, true)
-        embed.addField(lang.custcmdlist.creator, msg.guild.members.get(cmd.userId).user.username, true)
-        embed.addField(lang.custcmdlist.arg, cmd.arg, false);
-        msg.channel.send({
-          embed
-        });
-      } else {
-        var names;
-        if (args.length == 0) {
-          //All commands
-          names = cmds.map(x => x.name);
-        } else {
-          //User's commands
-          names = cmds.filter(x => x.userId == msg.mentions.users.first().id).map(x => x.name);
-        }
-        if (names != undefined) {
-          var output = '';
-          var spaces = 25;
-
-          for (var i = 0; i < names.length; i++) {
-            output += names[i] + Array(spaces - names[i].length).join(" ");
-            if ((i + 1) % 5 == 0) {
-              output += '\n';
-            }
-          }
-          msg.channel.send(output, {
-            code: 'css'
-          });
-          //Little message
-          msg.channel.send(mustache.render(lang.custcmdlist.msg, {
-            config
-          }))
-        }
-      }
-    } else {
-      bot.printMsg(msg, lang.custcmdlist.empty);
     }
   },
   executeCmd: function(msg, custCmd) {

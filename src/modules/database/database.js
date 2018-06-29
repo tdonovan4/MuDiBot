@@ -6,3 +6,5 @@ module.exports.users = require('./users-db.js');
 module.exports.config = require('./config-db.js');
 //Module for level rewards table
 module.exports.rewards = require('./rewards-db.js');
+//Module for custom commands table
+module.exports.customCmds = require('./custom-cmd-db.js');
