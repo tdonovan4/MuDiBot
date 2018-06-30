@@ -58,9 +58,11 @@
     "notPlaying": "Aucune vidéo ne joue!"
   },
   "database": {
+    "noVersion": "La version de la base de donnée n'a pas pu être trouvée. Utilisation de la première version.",
     "tableAdded": "{{num}} table(s) manquante(s) ajoutée(s)!",
     "newVersion": "La version de la base de donnée n'est pas à jour. Mise à jour de la version {{current}} à la version {{new}}",
-    "updated": "Mise à jour à la version {{version}} réussie"
+    "updated": "Mise à jour à la version {{version}} réussie",
+    "clear": "La base de donnée est à jour"
   },
   "ranks": {
     "vagabond": "Vagabond",

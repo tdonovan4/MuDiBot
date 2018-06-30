@@ -58,9 +58,11 @@
     "notPlaying": "I'm not playing anything!"
   },
   "database": {
+    "noVersion": "Could not find database version. Starting from baseline.",
     "tableAdded": "{{num}} missing table(s) added!",
     "newVersion": "Database version outdated. Updating from version {{current}} to version {{new}}",
-    "updated": "Updated to version {{version}} successfully"
+    "updated": "Updated to version {{version}} successfully",
+    "clear": "Database is up to date"
   },
   "ranks": {
     "vagabond": "Vagabond",

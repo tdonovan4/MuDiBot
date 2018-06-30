@@ -11,18 +11,13 @@ var Table = class {
   }
 }
 
-var tables = [
-  new Table('database_settings', [
-    'version INTEGER NOT NULL',
-    'date DATETIME NOT NULL'
-  ]),
+var baselineTables = [
   new Table('users', [
     'serverId TEXT',
     'userId TEXT',
-    'xp INTEGER DEFAULT 0',
-    'warnings INTEGER DEFAULT 0',
-    `groups TEXT DEFAULT "${config.groups[0].name}"`,
-    'CONSTRAINT users_unique UNIQUE (serverId, userId)'
+    'xp INTEGER',
+    'warnings INTEGER',
+    `groups TEXT`
   ]),
   new Table('servers', [
     'serverId TEXT',
@@ -42,6 +37,33 @@ var tables = [
   ])
 ];
 
+async function getDatabaseVersion() {
+  var version;
+  var databaseSettings = await sql.get('SELECT count(*) FROM sqlite_master ' +
+    'WHERE type="table" AND name="database_settings"');
+  if (databaseSettings['count(*)'] == 1) {
+    //Database settings exists, checking version
+    version = await sql.get('SELECT version FROM database_settings');
+  }
+  //Return the version
+  return version;
+}
+
+async function addMissingTables(tables) {
+  var addedTablesCount = 0;
+  //Check if each tables exists
+  for (var i = 0; i < tables.length; i++) {
+    var count = await sql.get('SELECT count(*) FROM sqlite_master ' +
+      `WHERE type='table' AND name='${tables[i].name}'`);
+    if (count['count(*)'] == 0) {
+      //Table don't exist, creating
+      await sql.run(`CREATE TABLE ${tables[i].name} (${tables[i].values.join(', ')})`);
+      addedTablesCount++;
+    }
+  }
+  return addedTablesCount;
+}
+
 function versionString(integer) {
   return integer.toString().padStart(3, '0');
 }
@@ -49,30 +71,6 @@ function versionString(integer) {
 async function updateDatabaseVersion(version) {
   var date = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
   await sql.run('INSERT INTO database_settings (version, date) VALUES (?,?)', [version, date]);
-}
-
-async function addMissingTables(tablesToVerify, lastVersion) {
-  //Check if each tables exists
-  for (var i = 0; i < tables.length; i++) {
-    var count = await sql.get(`SELECT count(*) FROM sqlite_master WHERE type='table' AND name='${tables[i].name}'`);
-    if (count['count(*)'] == 0) {
-      //Table don't exist, creating
-      await sql.run(`CREATE TABLE ${tables[i].name} (${tables[i].values.join(', ')})`);
-      //Mark to be removed (no need to test)
-      tablesToVerify[i] = null
-    }
-  }
-  //Remove null values
-  tablesToVerify = tablesToVerify.filter(x => x != null);
-  //Check if all tables were created
-  if(tablesToVerify.length == 0) {
-    //No need to update, add latest version
-    await updateDatabaseVersion(lastVersion);
-  }
-  //Display number of tables added
-  console.log(mustache.render(lang.database.tableAdded, {
-    num: tables.length - tablesToVerify.length
-  }));
 }
 
 async function updateDatabase(version, lastVersion) {
@@ -88,14 +86,14 @@ async function updateDatabase(version, lastVersion) {
   newPath[newPath.length - 1] = `database-backup-v${versionString(version)}.db`
   newPath = newPath.join('/');
   fs.writeFileSync(newPath, dbFile);
-  
+
   for (var i = version + 1; i <= lastVersion; i++) {
     try {
       var file = fs.readFileSync('./src/modules/database/scripts/' +
         `${versionString(i)}.sql`);
       //Parse variable
       file = file.toString().replace('$[default_group]', config.groups[0].name);
-      sql.exec(file);
+      await sql.exec(file);
       //Update database with new version
       await updateDatabaseVersion(i);
       //Success
@@ -115,29 +113,30 @@ module.exports.check = async function() {
   var scripts = fs.readdirSync('./src/modules/database/scripts');
   var lastVersion = scripts[scripts.length - 1].slice(0, 3);
 
-  //No reference
-  var tablesToVerify = JSON.parse(JSON.stringify(tables));
-  //Add missing tables and send a nice message
-  await addMissingTables(tablesToVerify, lastVersion);
-
   //Get database version
-  var version = await sql.get('SELECT version FROM database_settings');
+  var version = await getDatabaseVersion();
   //Handle if verson is null
   if (version == null) {
-    version = {};
-    if (tablesToVerify.length == 0) {
-      //New database, no need to update
-      version.version = lastVersion;
-    } else {
-      //Starting from first version, just to be sure
-      version.version = 0;
+    //Starting from first version
+    version = 0;
+    console.log(lang.database.noVersion);
+    //Add missing baseline tables
+    var addedTablesCount = await addMissingTables(baselineTables);
+    if (addedTablesCount) {
+      //Display number of tables added
+      console.log(mustache.render(lang.database.tableAdded, {
+        num: addedTablesCount
+      }));
     }
   }
-  version = version.version;
 
+  //Check if the database need updating
   if (version < lastVersion) {
     //Update database using sql scripts
     await updateDatabase(version, lastVersion);
+  } else {
+    //All clear
+    console.log(lang.database.clear);
   }
   await sql.close();
 }
