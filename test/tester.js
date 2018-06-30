@@ -97,19 +97,17 @@ describe('Test database checker', function() {
     await db.checker.check();
     //Check if all tables exists
     var tables = await getTables();
-    expect(tables[0].name).to.equal('database_settings');
-    expect(tables[1].name).to.equal('users');
-    expect(tables[2].name).to.equal('servers');
-    expect(tables[3].name).to.equal('rewards');
-    expect(tables[4].name).to.equal('customCmds');
+    expect(tables[0].name).to.equal('servers');
+    expect(tables[1].name).to.equal('rewards');
+    expect(tables[2].name).to.equal('customCmds');
+    expect(tables[3].name).to.equal('database_settings');
+    expect(tables[4].name).to.equal('users');
     expect(tables.length).to.equal(5);
   });
   it('Should not attempt to create an existing table', async function() {
     //If there is an attempt there will be an error
     await db.checker.check();
-    expect(spyLog.lastCall.args[0]).to.equal(mustache.render(lang.database.tableAdded, {
-      num: 0
-    }));
+    expect(spyLog.lastCall.args[0]).to.equal(lang.database.clear);
   });
   it('Should update database to version 001', async function() {
     //Delete old database
