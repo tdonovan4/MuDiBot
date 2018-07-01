@@ -297,7 +297,7 @@
     "deleted": "{{length}} message(s) supprimés!"
   },
   "warn": {
-    "list": "<@{{userId}}>: {{warnings}} avertissement",
+    "list": "<@{{userId}}>: {{warning}} avertissement",
     "noWarns": "Il n'y pas avertissement",
     "usersCleared": "Tous les utilisateurs ont été purgés",
     "userCleared": "Utilisateur purgé"

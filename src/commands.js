@@ -66,7 +66,7 @@ module.exports = {
       return true;
     }
 
-    var userGroup = await db.users.user.getPermGroups(msg.guild.id, msg.author.id);
+    var userGroup = await db.user.getPermGroups(msg.guild.id, msg.author.id);
     if (userGroup != null && userGroup != 'empty') {
       userGroup = userGroup.split(',').sort(function(a, b) {
         return config.groups.find(x => x.name == a).permLvl <

@@ -68,7 +68,7 @@ module.exports = {
     //Check if group exists
     if (groups.find(x => x.name == group) != undefined) {
       //Get existing groups
-      var userGroups = await db.users.user.getPermGroups(msg.guild.id, msg.author.id);
+      var userGroups = await db.user.getPermGroups(msg.guild.id, msg.author.id);
       //Split groups
       userGroups = userGroups.split(',');
       //Remove whitespace
@@ -80,7 +80,7 @@ module.exports = {
       }
       //Update row
       userGroups.push(group);
-      await db.users.user.updatePermGroups(msg.guild.id, user.id, userGroups.toString());
+      await db.user.updatePermGroups(msg.guild.id, user.id, userGroups.toString());
       bot.printMsg(msg, lang.setgroup.newGroup);
     } else {
       //Group don't exists
@@ -109,7 +109,7 @@ module.exports = {
     //Check if group exists
     if (groups.find(x => x.name == group) != undefined) {
       //Get existing groups
-      var userGroups = await db.users.user.getPermGroups(msg.guild.id, msg.author.id);
+      var userGroups = await db.user.getPermGroups(msg.guild.id, msg.author.id);
       //Split groups
       userGroups = userGroups.split(',');
       //Remove group
@@ -122,7 +122,7 @@ module.exports = {
         } else {
           userGroups = userGroups.toString()
         }
-        await db.users.user.updatePermGroups(msg.guild.id, user.id, userGroups);
+        await db.user.updatePermGroups(msg.guild.id, user.id, userGroups);
         bot.printMsg(msg, lang.unsetgroup.removed);
       } else {
         bot.printMsg(msg, lang.unsetgroup.notInGroup);
@@ -144,6 +144,6 @@ async function purgeGroups(msg) {
     return;
   }
   //Back to default group
-  await db.users.user.updatePermGroups(msg.guild.id, user.id, config.groups[0].name);
+  await db.user.updatePermGroups(msg.guild.id, user.id, config.groups[0].name);
   bot.printMsg(msg, lang.purgegroups.purged);
 }

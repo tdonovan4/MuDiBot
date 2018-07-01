@@ -2,7 +2,7 @@ var queries = require('./queries.js');
 var bot = require('../../bot.js');
 var client = bot.client();
 
-const insertQuery = 'INSERT OR IGNORE INTO servers (serverId) VALUES (?)';
+const insertQuery = 'INSERT OR IGNORE INTO config (server_id) VALUES (?)';
 
 function getBackupChannel(serverId) {
   var channel;
@@ -21,15 +21,15 @@ function getBackupChannel(serverId) {
 
 module.exports = {
   getDefaultChannel: async function(serverId) {
-    var query = 'SELECT defaultChannel FROM servers WHERE serverId = ?';
+    var query = 'SELECT default_channel FROM config WHERE server_id = ?';
     var response = await queries.runGetQuery(query, serverId);
     var channel;
-    if(response == null || response.defaultChannel == null) {
+    if(response == null || response.default_channel == null) {
       //No channel in database, using backup
       channel = getBackupChannel(serverId);
     } else  {
       //Channel found, checking
-      channel = client.channels.get(response.defaultChannel);
+      channel = client.channels.get(response.default_channel);
       if (channel == undefined) {
         //This channel don't exists
         //TODO: error message
@@ -39,7 +39,7 @@ module.exports = {
     return channel;
   },
   updateDefaultChannel: async function(serverId, channel) {
-    var updateQuery = 'UPDATE servers SET defaultChannel = ? WHERE serverId = ?';
+    var updateQuery = 'UPDATE config SET default_channel = ? WHERE server_id = ?';
     await queries.runInsertUpdateQuery(insertQuery, updateQuery, [serverId], [channel.id]);
   }
 }

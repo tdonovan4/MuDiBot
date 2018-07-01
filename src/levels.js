@@ -150,13 +150,13 @@ module.exports = {
       })
     }
 
-    var xp = await db.users.user.getXP(msg.guild.id, msg.author.id);
+    var xp = await db.user.getXP(msg.guild.id, msg.author.id);
     if (xp != undefined) {
       //Add 1 per 2 characters
       var extraXp = Math.trunc(msg.content.replace(/\s/g, "").length / 3);
       //Get a random number from 1 to 3 and add extra xp (max is 20);
       var xpGained = Math.min(20, (Math.floor(Math.random() * 3) + 1) + extraXp);
-      await db.users.user.updateXP(msg.guild.id, msg.author.id, xp + xpGained);
+      await db.user.updateXP(msg.guild.id, msg.author.id, xp + xpGained);
 
       let progression = this.getProgression(xp);
       let xpForNextLevel = this.getXpForLevel(progression[0]) - progression[1];
@@ -173,7 +173,7 @@ module.exports = {
           message += '\n' + mustache.render(lang.general.member.rankUp, {
             rank: `${rank[0]}${(rank[1] > 0) ? ` (${rank[1]}:star:)` : ''}`
           });
-          var reward = await db.rewards.getRankReward(msg.guild.id, rank[0]);
+          var reward = await db.reward.getRankReward(msg.guild.id, rank[0]);
           if (reward != undefined) {
             //Reward found for this rank
             let name = await addReward(msg, reward);
@@ -182,7 +182,7 @@ module.exports = {
             });
             //Check if the removal of the old role is enabled
             if (config.levels.removeOldRole == true) {
-              var oldRole = await db.rewards.getRankReward(msg.guild.id, this.getRank(progression[2]));
+              var oldRole = await db.reward.getRankReward(msg.guild.id, this.getRank(progression[2]));
               if (oldRole != undefined) {
                 msg.member.removeRole(oldRole, lang.general.member.removeOldReward).catch(error => {
                   console.log(error);

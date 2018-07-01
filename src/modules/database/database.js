@@ -1,10 +1,10 @@
 //Module for checking and fixing database
 module.exports.checker = require('./checker.js');
 //Module for the users table
-module.exports.users = require('./users-db.js');
+module.exports.user = require('./users-db.js');
 //Module for servers config table
 module.exports.config = require('./config-db.js');
 //Module for level rewards table
-module.exports.rewards = require('./rewards-db.js');
+module.exports.reward = require('./rewards-db.js');
 //Module for custom commands table
-module.exports.customCmds = require('./custom-cmd-db.js');
+module.exports.customCmd = require('./custom-cmd-db.js');

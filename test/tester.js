@@ -54,88 +54,94 @@ const commands = require('../src/commands.js');
 commands.registerCategories(config.categories);
 commands.registerCommands();
 
-function deleteDatabase() {
-  //Delete the test database if it exists
-  var db = './test/test-resources/test-database.db';
-  if (fs.existsSync(db)) {
-    fs.unlinkSync(db);
-  }
-  //Delete the backup database if it exists
-  var backup = './test/test-resources/database-backup-v000.db';
-  if (fs.existsSync(backup)) {
-    fs.unlinkSync(backup);
-  }
+//Checking for database folder
+var dbFolder = './test/database/';
+if (!fs.existsSync(dbFolder)) {
+  fs.mkdirSync(dbFolder);
 }
 
-async function getTables() {
-  await sql.open(config.pathDatabase);
-  var tables = await sql.all('SELECT * FROM sqlite_master WHERE type="table"');
-  await sql.close();
-  return tables;
+//Because promises are better than callbacks
+const util = require('util');
+const readdir = util.promisify(fs.readdir);
+const readFile = util.promisify(fs.readFile);
+const writeFile = util.promisify(fs.writeFile);
+const stat = util.promisify(fs.stat);
+const unlink = util.promisify(fs.unlink);
+
+async function deleteDatabase() {
+  var filesToDelete = await readdir(dbFolder);
+  filesToDelete.forEach(async file => {
+    await unlink(dbFolder+file);
+  });
 }
 
-async function getRowCount(path) {
-  var count = 0;
+async function createDatabaseSchema(path) {
   await sql.open(path);
-  //Get all tables
-  var tables = await sql.all('SELECT name FROM sqlite_master WHERE type="table"');
-  for(var table of tables) {
-    count += (await sql.get(`SELECT count(*) FROM ${table.name}`))['count(*)'];
+  var schema = [];
+  var tables = await sql.all('SELECT * FROM sqlite_master WHERE type="table"');
+  //Create schema for each tables
+  for (var table of tables) {
+    //Name
+    var tableObj = {
+      name: table.name
+    };
+    //Schema
+    tableObj.schema = await sql.all(`PRAGMA table_info(${table.name})`);
+    //Rows (except database_settings because it contains dates)
+    if (table.name != 'database_settings') {
+      tableObj.rows = await sql.all(`SELECT * FROM ${table.name}`);
+    } else {
+      //Get only the row count
+      tableObj.rows = await sql.get(`SELECT count(*) FROM ${table.name}`);
+    }
+    schema.push(tableObj);
   }
   await sql.close();
-  return count;
+  return schema
+}
+
+//Comparaison database
+var lastVersionSchema;
+
+async function checkDatabaseUpdating(version) {
+  //Delete old database
+  await deleteDatabase();
+  //Copy and paste the test database
+  var dbFile = await readFile(`./test/test-resources/legacy-v${version}-database.db`);
+  await writeFile(config.pathDatabase, dbFile);
+  //Update database
+  await db.checker.check();
+  //Check backup
+  var backup = dbFolder + `database-backup-v${version}.db`;
+  expect(await stat(backup)).to.be.an('object');
+  var schema = await createDatabaseSchema(config.pathDatabase);
+  expect(schema).to.deep.equal(lastVersionSchema);
 }
 
 //Make console.log a spy
 var spyLog = sinon.spy(console, 'log');
 
 describe('Test database checker', function() {
-  it('Should create table when they don\'t exist', async function() {
-    //Just to be sure
-    deleteDatabase();
-    //Check database
+  before(async function() {
+    //Get last version database schema
+    lastVersionSchema = await createDatabaseSchema('./test/test-resources/last-version-database.db');
+    //Setup
     await db.checker.check();
-    //Check if all tables exists
-    var tables = await getTables();
-    expect(tables[0].name).to.equal('servers');
-    expect(tables[1].name).to.equal('rewards');
-    expect(tables[2].name).to.equal('customCmds');
-    expect(tables[3].name).to.equal('database_settings');
-    expect(tables[4].name).to.equal('users');
-    expect(tables.length).to.equal(5);
   });
   it('Should not attempt to create an existing table', async function() {
     //If there is an attempt there will be an error
     await db.checker.check();
     expect(spyLog.lastCall.args[0]).to.equal(lang.database.clear);
   });
-  it('Should update database to version 001', async function() {
-    //Delete old database
-    deleteDatabase();
-    //Copy and paste the test database
-    var dbFile = fs.readFileSync('./test/test-resources/legacy-v000-database.db');
-    fs.writeFileSync('./test/test-resources/test-database.db', dbFile);
-    //Update database
-    await db.checker.check();
-    //Check backup
-    var backup = './test/test-resources/database-backup-v000.db';
-    expect(fs.existsSync(backup)).to.equal(true);
-    expect(await getRowCount(backup)).to.equal(10);
-    //Check db
-    var tables = await getTables();
-    expect(tables.length).to.equal(5);
-    //Remove line breaks
-    var statement = tables.filter(x => x.name == 'users')[0].sql.replace(/\r?\n?/g, '');
-    //Quick and dirty way
-    expect(statement).to.equal(
-      'CREATE TABLE users(  serverID TEXT,  userId TEXT,  ' +
-      'xp INTEGER DEFAULT 0,  warnings INTEGER DEFAULT 0,  ' +
-      'groups TEXT DEFAULT "User",  CONSTRAINT users_unique UNIQUE (serverID,  userID))');
-    expect(await getRowCount(config.pathDatabase)).to.equal(9);
+  it('Should update baseline to last version', async function() {
+    await checkDatabaseUpdating('000');
   });
+  it('Should update v001 to last version', async function() {
+    await checkDatabaseUpdating('001');
+  })
   it('Should make a fresh new database for rest of tests', async function() {
     //Delete old database
-    deleteDatabase();
+    await deleteDatabase();
     //Create tables
     await db.checker.check();
   });
@@ -143,90 +149,90 @@ describe('Test database checker', function() {
 describe('Test users-db', function() {
   describe('Test get queries with empty responses', function() {
     it('user.getAll() should return undefined', async function() {
-      var response = await db.users.user.getAll('1', '2');
+      var response = await db.user.getAll('1', '2');
       expect(response).to.equal(undefined);
     });
     it('user.getXp() should return 0', async function() {
-      var response = await db.users.user.getXP('1', '2');
+      var response = await db.user.getXP('1', '2');
       expect(response).to.equal(0);
     });
     it('user.getWarnings() should return 0', async function() {
-      var response = await db.users.user.getWarnings('1', '2');
+      var response = await db.user.getWarnings('1', '2');
       expect(response).to.equal(0);
     });
     it('users.getWarnings() should return empty array', async function() {
-      var response = await db.users.getWarnings('1');
+      var response = await db.user.getUsersWarnings('1');
       expect(response).to.be.empty;
     });
     it('user.exists() should return false', async function() {
-      var response = await db.users.user.exists('1', '2');
+      var response = await db.user.exists('1', '2');
       expect(response).to.equal(false);
     });
     //Last because it does an insert if response is null
     it('user.getPermGroups() should return default role', async function() {
-      var response = await db.users.user.getPermGroups('1', '2');
+      var response = await db.user.getPermGroups('1', '2');
       expect(response).to.equal(config.groups[0].name);
     });
   });
   describe('Test update queries with empty database', function() {
     it('user.updatePermGroups() should change group to Member', async function() {
-      await db.users.user.updatePermGroups('1', '2', 'Member');
-      var response = await db.users.user.getPermGroups('1', '2');
+      await db.user.updatePermGroups('1', '2', 'Member');
+      var response = await db.user.getPermGroups('1', '2');
       expect(response).to.equal('Member');
     });
     it('user.updateXP() should change XP to 10000', async function() {
-      await db.users.user.updateXP('1', '3', 10000);
-      var response = await db.users.user.getXP('1', '3');
+      await db.user.updateXP('1', '3', 10000);
+      var response = await db.user.getXP('1', '3');
       expect(response).to.equal(10000);
     });
     it('user.updateWarnings() should change warnings to 4', async function() {
-      await db.users.user.updateWarnings('1', '4', 4);
-      var response = await db.users.user.getWarnings('1', '4');
+      await db.user.updateWarnings('1', '4', 4);
+      var response = await db.user.getWarnings('1', '4');
       expect(response).to.equal(4);
     })
     it('users.updateWarnings() should change warnings to 1', async function() {
-      await db.users.updateWarnings('1', 1);
-      var response = await db.users.getWarnings('1');
+      await db.user.updateUsersWarnings('1', 1);
+      var response = await db.user.getUsersWarnings('1');
       expect(response).to.deep.equal([{
-        "userId": "2",
-        "warnings": 1
+        "user_id": "2",
+        "warning": 1
       }, {
-        "userId": "3",
-        "warnings": 1
+        "user_id": "3",
+        "warning": 1
       }, {
-        "userId": "4",
-        "warnings": 1
+        "user_id": "4",
+        "warning": 1
       }]);
     });
   });
   describe('Test updating existing users', function() {
     it('user.updatePermGroups() should change group to Mod', async function() {
-      await db.users.user.updatePermGroups('1', '2', 'Mod');
-      var response = await db.users.user.getPermGroups('1', '2');
+      await db.user.updatePermGroups('1', '2', 'Mod');
+      var response = await db.user.getPermGroups('1', '2');
       expect(response).to.equal('Mod');
     });
     it('user.updateXP() should change XP to 15000', async function() {
-      await db.users.user.updateXP('1', '3', 15000);
-      var response = await db.users.user.getXP('1', '3');
+      await db.user.updateXP('1', '3', 15000);
+      var response = await db.user.getXP('1', '3');
       expect(response).to.equal(15000);
     });
     it('user.updateWarnings() should change warnings to 2', async function() {
-      await db.users.user.updateWarnings('1', '4', 2);
-      var response = await db.users.user.getWarnings('1', '4');
+      await db.user.updateWarnings('1', '4', 2);
+      var response = await db.user.getWarnings('1', '4');
       expect(response).to.equal(2);
     })
     it('users.updateWarnings() should change warnings to 0', async function() {
-      await db.users.updateWarnings('1', 0);
-      var response = await db.users.getWarnings('1');
+      await db.user.updateUsersWarnings('1', 0);
+      var response = await db.user.getUsersWarnings('1');
       expect(response).to.deep.equal([{
-        "userId": "2",
-        "warnings": 0
+        "user_id": "2",
+        "warning": 0
       }, {
-        "userId": "3",
-        "warnings": 0
+        "user_id": "3",
+        "warning": 0
       }, {
-        "userId": "4",
-        "warnings": 0
+        "user_id": "4",
+        "warning": 0
       }]);
     });
   });
@@ -272,12 +278,16 @@ describe('Test config-db', function() {
   });
   describe('Test updateDefaultChannel', function() {
     it('Should insert channel into empty table', async function() {
-      await db.config.updateDefaultChannel('1234567890', {id: '3'});
+      await db.config.updateDefaultChannel('1234567890', {
+        id: '3'
+      });
       var response = await db.config.getDefaultChannel('1234567890');
       expect(response.name).to.equal('test');
     })
     it('Should modify existing row', async function() {
-      await db.config.updateDefaultChannel('1234567890', {id: '2'});
+      await db.config.updateDefaultChannel('1234567890', {
+        id: '2'
+      });
       var response = await db.config.getDefaultChannel('1234567890');
       expect(response.name).to.equal('general');
     })
@@ -286,26 +296,26 @@ describe('Test config-db', function() {
 describe('Test rewards-db.js', function() {
   describe('Test getRankReward with empty response', function() {
     it('Should return undefined if rank doesn\'t have a reward', async function() {
-      var response = await db.rewards.getRankReward(msg.guild.id, 'random');
+      var response = await db.reward.getRankReward(msg.guild.id, 'random');
       expect(response).to.equal(undefined);
     });
   });
   describe('Test updateRankReward', function() {
     it('Should add reward to rank', async function() {
-      await db.rewards.updateRankReward(msg.guild.id, 'King', 'Member');
-      var response = await db.rewards.getRankReward(msg.guild.id, 'King');
+      await db.reward.updateRankReward(msg.guild.id, 'King', 'Member');
+      var response = await db.reward.getRankReward(msg.guild.id, 'King');
       expect(response).to.equal('Member');
     });
     it('Should update the reward', async function() {
-      await db.rewards.updateRankReward(msg.guild.id, 'King', 'Mod');
-      var response = await db.rewards.getRankReward(msg.guild.id, 'King');
+      await db.reward.updateRankReward(msg.guild.id, 'King', 'Mod');
+      var response = await db.reward.getRankReward(msg.guild.id, 'King');
       expect(response).to.equal('Mod');
     });
   });
   describe('Test deleteRankReward', function() {
     it('Should delete reward', async function() {
-      await db.rewards.deleteRankReward(msg.guild.id, 'King');
-      var response = await db.rewards.getRankReward(msg.guild.id, 'King');
+      await db.reward.deleteRankReward(msg.guild.id, 'King');
+      var response = await db.reward.getRankReward(msg.guild.id, 'King');
       expect(response).to.equal(undefined);
     });
   });
@@ -313,42 +323,42 @@ describe('Test rewards-db.js', function() {
 describe('Test custom-cmd-db.js', function() {
   describe('Test get queries with empty responses', function() {
     it('getCmd should return undefined', async function() {
-      var response = await db.customCmds.getCmd(msg.guild.id, 'test');
+      var response = await db.customCmd.getCmd(msg.guild.id, 'test');
       expect(response).to.equal(undefined);
     });
     it('getCmds should return empty array', async function() {
-      var response = await db.customCmds.getCmds(msg.guild.id);
+      var response = await db.customCmd.getCmds(msg.guild.id);
       expect(response.length).to.equal(0);
     });
   });
   describe('Test insertCmd', function() {
     it('Should insert new cmd', async function() {
-      await db.customCmds.insertCmd(msg.guild.id, msg.author.id, 'test1', 'say', 'test1');
-      var cmd = await db.customCmds.getCmd(msg.guild.id, 'test1');
-      var cmds = await db.customCmds.getCmds(msg.guild.id);
+      await db.customCmd.insertCmd(msg.guild.id, msg.author.id, 'test1', 'say', 'test1');
+      var cmd = await db.customCmd.getCmd(msg.guild.id, 'test1');
+      var cmds = await db.customCmd.getCmds(msg.guild.id);
       expect(cmd.arg).to.equal('test1');
       expect(cmds.length).to.equal(1);
     });
     it('Should insert another cmd', async function() {
-      await db.customCmds.insertCmd(msg.guild.id, msg.author.id, 'test2', 'say', 'test2');
-      var cmd = await db.customCmds.getCmd(msg.guild.id, 'test2');
-      var cmds = await db.customCmds.getCmds(msg.guild.id);
+      await db.customCmd.insertCmd(msg.guild.id, msg.author.id, 'test2', 'say', 'test2');
+      var cmd = await db.customCmd.getCmd(msg.guild.id, 'test2');
+      var cmds = await db.customCmd.getCmds(msg.guild.id);
       expect(cmd.arg).to.equal('test2');
       expect(cmds.length).to.equal(2);
     });
     it('Should insert cmd in another guild', async function() {
-      await db.customCmds.insertCmd('1', msg.author.id, 'test1', 'say', 'test1');
-      var cmd = await db.customCmds.getCmd('1', 'test1');
-      var cmds = await db.customCmds.getCmds('1');
+      await db.customCmd.insertCmd('1', msg.author.id, 'test1', 'say', 'test1');
+      var cmd = await db.customCmd.getCmd('1', 'test1');
+      var cmds = await db.customCmd.getCmds('1');
       expect(cmd.arg).to.equal('test1');
       expect(cmds.length).to.equal(1);
     })
   });
   describe('Test deleteCmd', function() {
     it('Should delete cmd', async function() {
-      await db.customCmds.deleteCmd(msg.guild.id, 'test1');
-      var cmd = await db.customCmds.getCmd(msg.guild.id, 'test1');
-      var cmds = await db.customCmds.getCmds(msg.guild.id);
+      await db.customCmd.deleteCmd(msg.guild.id, 'test1');
+      var cmd = await db.customCmd.getCmd(msg.guild.id, 'test1');
+      var cmds = await db.customCmd.getCmds(msg.guild.id);
       expect(cmd).to.equal(undefined);
       expect(cmds.length).to.equal(1);
     });
@@ -370,12 +380,12 @@ describe('Test permission groups', function() {
     });
     it('Should add "User" to the list of groups of TestUser', async function() {
       await permGroups.setGroup(msg, msg.author, 'User');
-      var response = await db.users.user.getPermGroups(msg.guild.id, '041025599435591424');
+      var response = await db.user.getPermGroups(msg.guild.id, '041025599435591424');
       expect(response).to.equal('User');
     });
     it('Should add "Member" to the list of groups of TestUser', async function() {
       await permGroups.setGroup(msg, msg.author, 'Member');
-      var response = await db.users.user.getPermGroups(msg.guild.id, '041025599435591424');
+      var response = await db.user.getPermGroups(msg.guild.id, '041025599435591424');
       expect(response).to.equal('User,Member');
     });
   });
@@ -394,7 +404,7 @@ describe('Test permission groups', function() {
     });
     it('Should remove "User" from the list of groups of TestUser', async function() {
       await permGroups.unsetGroup(msg, msg.author, 'User');
-      var response = await db.users.user.getPermGroups(msg.guild.id, '041025599435591424');
+      var response = await db.user.getPermGroups(msg.guild.id, '041025599435591424');
       expect(response).to.equal('Member');
     });
     it('Should return that the user is not in this group', async function() {
@@ -413,7 +423,7 @@ describe('Test permission groups', function() {
         id: '041025599435591424'
       });
       await permGroups.__get__('purgeGroups')(msg);
-      var response = await db.users.user.getPermGroups(msg.guild.id, '041025599435591424');
+      var response = await db.user.getPermGroups(msg.guild.id, '041025599435591424');
       expect(response).to.equal('User');
     })
   });
@@ -473,23 +483,23 @@ describe('Test levels', function() {
     msg.content = 'test';
     it('User should have more than 0 XP', async function() {
       //To make sure
-      await db.users.user.updateXP(msg.guild.id, '041025599435591424', 0);
+      await db.user.updateXP(msg.guild.id, '041025599435591424', 0);
       await levels.newMessage(msg);
-      var xp = await db.users.user.getXP(msg.guild.id, '041025599435591424');
+      var xp = await db.user.getXP(msg.guild.id, '041025599435591424');
       expect(xp).to.be.above(0);
     });
     it('XP should not augment if spamming', async function() {
       /*This should be executed while the XP is still
         in cooldown because of the test before */
-      await db.users.user.updateXP(msg.guild.id, '041025599435591424', 0);
+      await db.user.updateXP(msg.guild.id, '041025599435591424', 0);
       for (var i = 0; i < 5; i++) {
         await levels.newMessage(msg);
       }
-      var xp = await db.users.user.getXP(msg.guild.id, '041025599435591424');
+      var xp = await db.user.getXP(msg.guild.id, '041025599435591424');
       expect(xp).to.be.equal(0);
     });
     it('Should return that the user has leveled up', async function() {
-      await db.users.user.updateXP(msg.guild.id, '041025599435591424', 99);
+      await db.user.updateXP(msg.guild.id, '041025599435591424', 99);
       //Remove cooldown
       levels.__set__('lastMessages', []);
       await levels.newMessage(msg);
@@ -499,7 +509,7 @@ describe('Test levels', function() {
       }));
     });
     it('Should return that the user ranked up', async function() {
-      await db.users.user.updateXP(msg.guild.id, '041025599435591424', 989);
+      await db.user.updateXP(msg.guild.id, '041025599435591424', 989);
       //Remove cooldown
       levels.__set__('lastMessages', []);
       await levels.newMessage(msg);
@@ -514,23 +524,23 @@ describe('Test levels', function() {
     });
     it('Should set the reward for the user (permission group)', async function() {
       //Set the reward for warrior
-      await db.rewards.updateRankReward(msg.guild.id, 'Warrior', 'Member');
-      await db.users.user.updateXP(msg.guild.id, '041025599435591424', 2529);
+      await db.reward.updateRankReward(msg.guild.id, 'Warrior', 'Member');
+      await db.user.updateXP(msg.guild.id, '041025599435591424', 2529);
       //Remove cooldown
       levels.__set__('lastMessages', []);
       await levels.newMessage(msg);
-      var response = await db.users.user.getPermGroups(msg.guild.id, '041025599435591424');
+      var response = await db.user.getPermGroups(msg.guild.id, '041025599435591424');
       expect(response).to.equal('User,Member');
     })
     it('Should set the reward for the user (role)', async function() {
-      await db.users.user.updateXP(msg.guild.id, '041025599435591424', 11684);
+      await db.user.updateXP(msg.guild.id, '041025599435591424', 11684);
       //Add roles
       msg.guild.roles.set('2', {
         id: '2',
         name: 'guildMember'
       });
       //Set the reward for emperor
-      await db.rewards.updateRankReward(msg.guild.id, 'Emperor', '2');
+      await db.reward.updateRankReward(msg.guild.id, 'Emperor', '2');
       //Remove cooldown
       levels.__set__('lastMessages', []);
       await levels.newMessage(msg);
@@ -541,12 +551,13 @@ describe('Test levels', function() {
 //Delete all users from the database
 async function purgeUsers() {
   await sql.open(config.pathDatabase);
-  await sql.run('DELETE FROM users');
+  await sql.run('DELETE FROM user');
   await sql.close();
 }
 async function insertUser(serverId, userId, xp) {
   await sql.open(config.pathDatabase);
-  await sql.run('INSERT INTO users (serverId, userId, xp, warnings, groups) VALUES (?, ?, ?, ?, ?)', [serverId, userId, xp, 0, null]);
+  await sql.run('INSERT INTO user (server_id, user_id, xp, warning, permission_group) VALUES (?, ?, ?, ?, ?)',
+    [serverId, userId, xp, 0, null]);
   await sql.close();
   //Add user to collection
   testClient.users.set(`${userId}`, {
@@ -567,7 +578,7 @@ async function insertUsers(serverId, num) {
     });
   }
   //Bulk insert
-  await sql.run('INSERT INTO users (serverId, userId, xp, warnings, groups) VALUES ' + users.join(', '));
+  await sql.run('INSERT INTO user (server_id, user_id, xp, warning, permission_group) VALUES ' + users.join(', '));
   await sql.close();
 }
 describe('Test top', function() {
@@ -615,7 +626,7 @@ describe('Test top', function() {
       var response = await getTops(msg, 1);
       var expectedResponse = {
         "level": 1,
-        "userId": "02",
+        "user_id": "02",
         "xp": 15,
         "username": "The02"
       }
@@ -635,7 +646,7 @@ describe('Test top', function() {
       var response = await getTops(msg, 10);
       expect(response.global[0]).to.deep.equal({
         "level": 1,
-        "userId": "02",
+        "user_id": "02",
         "xp": 25,
         "username": "The02"
       });
@@ -661,8 +672,8 @@ describe('Test top', function() {
   describe('Test getUsersCount', function() {
     it('Should get users count', async function() {
       var response = await top.__get__('getUsersCount')(msg);
-      expect(response.local['COUNT(userId)']).to.equal(22);
-      expect(response.global['COUNT(DISTINCT userId)']).to.equal(22);
+      expect(response.local['COUNT(user_id)']).to.equal(22);
+      expect(response.global['COUNT(DISTINCT user_id)']).to.equal(22);
     });
   });
   describe('Execute the actual command', function() {
@@ -684,7 +695,7 @@ describe('Test the custom commands', function() {
     it('custcmd should add the command to the database', async function() {
       msg.content = '$custcmd testCmd1 say This is a test';
       await commands.executeCmd(msg, ['custcmd']);
-      var response = await db.customCmds.getCmd(msg.guild.id, 'testCmd1');
+      var response = await db.customCmd.getCmd(msg.guild.id, 'testCmd1');
       expect(response.name).to.equal('testCmd1');
       expect(printMsg.lastCall.returnValue).to.equal(lang.custcmd.cmdAdded);
     });
@@ -708,7 +719,7 @@ describe('Test the custom commands', function() {
       msg.content = '$custcmd testCmd2 say This is a test';
       msg.member.permissions.set('ADMINISTRATOR');
       await commands.executeCmd(msg, ['custcmd']);
-      var response = await db.customCmds.getCmd(msg.guild.id, 'testCmd2');
+      var response = await db.customCmd.getCmd(msg.guild.id, 'testCmd2');
       expect(response.name).to.equal('testCmd2');
       expect(printMsg.lastCall.returnValue).to.equal(lang.custcmd.cmdAdded);
     });
@@ -722,7 +733,7 @@ describe('Test the custom commands', function() {
     it('Should remove testCmd2', async function() {
       msg.content = '$custcmd testCmd2';
       await commands.executeCmd(msg, ['custcmdremove']);
-      var response = await db.customCmds.getCmd(msg.guild.id, 'testCmd2');
+      var response = await db.customCmd.getCmd(msg.guild.id, 'testCmd2');
       expect(response).to.equal(undefined);
       expect(printMsg.lastCall.returnValue).to.equal(lang.custcmdremove.cmdRemoved);
     });
@@ -740,18 +751,17 @@ describe('Test the custom commands', function() {
     it('Should return all custom commands', async function() {
       msg.author.id = '357156661105365963';
       //Add another custom cmd
-      await db.customCmds.insertCmd(msg.guild.id, msg.author.id, 'testCmd2', 'say', '2');
+      await db.customCmd.insertCmd(msg.guild.id, msg.author.id, 'testCmd2', 'say', '2');
       msg.author.id = '041025599435591424';
       msg.content = '$custcmdlist';
       await commands.executeCmd(msg, ['custcmdlist']);
       var response = msgSend.getCall(msgSend.callCount - 2).returnValue.content;
-      console.log(response);
       expect(response).to.have.string('testCmd1');
       expect(response).to.have.string('testCmd2');
     })
     it('Should return all TestUser\'s custom commands', async function() {
       //Add another custom cmd
-      await db.customCmds.insertCmd(msg.guild.id, msg.author.id, 'testCmd3', 'say', '3');
+      await db.customCmd.insertCmd(msg.guild.id, msg.author.id, 'testCmd3', 'say', '3');
       msg.content = '$custcmdlist';
       await commands.executeCmd(msg, ['custcmdlist']);
       var response = msgSend.getCall(msgSend.callCount - 2).returnValue.content;
@@ -761,7 +771,7 @@ describe('Test the custom commands', function() {
     it('Should return that the list is empty', async function() {
       //Remove all inside of table
       await sql.open(config.pathDatabase);
-      await sql.run('DELETE FROM customCmds');
+      await sql.run('DELETE FROM custom_command');
       await sql.close();
       msg.content = '$custcmdlist';
       await commands.executeCmd(msg, ['custcmdlist']);
@@ -1007,12 +1017,12 @@ describe('Test warnings', function() {
         id: '041025599435591424'
       });
       await warnings.warn(msg, 1);
-      var response = await db.users.user.getWarnings(msg.guild.id, '041025599435591424');
+      var response = await db.user.getWarnings(msg.guild.id, '041025599435591424');
       expect(response).to.equal(1);
     });
     it('Should decrease TestUser\'s warnings by one', async function() {
       await warnings.warn(msg, -1);
-      var response = await db.users.user.getWarnings(msg.guild.id, '041025599435591424');
+      var response = await db.user.getWarnings(msg.guild.id, '041025599435591424');
       expect(response).to.equal(0);
     });
   });
@@ -1060,16 +1070,16 @@ describe('Test warnings', function() {
       });
       msg.content = '$warnpurge';
       await commands.executeCmd(msg, ['warnpurge']);
-      var response = await db.users.user.getWarnings(msg.guild.id, '041025599435591424');
+      var response = await db.user.getWarnings(msg.guild.id, '041025599435591424');
       expect(response).to.equal(0);
     });
     it('Should purge all', async function() {
       await warnings.warn(msg, 1);
       msg.content = '$warnpurge all';
       await commands.executeCmd(msg, ['warnpurge']);
-      var response = await db.users.getWarnings(msg.guild.id);
-      expect(response[0].warnings).to.equal(0);
-      expect(response[1].warnings).to.equal(0);
+      var response = await db.user.getUsersWarnings(msg.guild.id);
+      expect(response[0].warning).to.equal(0);
+      expect(response[1].warning).to.equal(0);
     });
   });
 });
@@ -1275,7 +1285,7 @@ describe('Test commands', function() {
   describe('profile', function() {
     it('Should return the message author\'s (TestUser) profile', async function() {
       //Add XP
-      await db.users.user.updateXP(msg.guild.id, msg.author.id, 11685);
+      await db.user.updateXP(msg.guild.id, msg.author.id, 11685);
       //Add member to groups
       await permGroups.setGroup(msg, msg.author, 'Member');
       msg.content = '$profile';
@@ -1321,7 +1331,7 @@ describe('Test commands', function() {
       });
       msg.content = '$setgroup <#041025599435591424> Mod'
       await commands.executeCmd(msg, ['setgroup']);
-      var response = await db.users.user.getPermGroups(msg.guild.id, '041025599435591424');
+      var response = await db.user.getPermGroups(msg.guild.id, '041025599435591424');
       expect(response).to.equal('User,Member,Mod');
     });
   });
@@ -1329,7 +1339,7 @@ describe('Test commands', function() {
     it('Should remove "User" from the list of groups of TestUser', async function() {
       msg.content = '$unsetgroup <#041025599435591424> User'
       await commands.executeCmd(msg, ['unsetgroup', '<#041025599435591424>', 'User']);
-      var response = await db.users.user.getPermGroups(msg.guild.id, '041025599435591424');
+      var response = await db.user.getPermGroups(msg.guild.id, '041025599435591424');
       expect(response).to.equal('Member,Mod');
     });
   });
@@ -1337,7 +1347,7 @@ describe('Test commands', function() {
     it('Should get TestUser back to User', async function() {
       msg.content = '$purgegroups <#041025599435591424>'
       await commands.executeCmd(msg, ['purgegroups', '<#041025599435591424>']);
-      var response = await db.users.user.getPermGroups(msg.guild.id, '041025599435591424');
+      var response = await db.user.getPermGroups(msg.guild.id, '041025599435591424');
       expect(response).to.equal('User');
     });
   });
@@ -1492,7 +1502,7 @@ describe('Test commands', function() {
     it('Should set the reward for king (permission group) and create table', async function() {
       msg.content = 'setreward king member';
       await commands.executeCmd(msg, ['setreward']);
-      var response = await db.rewards.getRankReward(msg.guild.id, 'King');
+      var response = await db.reward.getRankReward(msg.guild.id, 'King');
       expect(response).to.equal('Member');
     });
     it('Should set the reward for emperor (role)', async function() {
@@ -1505,7 +1515,7 @@ describe('Test commands', function() {
       });
       msg.content = 'setreward emperor <#1>';
       await commands.executeCmd(msg, ['setreward']);
-      var response = await db.rewards.getRankReward(msg.guild.id, 'Emperor');
+      var response = await db.reward.getRankReward(msg.guild.id, 'Emperor');
       expect(response).to.equal('1');
     });
     it('Should update the reward for emperor', async function() {
@@ -1520,7 +1530,7 @@ describe('Test commands', function() {
       });
       msg.content = 'setreward emperor <#2>';
       await commands.executeCmd(msg, ['setreward']);
-      var response = await db.rewards.getRankReward(msg.guild.id, 'Emperor');
+      var response = await db.reward.getRankReward(msg.guild.id, 'Emperor');
       expect(response).to.equal('2');
     });
     after(function() {
@@ -1547,13 +1557,13 @@ describe('Test commands', function() {
     it('Should remove the reward for emperor', async function() {
       msg.content = 'unsetreward emperor';
       await commands.executeCmd(msg, ['unsetreward']);
-      var response = await db.rewards.getRankReward(msg.guild.id, 'Emperor');
+      var response = await db.reward.getRankReward(msg.guild.id, 'Emperor');
       expect(response).to.equal(undefined);
     });
   });
 });
 
-process.on('exit', function() {
+after(async function() {
   //Make sure to delete the database at the end
-  deleteDatabase();
+  await deleteDatabase();
 });
