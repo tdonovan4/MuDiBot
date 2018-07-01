@@ -43,7 +43,11 @@ async function getDatabaseVersion() {
     'WHERE type="table" AND name="database_settings"');
   if (databaseSettings['count(*)'] == 1) {
     //Database settings exists, checking version
-    version = await sql.get('SELECT version FROM database_settings');
+    version = await sql.get('SELECT version FROM database_settings ' +
+      'ORDER BY version DESC LIMIT 1')
+    if (version != undefined) {
+      version = version.version;
+    }
   }
   //Return the version
   return version;

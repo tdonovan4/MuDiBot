@@ -297,7 +297,7 @@
     "deleted": "{{length}} message(s) deleted!"
   },
   "warn": {
-    "list": "<@{{userId}}>: {{warnings}} warnings",
+    "list": "<@{{userId}}>: {{warning}} warnings",
     "noWarns": "There is no warnings",
     "usersCleared": "All users cleared",
     "userCleared": "User cleared"

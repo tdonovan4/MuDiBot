@@ -23,7 +23,7 @@ module.exports = class ProfileCommand extends bot.Command {
       user = msg.author;
     }
 
-    let userData = await db.users.user.getAll(msg.guild.id, user.id);
+    let userData = await db.user.getAll(msg.guild.id, user.id);
     let progression = levels.getProgression(userData.xp);
     let level = progression[0];
     let xpToNextLevel = `${progression[1]}/${levels.getXpForLevel(level)}`;
@@ -31,8 +31,8 @@ module.exports = class ProfileCommand extends bot.Command {
     let groups = ['Ø'];
 
     //Get groups
-    if(userData.groups != null) {
-      groups = userData.groups.split(',').sort(function(a, b) {
+    if(userData.permission_group != null) {
+      groups = userData.permission_group.split(',').sort(function(a, b) {
         return config.groups.find(x => x.name == a).permLvl <
           config.groups.find(x => x.name == b).permLvl;
       });
@@ -57,7 +57,7 @@ module.exports = class ProfileCommand extends bot.Command {
     embed.addField(lang.profile.groups, groups.join(', '), true)
     embed.addField(lang.profile.level, `${level} (${xpToNextLevel})`, false)
     embed.addField(lang.profile.xp, userData.xp, true)
-    embed.addField(lang.profile.warnings, userData.warnings, true)
+    embed.addField(lang.profile.warnings, userData.warning, true)
     embed.setFooter(mustache.render(lang.profile.footer, user))
     msg.channel.send({
       embed

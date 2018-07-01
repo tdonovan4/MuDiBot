@@ -12,7 +12,7 @@ function printSingleCmd(msg, cmd) {
   embed.title = cmd.name;
   embed.color = 0x3aa00a;
   embed.addField(lang.custcmdlist.action, cmd.action, true)
-  embed.addField(lang.custcmdlist.creator, msg.guild.members.get(cmd.userId).user.username, true)
+  embed.addField(lang.custcmdlist.creator, msg.guild.members.get(cmd.user_id).user.username, true)
   embed.addField(lang.custcmdlist.arg, cmd.arg, false);
   msg.channel.send({
     embed
@@ -20,7 +20,7 @@ function printSingleCmd(msg, cmd) {
 }
 
 async function printAllCmds(msg, args) {
-  var cmds = await db.customCmds.getCmds(msg.guild.id);
+  var cmds = await db.customCmd.getCmds(msg.guild.id);
   if (cmds.length > 0) {
     var names;
     if (args.length == 0) {
@@ -28,7 +28,7 @@ async function printAllCmds(msg, args) {
       names = cmds.map(x => x.name);
     } else {
       //User's commands
-      names = cmds.filter(x => x.userId == msg.mentions.users.first().id).map(x => x.name);
+      names = cmds.filter(x => x.author_id == msg.mentions.users.first().id).map(x => x.name);
     }
     if (names != undefined) {
       var output = '';
@@ -65,14 +65,14 @@ module.exports = {
       });
     }
     async execute(msg, args) {
-      var cmds = await db.customCmds.getCmds(msg.guild.id);
+      var cmds = await db.customCmd.getCmds(msg.guild.id);
       if (cmds == undefined) {
         cmds = [];
       }
       //Check if user have too many commands (ignore if admin or superuser)
       if (msg.member.permissions.has('ADMINISTRATOR') ||
         config.superusers.find(x => x == msg.author.id) != undefined ||
-        cmds.filter(x => x.userId == msg.author.id).length < config.custcmd.maxCmdsPerUser) {
+        cmds.filter(x => x.author_id == msg.author.id).length < config.custcmd.maxCmdsPerUser) {
         //Check if cmd already exists
         if (cmds.find(x => x.name == args[0]) != undefined) {
           bot.printMsg(msg, lang.error.cmdAlreadyExists);
@@ -83,7 +83,7 @@ module.exports = {
             if (args.length >= 3 && args[0].length < 25) {
               //Add command to db
               if (args[1] == 'say' || args[1] == 'play') {
-                await db.customCmds.insertCmd(
+                await db.customCmd.insertCmd(
                   msg.guild.id,
                   msg.author.id,
                   args[0],
@@ -117,7 +117,7 @@ module.exports = {
       });
     }
     async execute(msg, args) {
-      var cmd = await db.customCmds.getCmd(msg.guild.id, args[0]);
+      var cmd = await db.customCmd.getCmd(msg.guild.id, args[0]);
       if (cmd != undefined) {
         //Print info about the command
         printSingleCmd(msg, cmd);
@@ -139,10 +139,10 @@ module.exports = {
     }
     async execute(msg, args) {
       var name = args[0]
-      var cmd = await db.customCmds.getCmd(msg.guild.id, name);
+      var cmd = await db.customCmd.getCmd(msg.guild.id, name);
       if (cmd != undefined) {
         //Command exist, deleting
-        await db.customCmds.deleteCmd(msg.guild.id, name);
+        await db.customCmd.deleteCmd(msg.guild.id, name);
         bot.printMsg(msg, lang.custcmdremove.cmdRemoved);
       } else {
         //Command not found

@@ -60,7 +60,7 @@ module.exports = {
       //Check if rank exists
       if (levels.ranks.find(x => x.name == rank) != undefined) {
         //Insert reward for rank in database
-        await db.rewards.updateRankReward(msg.guild.id, rank, reward);
+        await db.reward.updateRankReward(msg.guild.id, rank, reward);
         msg.channel.send(lang.setreward.newReward);
       } else {
         //Rank don't exists
@@ -94,14 +94,14 @@ module.exports = {
         return;
       }
       //Check if this rank as a reward
-      var reward = await db.rewards.getRankReward(msg.guild.id, rank);
+      var reward = await db.reward.getRankReward(msg.guild.id, rank);
       if (reward == null) {
         //Reward not found
         bot.printMsg(msg, lang.error.notFound.rankReward);
         return;
       }
       //Delete reward
-      await db.rewards.deleteRankReward(msg.guild.id, rank);
+      await db.reward.deleteRankReward(msg.guild.id, rank);
       bot.printMsg(msg, lang.unsetreward.rewardUnset);
     }
   }

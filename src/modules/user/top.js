@@ -74,8 +74,8 @@ async function getUsersCount(msg) {
     //Open database
     await sql.open(config.pathDatabase);
     var usersCount = {};
-    usersCount.local = await sql.get('SELECT COUNT(userId) FROM users WHERE serverId = ?', msg.guild.id);
-    usersCount.global = await sql.get('SELECT COUNT(DISTINCT userId) FROM users');
+    usersCount.local = await sql.get('SELECT COUNT(user_id) FROM user WHERE server_id = ?', msg.guild.id);
+    usersCount.global = await sql.get('SELECT COUNT(DISTINCT user_id) FROM user');
     //Close database
     await sql.close();
   } catch (e) {
@@ -88,13 +88,13 @@ async function getInfo(users) {
   var discordUsers = [];
   //Fetch users
   for (var user of users) {
-    discordUsers.push(client.fetchUser(user.userId));
+    discordUsers.push(client.fetchUser(user.user_id));
   }
   await Promise.all(discordUsers);
   for (user of users) {
-    if (client.users.has(user.userId)) {
+    if (client.users.has(user.user_id)) {
       //Get name
-      user.username = client.users.get(user.userId).username;
+      user.username = client.users.get(user.user_id).username;
     } else {
       //User not found
       console.log(lang.error.notFound.user);
@@ -112,10 +112,10 @@ async function getTops(msg, num) {
     await sql.open(config.pathDatabase);
     var tops = {};
     //Get top of this server using limit
-    tops.local = await sql.all('SELECT userId, xp FROM users WHERE serverId = ? ORDER BY xp DESC LIMIT ?', [msg.guild.id, num]);
+    tops.local = await sql.all('SELECT user_id, xp FROM user WHERE server_id = ? ORDER BY xp DESC LIMIT ?', [msg.guild.id, num]);
     tops.local = await getInfo(tops.local);
     //Get top of all users
-    tops.global = await sql.all('SELECT userId, SUM(xp) FROM users GROUP BY userId ORDER BY SUM(xp) DESC LIMIT ?', [num]);
+    tops.global = await sql.all('SELECT user_id, SUM(xp) FROM user GROUP BY user_id ORDER BY SUM(xp) DESC LIMIT ?', [num]);
     //Convert SUM(xp) to xp
     for (var user of tops.global) {
       user.xp = user['SUM(xp)'];
