@@ -24,7 +24,9 @@
       "rank": "Missing argument: rank",
       "reward": "Missing argument: reward",
       "role": "Missing argument: role",
-      "group": "Missing argument: group"
+      "group": "Missing argument: group",
+      "field": "Missing argument: field",
+      "value": "Missing argument: field value"
     },
     "invalidArg": {
       "token": "The provided token is invalid!",
