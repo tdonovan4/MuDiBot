@@ -24,7 +24,9 @@
       "rank": "Argument manquant: rang",
       "reward": "Argument manquant: récompense",
       "role": "Argument manquant: role",
-      "group": "Argument manquant: groupe"
+      "group": "Argument manquant: groupe",
+      "field": "Argument manquant: champ",
+      "value": "Argument manquant: valeur du champ"
     },
     "invalidArg": {
       "token": "Le token n'est pas valide!",
