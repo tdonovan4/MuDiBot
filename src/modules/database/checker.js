@@ -112,6 +112,11 @@ async function updateDatabase(version, lastVersion) {
 }
 
 module.exports.check = async function() {
+  var dbFolder = config.pathDatabase.split('/').slice(0, -1).join('/') + '/';
+  //Create db folder if not exist
+  if (!fs.existsSync(dbFolder)) {
+    fs.mkdirSync(dbFolder);
+  }
   await sql.open(config.pathDatabase);
   //Get last version using the last scripts
   var scripts = fs.readdirSync('./src/modules/database/scripts');
