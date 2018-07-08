@@ -51,13 +51,15 @@
     },
     "tooMuch": {
       "cmds": "There is too much custom commands!",
-      "cmdsUser": "You have too many custom commands!"
+      "cmdsUser": "You have too many custom commands!",
+      "chars": "You have more than {{max}} characters! Please enter less."
     },
     "cmdAlreadyExists": "This command already exists!",
     "groupDuplicate": "This user already is in this group!",
     "notEnoughPermissions": "Not enough permissions",
     "ytdlError": "This video could not be downloaded (maybe unavailable?).",
-    "notPlaying": "I'm not playing anything!"
+    "notPlaying": "I'm not playing anything!",
+    "formatError": "Please format the date using ISO 8601 (yyyy-mm-dd or --mm-dd)"
   },
   "database": {
     "noVersion": "Could not find database version. Starting from baseline.",

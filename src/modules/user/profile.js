@@ -7,15 +7,21 @@ var config = require('../../args.js').getConfig()[1];
 var lang = require('../../localization.js').getLocalization();
 
 class Condition {
-  constructor(name, value) {
+  constructor(name, value, error) {
     this.name = name;
     this.value = value;
+    //The error to throw if the input don't pass the conditon
+    this.rejectionError = error;
   }
 }
 
 class MaxCharLengthCondition extends Condition {
   constructor(maxCharLength) {
-    super('maxCharLength', maxCharLength);
+    super('maxCharLength',
+      maxCharLength,
+      mustache.render(lang.error.tooMuch.chars, {
+        max: maxCharLength
+      }));
   }
   validate(input) {
     /*
@@ -30,7 +36,9 @@ class MaxCharLengthCondition extends Condition {
 
 class FormatCondition extends Condition {
   constructor(regex) {
-    super('format', regex);
+    super('format',
+    regex,
+    lang.error.formatError);
   }
   validate(input) {
     var result = true;
@@ -58,7 +66,7 @@ class ProfileField {
       new FormatCondition(req.format)
     ]
   }
-  isInputValid(input) {
+  isInputValid(msg, input) {
     var isValid = true;
     //Check each conditions to make sure the input is valid
     for(var condition of this.conditions) {
@@ -66,6 +74,8 @@ class ProfileField {
       if (result === false) {
         //If one condition failed, the input is not valid
         isValid = false;
+        //Print the error
+        msg.channel.send(condition.rejectionError);
         break;
       }
     }
@@ -166,8 +176,8 @@ module.exports = {
         return;
       }
       //Check input
-      var isInputValid = profileFields.get(args[0]).isInputValid(args[1]);
-      if(isInputValid) {
+      var isInputValid = profileFields.get(args[0]).isInputValid(msg, args[1]);
+      if (isInputValid) {
         //TODO: Add to database
       }
     }
