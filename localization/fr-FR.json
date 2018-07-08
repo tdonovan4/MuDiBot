@@ -51,13 +51,15 @@
     },
     "tooMuch": {
       "cmds": "Il y a trop de commandes personnalisée!",
-      "cmdsUser:": "Vous avez trop de commandes personnalisée!"
+      "cmdsUser:": "Vous avez trop de commandes personnalisée!",
+      "chars": "Vous avez plus de {{max}} charactères! Veuillez en entrer moins."
     },
     "cmdAlreadyExists": "Cette commande existe déjà!",
     "groupDuplicate": "Cette utilisateur est déjà dans ce groupe!",
     "notEnoughPermissions": "Permissions insuffisantes",
     "ytdlError": "Cette vidéo n'a pas pu être télécharger (peut-être indisponible?).",
-    "notPlaying": "Aucune vidéo ne joue!"
+    "notPlaying": "Aucune vidéo ne joue!",
+    "formatError": "Veuillez formater la date avec ISO 8601 (aaaa-mm-qq or --mm-qq)"
   },
   "database": {
     "noVersion": "La version de la base de donnée n'a pas pu être trouvée. Utilisation de la première version.",
