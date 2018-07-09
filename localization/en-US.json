@@ -34,7 +34,8 @@
       "category": "Warning: {{cmds}} doesn't have a valid category",
       "user": "Invalid user",
       "role": "Invalid role",
-      "reward": "Invalid reward"
+      "reward": "Invalid reward",
+      "field": "Invalid field"
     },
     "notLocalized": {
       "cmd": "Error: this command is not localized!",

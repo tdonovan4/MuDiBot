@@ -168,17 +168,23 @@ module.exports = {
       if(args.length < 2) {
         if(args.length < 1) {
           //No field
-          bot.printMsg(msg, lang.error.missingArg.field);
+          msg.channel.send(lang.error.missingArg.field);
         } else {
           //No value
-          bot.printMsg(msg, lang.error.missingArg.value);
+          msg.channel.send(lang.error.missingArg.value);
         }
         return;
       }
-      //Check input
-      var isInputValid = profileFields.get(args[0]).isInputValid(msg, args[1]);
-      if (isInputValid) {
-        //TODO: Add to database
+      var field = profileFields.get(args[0]);
+      if (field != undefined) {
+        //Check input
+        var isInputValid = field.isInputValid(msg, args[1]);
+        if (isInputValid) {
+          //TODO: Add to database
+        }
+      } else {
+        //Bad field
+        msg.channel.send(lang.error.invalidArg.field);
       }
     }
   }
