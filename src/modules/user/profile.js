@@ -51,20 +51,24 @@ class FormatCondition extends Condition {
 }
 
 class ProfileField {
-  constructor(name, req) {
+  constructor(name, args) {
     /*
      * The name of the field, used in
      * the command to find which column
      * in the database too change.
      */
     this.name = name;
+    //Make sure req is defined
+    if (args.req == undefined) args.req = {};
     //Conditions used to validate the input
     this.conditions = [
       //The maximum amount of characters for the input
-      new MaxCharLengthCondition(req.maxCharLength),
+      new MaxCharLengthCondition(args.req.maxCharLength),
       //The format of the input using regex
-      new FormatCondition(req.format)
+      new FormatCondition(args.req.format)
     ]
+    //The function to modify the row in the database
+    this.dbModifyFunction = args.dbModifyFunction;
   }
   isInputValid(msg, input) {
     var isValid = true;
@@ -81,18 +85,33 @@ class ProfileField {
     }
     return isValid;
   }
+  async updateDB(msg, input) {
+    //Check input
+    if (this.isInputValid(msg, input)) {
+      await this.dbModifyFunction(msg.guild.id, msg.author.id, input);
+      msg.channel.send(lang.modifyProfile.modified);
+    }
+  }
 }
 
 //The user profile customizable fields
 var profileFields = new Map();
 //Set the fields
 profileFields.set('bio', new ProfileField('bio', {
-  maxCharLength: 280
+  req: {
+    maxCharLength: 280
+  },
+  dbModifyFunction: db.user.updateBio
 }));
 profileFields.set('birthday', new ProfileField('birthday', {
-  format: /([0-9]{4}|-)(-[0-9]{2}){2}/
+  req: {
+    format: /([0-9]{4}|-)(-[0-9]{2}){2}/
+  },
+  dbModifyFunction: db.user.updateBirthday
 }));
-profileFields.set('location', new ProfileField('location', {}));
+profileFields.set('location', new ProfileField('location', {
+  dbModifyFunction: db.user.updateLocation
+}));
 
 module.exports = {
   ProfileCommand: class extends bot.Command {
@@ -163,7 +182,7 @@ module.exports = {
         permLvl: 0
       });
     }
-    execute(msg, args) {
+    async execute(msg, args) {
       //Check args
       if(args.length < 2) {
         if(args.length < 1) {
@@ -175,13 +194,10 @@ module.exports = {
         }
         return;
       }
-      var field = profileFields.get(args[0]);
+      var field = profileFields.get(args[0].toLowerCase());
       if (field != undefined) {
-        //Check input
-        var isInputValid = field.isInputValid(msg, args[1]);
-        if (isInputValid) {
-          //TODO: Add to database
-        }
+        //Add input to db
+        await field.updateDB(msg, args.slice(1).join(' '));
       } else {
         //Bad field
         msg.channel.send(lang.error.invalidArg.field);
