@@ -250,6 +250,9 @@
     "xp": "Total XP:",
     "footer": "Client id: {{id}}"
   },
+  "modifyProfile": {
+    "modified": "Profile field modified!"
+  },
   "setgroup": {
     "newGroup": "Group added!"
   },

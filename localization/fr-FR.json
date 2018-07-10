@@ -250,6 +250,9 @@
     "xp": "XP total:",
     "footer": "ID du client: {{id}}"
   },
+  "modifyProfile": {
+    "modified": "Champ du profile modifié"
+  },
   "setgroup": {
     "newGroup": "Groupe ajouté!"
   },
