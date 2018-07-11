@@ -139,6 +139,9 @@ describe('Test database checker', function() {
   it('Should update v001 to last version', async function() {
     await checkDatabaseUpdating('001');
   })
+  it('Should update v002 to last version', async function() {
+    await checkDatabaseUpdating('002');
+  })
   it('Should make a fresh new database for rest of tests', async function() {
     //Delete old database
     await deleteDatabase();
@@ -148,49 +151,64 @@ describe('Test database checker', function() {
 });
 describe('Test users-db', function() {
   describe('Test get queries with empty responses', function() {
-    it('user.getAll() should return undefined', async function() {
+    it('getAll() should return undefined', async function() {
       var response = await db.user.getAll('1', '2');
       expect(response).to.equal(undefined);
     });
-    it('user.getXp() should return 0', async function() {
+    it('getXp() should return 0', async function() {
       var response = await db.user.getXP('1', '2');
       expect(response).to.equal(0);
     });
-    it('user.getWarnings() should return 0', async function() {
+    it('getWarnings() should return 0', async function() {
       var response = await db.user.getWarnings('1', '2');
       expect(response).to.equal(0);
     });
-    it('users.getWarnings() should return empty array', async function() {
+    it('getUsersWarnings() should return empty array', async function() {
       var response = await db.user.getUsersWarnings('1');
       expect(response).to.be.empty;
     });
-    it('user.exists() should return false', async function() {
+    it('exists() should return false', async function() {
       var response = await db.user.exists('1', '2');
       expect(response).to.equal(false);
     });
     //Last because it does an insert if response is null
-    it('user.getPermGroups() should return default role', async function() {
+    it('getPermGroups() should return default role', async function() {
       var response = await db.user.getPermGroups('1', '2');
       expect(response).to.equal(config.groups[0].name);
     });
   });
   describe('Test update queries with empty database', function() {
-    it('user.updatePermGroups() should change group to Member', async function() {
+    it('updatePermGroups() should change group to Member', async function() {
       await db.user.updatePermGroups('1', '2', 'Member');
       var response = await db.user.getPermGroups('1', '2');
       expect(response).to.equal('Member');
     });
-    it('user.updateXP() should change XP to 10000', async function() {
+    it('updateXP() should change XP to 10000', async function() {
       await db.user.updateXP('1', '3', 10000);
       var response = await db.user.getXP('1', '3');
       expect(response).to.equal(10000);
     });
-    it('user.updateWarnings() should change warnings to 4', async function() {
+    it('updateWarnings() should change warnings to 4', async function() {
       await db.user.updateWarnings('1', '4', 4);
       var response = await db.user.getWarnings('1', '4');
       expect(response).to.equal(4);
-    })
-    it('users.updateWarnings() should change warnings to 1', async function() {
+    });
+    it('updateBio() should change bio to lorem ipsum', async function() {
+      await db.user.updateBio('1', '4', 'lorem ipsum');
+      var response = await db.user.getAll('1', '4');
+      expect(response.bio).to.equal('lorem ipsum');
+    });
+    it('updateBirthday() should change birthday to 1971-01-01', async function() {
+      await db.user.updateBirthday('1', '4', '1971-01-01');
+      var response = await db.user.getAll('1', '4');
+      expect(response.birthday).to.equal('1971-01-01');
+    });
+    it('updateLocation() should change location to somewhere', async function() {
+      await db.user.updateLocation('1', '4', 'somewhere');
+      var response = await db.user.getAll('1', '4');
+      expect(response.location).to.equal('somewhere');
+    });
+    it('updateUsersWarnings() should change warnings to 1', async function() {
       await db.user.updateUsersWarnings('1', 1);
       var response = await db.user.getUsersWarnings('1');
       expect(response).to.deep.equal([{
@@ -206,22 +224,37 @@ describe('Test users-db', function() {
     });
   });
   describe('Test updating existing users', function() {
-    it('user.updatePermGroups() should change group to Mod', async function() {
+    it('updatePermGroups() should change group to Mod', async function() {
       await db.user.updatePermGroups('1', '2', 'Mod');
       var response = await db.user.getPermGroups('1', '2');
       expect(response).to.equal('Mod');
     });
-    it('user.updateXP() should change XP to 15000', async function() {
+    it('updateXP() should change XP to 15000', async function() {
       await db.user.updateXP('1', '3', 15000);
       var response = await db.user.getXP('1', '3');
       expect(response).to.equal(15000);
     });
-    it('user.updateWarnings() should change warnings to 2', async function() {
+    it('updateWarnings() should change warnings to 2', async function() {
       await db.user.updateWarnings('1', '4', 2);
       var response = await db.user.getWarnings('1', '4');
       expect(response).to.equal(2);
-    })
-    it('users.updateWarnings() should change warnings to 0', async function() {
+    });
+    it('updateBio() should change bio to an other thing', async function() {
+      await db.user.updateBio('1', '4', 'This is a bio');
+      var response = await db.user.getAll('1', '4');
+      expect(response.bio).to.equal('This is a bio');
+    });
+    it('updateBirthday() should change birthday to 2038-01-01', async function() {
+      await db.user.updateBirthday('1', '4', '2038-01-01');
+      var response = await db.user.getAll('1', '4');
+      expect(response.birthday).to.equal('2038-01-01');
+    });
+    it('updateLocation() should change location to there', async function() {
+      await db.user.updateLocation('1', '4', 'there');
+      var response = await db.user.getAll('1', '4');
+      expect(response.location).to.equal('there');
+    });
+    it('updateUsersWarnings() should change warnings to 0', async function() {
       await db.user.updateUsersWarnings('1', 0);
       var response = await db.user.getUsersWarnings('1');
       expect(response).to.deep.equal([{
@@ -1289,7 +1322,7 @@ describe('Test commands', function() {
       //Add member to groups
       await permGroups.setGroup(msg, msg.author, 'Member');
       msg.content = '$profile';
-      await commands.executeCmd(msg, ['profile'])
+      await commands.executeCmd(msg, ['profile']);
       var embed = msgSend.lastCall.returnValue.content.embed;
       expect(embed.title).to.equal('TestUser\'s profile');
       expect(embed.fields[0].value).to.equal('Emperor ');
@@ -1321,6 +1354,77 @@ describe('Test commands', function() {
       expect(embed.fields[2].value).to.exist;
       expect(embed.fields[3].value).to.exist;
       expect(embed.fields[4].value).to.equal('0');
+    });
+  });
+  describe('modifyprofile', function() {
+    describe('Test bad arguments', function() {
+      it('Should return missing argument field', async function() {
+        msg.content = '$modifyprofile';
+        await commands.executeCmd(msg, ['modifyprofile']);
+        var result = msgSend.lastCall.returnValue.content;
+        expect(result).to.equal(lang.error.missingArg.field);
+      });
+      it('Should return missing argument value', async function() {
+        msg.content = '$modifyprofile test';
+        await commands.executeCmd(msg, ['modifyprofile']);
+        var result = msgSend.lastCall.returnValue.content;
+        expect(result).to.equal(lang.error.missingArg.value);
+      });
+      it('Should return invalid argument field', async function() {
+        msg.content = '$modifyprofile test test';
+        await commands.executeCmd(msg, ['modifyprofile']);
+        var result = msgSend.lastCall.returnValue.content;
+        expect(result).to.equal(lang.error.invalidArg.field);
+      });
+    });
+    describe('Test validation of input', function() {
+      it('The bio field should return that there is too much chars', async function() {
+        msg.content = '$modifyprofile bio Lorem ipsum dolor sit amet, ' +
+          'nostrud civibus mel ne, eu sea nostrud epicurei urbanitas, ' +
+          'eam ex sonet repudiare. Ex debet tation cum, ex qui graeci ' +
+          'senserit definiebas, sint dolorem definitionem eam ne. ' +
+          'Eum doctus impedit prodesset ad, habeo justo dicunt te est. ' +
+          'Vel eruditi eligendi imperdiet et, mea no dolor propriae deseruisse. ' +
+          'Reque populo maluisset ne has, has decore ullamcorper ad, ' +
+          'commodo iracundia ea nec.';
+        await commands.executeCmd(msg, ['modifyprofile']);
+        var result = msgSend.lastCall.returnValue.content;
+        var response = await db.user.getAll(msg.guild.id, msg.author.id);
+        expect(result).to.equal(mustache.render(lang.error.tooMuch.chars, {
+          max: 280
+        }));
+        //Make sure the db was not modified
+        expect(response.bio).to.equal(null);
+      });
+      it('The birthday field should return that the format is wrong', async function() {
+        msg.content = '$modifyprofile birthday test';
+        await commands.executeCmd(msg, ['modifyprofile']);
+        var result = msgSend.lastCall.returnValue.content;
+        var response = await db.user.getAll(msg.guild.id, msg.author.id);
+        expect(result).to.equal(lang.error.formatError);
+        //Make sure the db was not modified
+        expect(response.birthday).to.equal(null);
+      });
+    });
+    describe('Test if the command actually works', function() {
+      it('Should change bio to lorem ipsum', async function() {
+        msg.content = '$modifyprofile bio lorem ipsum';
+        await commands.executeCmd(msg, ['modifyprofile']);
+        var response = await db.user.getAll(msg.guild.id, msg.author.id);
+        expect(response.bio).to.equal('lorem ipsum');
+      });
+      it('Should change birthday to 1971-01-01', async function() {
+        msg.content = '$modifyprofile birthday 1971-01-01';
+        await commands.executeCmd(msg, ['modifyprofile']);
+        var response = await db.user.getAll(msg.guild.id, msg.author.id);
+        expect(response.birthday).to.equal('1971-01-01');
+      });
+      it('Should change location to there', async function() {
+        msg.content = '$modifyprofile location there';
+        await commands.executeCmd(msg, ['modifyprofile']);
+        var response = await db.user.getAll(msg.guild.id, msg.author.id);
+        expect(response.location).to.equal('there');
+      });
     });
   });
   describe('setgroup', function() {

@@ -24,7 +24,9 @@
       "rank": "Missing argument: rank",
       "reward": "Missing argument: reward",
       "role": "Missing argument: role",
-      "group": "Missing argument: group"
+      "group": "Missing argument: group",
+      "field": "Missing argument: field",
+      "value": "Missing argument: field value"
     },
     "invalidArg": {
       "token": "The provided token is invalid!",
@@ -32,7 +34,8 @@
       "category": "Warning: {{cmds}} doesn't have a valid category",
       "user": "Invalid user",
       "role": "Invalid role",
-      "reward": "Invalid reward"
+      "reward": "Invalid reward",
+      "field": "Invalid field"
     },
     "notLocalized": {
       "cmd": "Error: this command is not localized!",
@@ -49,13 +52,15 @@
     },
     "tooMuch": {
       "cmds": "There is too much custom commands!",
-      "cmdsUser": "You have too many custom commands!"
+      "cmdsUser": "You have too many custom commands!",
+      "chars": "You have more than {{max}} characters! Please enter less."
     },
     "cmdAlreadyExists": "This command already exists!",
     "groupDuplicate": "This user already is in this group!",
     "notEnoughPermissions": "Not enough permissions",
     "ytdlError": "This video could not be downloaded (maybe unavailable?).",
-    "notPlaying": "I'm not playing anything!"
+    "notPlaying": "I'm not playing anything!",
+    "formatError": "Please format the date using ISO 8601 (yyyy-mm-dd or --mm-dd)"
   },
   "database": {
     "noVersion": "Could not find database version. Starting from baseline.",
@@ -244,6 +249,9 @@
     "warnings": "Warnings:",
     "xp": "Total XP:",
     "footer": "Client id: {{id}}"
+  },
+  "modifyProfile": {
+    "modified": "Profile field modified!"
   },
   "setgroup": {
     "newGroup": "Group added!"

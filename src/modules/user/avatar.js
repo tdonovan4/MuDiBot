@@ -7,7 +7,7 @@ module.exports = class AvatarCommand extends bot.Command {
       name: 'avatar',
       aliases: [],
       category: 'user',
-      priority: 10,
+      priority: 11,
       permLvl: 0
     });
   }
