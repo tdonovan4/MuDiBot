@@ -64,6 +64,24 @@ module.exports = {
     var args = [serverId, userId];
     await queries.runInsertUpdateQuery(insertQuery, updateQuery, args, [newWarnings]);
   },
+  updateBio: async function(serverId, userId, newBio) {
+    //Update user's profile bio
+    var updateQuery = 'UPDATE user SET bio = ? WHERE server_id = ? AND user_id = ?';
+    var args = [serverId, userId];
+    await queries.runInsertUpdateQuery(insertQuery, updateQuery, args, [newBio]);
+  },
+  updateBirthday: async function(serverId, userId, newBirthday) {
+    //Update user's profile birthday
+    var updateQuery = 'UPDATE user SET birthday = ? WHERE server_id = ? AND user_id = ?';
+    var args = [serverId, userId];
+    await queries.runInsertUpdateQuery(insertQuery, updateQuery, args, [newBirthday]);
+  },
+  updateLocation: async function(serverId, userId, newLocation) {
+    //Update user's profile location
+    var updateQuery = 'UPDATE user SET location = ? WHERE server_id = ? AND user_id = ?';
+    var args = [serverId, userId];
+    await queries.runInsertUpdateQuery(insertQuery, updateQuery, args, [newLocation]);
+  },
   getUsersWarnings: async function(serverId) {
     var query = 'SELECT user_id, warning FROM user WHERE server_id = ?';
     return await queries.runAllQuery(query, serverId);

@@ -24,7 +24,9 @@
       "rank": "Argument manquant: rang",
       "reward": "Argument manquant: récompense",
       "role": "Argument manquant: role",
-      "group": "Argument manquant: groupe"
+      "group": "Argument manquant: groupe",
+      "field": "Argument manquant: champ",
+      "value": "Argument manquant: valeur du champ"
     },
     "invalidArg": {
       "token": "Le token n'est pas valide!",
@@ -32,7 +34,8 @@
       "category": "Attention: {{cmds}} n'a pas de catégorie valide",
       "user": "Utilisateur non valide",
       "role": "Role non valide",
-      "reward": "Récompense non valide"
+      "reward": "Récompense non valide",
+      "field": "Champ non valide"
     },
     "notLocalized": {
       "cmd": "Erreur: cette commande n'est pas traduite!",
@@ -49,13 +52,15 @@
     },
     "tooMuch": {
       "cmds": "Il y a trop de commandes personnalisée!",
-      "cmdsUser:": "Vous avez trop de commandes personnalisée!"
+      "cmdsUser:": "Vous avez trop de commandes personnalisée!",
+      "chars": "Vous avez plus de {{max}} charactères! Veuillez en entrer moins."
     },
     "cmdAlreadyExists": "Cette commande existe déjà!",
     "groupDuplicate": "Cette utilisateur est déjà dans ce groupe!",
     "notEnoughPermissions": "Permissions insuffisantes",
     "ytdlError": "Cette vidéo n'a pas pu être télécharger (peut-être indisponible?).",
-    "notPlaying": "Aucune vidéo ne joue!"
+    "notPlaying": "Aucune vidéo ne joue!",
+    "formatError": "Veuillez formater la date avec ISO 8601 (aaaa-mm-qq or --mm-qq)"
   },
   "database": {
     "noVersion": "La version de la base de donnée n'a pas pu être trouvée. Utilisation de la première version.",
@@ -244,6 +249,9 @@
     "warnings": "Avertissements:",
     "xp": "XP total:",
     "footer": "ID du client: {{id}}"
+  },
+  "modifyProfile": {
+    "modified": "Champ du profile modifié"
   },
   "setgroup": {
     "newGroup": "Groupe ajouté!"
