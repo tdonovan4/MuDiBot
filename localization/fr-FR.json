@@ -243,6 +243,13 @@
   },
   "profile": {
     "title": "Profit de {{username}}",
+    "basicInfo": {
+      "name": "__**Information général:**__",
+      "bio": "**Bio:**",
+      "birtday": "**Anniversaire:**",
+      "location": "**Emplacement**",
+      "accountCreation": "**Compte créé depuis:**"
+    },
     "rank": "Rang:",
     "groups": "Groupes de permission",
     "level": "Niveau:",
