@@ -243,6 +243,13 @@
   },
   "profile": {
     "title": "{{username}}'s profile",
+    "basicInfo": {
+      "name": "__**General info:**__",
+      "bio": "**Bio:**",
+      "birthday": "**Birthday:**",
+      "location": "**Location**",
+      "accountCreation": "**Account created since:**"
+    },
     "rank": "Rank:",
     "groups": "Permission groups",
     "level": "Level:",

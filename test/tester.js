@@ -1,4 +1,4 @@
-/*eslint no-underscore-dangle: "off", */
+/*eslint no-underscore-dangle: "off"*/
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const Discord = require('discord.js');
@@ -41,7 +41,6 @@ const bot = require('../src/bot.js');
 //Init stuff that need bot
 const db = require('../src/modules/database/database.js');
 const audioPlayer = rewire('../src/modules/music/audio-player.js');
-const top = rewire('../src/modules/user/top.js');
 var setActivity = sinon.spy(bot.client().user, 'setActivity');
 var channelSend = sinon.spy(bot.client().channels.get('42'), 'send');
 var printMsg = sinon.stub(bot, 'printMsg');
@@ -151,6 +150,14 @@ describe('Test database checker', function() {
 });
 describe('Test users-db', function() {
   describe('Test get queries with empty responses', function() {
+    it('getLocalCount should return 0', async function() {
+      var response = await db.user.getLocalCount('1');
+      expect(response).to.equal(0);
+    });
+    it('getGlobalCount should return 0', async function() {
+      var response = await db.user.getGlobalCount();
+      expect(response).to.equal(0);
+    });
     it('getAll() should return undefined', async function() {
       var response = await db.user.getAll('1', '2');
       expect(response).to.equal(undefined);
@@ -221,6 +228,18 @@ describe('Test users-db', function() {
         "user_id": "4",
         "warning": 1
       }]);
+    });
+  });
+  describe('Test user count', function() {
+    it('getLocalCount should return 1', async function() {
+      //Add user in new server
+      await db.user.updateXP('2', '1', 15000);
+      var response = await db.user.getLocalCount('2');
+      expect(response).to.equal(1);
+    });
+    it('getGlobalCount should return 4', async function() {
+      var response = await db.user.getGlobalCount();
+      expect(response).to.equal(4);
     });
   });
   describe('Test updating existing users', function() {
@@ -396,6 +415,34 @@ describe('Test custom-cmd-db.js', function() {
       expect(cmds.length).to.equal(1);
     });
   })
+});
+describe('Test leaderboard.js', function() {
+  it('getLocalTop should return the correct leaderboard', async function() {
+    var response = await db.leaderboard.getLocalTop('1', 10);
+    /*eslint-disable camelcase*/
+    expect(response).to.deep.equal([
+      {
+        user_id: '3', xp: 15000
+      }, {
+        user_id: '2', xp: 0
+      }, {
+        user_id: '4', xp: 0
+      }]);
+  })
+  it('getGlobalTop should return the correct leaderboard', async function() {
+    var response = await db.leaderboard.getGlobalTop(10);
+    expect(response).to.deep.equal([
+      {
+        user_id: '1', xp: 15000
+      }, {
+        user_id: '3', xp: 15000
+      }, {
+        user_id: '2', xp: 0
+      }, {
+        user_id: '4', xp: 0
+      }]);
+  });
+  /*eslint-enable camelcase*/
 });
 describe('Test permission groups', function() {
   describe('Test setGroup', function() {
@@ -615,107 +662,62 @@ async function insertUsers(serverId, num) {
   await sql.close();
 }
 describe('Test top', function() {
-  var targetUser1 = {
-    userId: '1234567890',
-    xp: 0
-  }
-  var targetUser2 = {
-    userId: '1',
-    xp: 0
-  }
-  describe('Test getInfo', function() {
-    var getInfo = top.__get__('getInfo');
-    it('Should return empty array when no user', async function() {
-      var response = await getInfo([]);
-      expect(response).to.deep.equal([]);
-    });
-    it('Return more info about user', async function() {
-      await insertUser('1234567890', '1234567890', 0);
-      var response = await getInfo([targetUser1]);
-      var expectedResponse = targetUser1;
-      expectedResponse.level = 1;
-      expectedResponse.username = 'The1234567890';
-      expect(response).to.deep.equal([expectedResponse]);
-    });
-    it('Should work with wrong users', async function() {
-      var response = await getInfo([targetUser1, targetUser2]);
-      var expectedResponse = [targetUser1, targetUser2];
-      expectedResponse[0].level = 1;
-      expectedResponse[0].username = 'The1234567890';
-      expect(response).to.deep.equal(expectedResponse);
-    });
+  it('Should return empty tops', async function() {
+    await purgeUsers();
+    await commands.executeCmd(msg, ['top']);
+    var embed = msgSend.lastCall.returnValue.content;
+    //Local
+    expect(embed.fields[0].value).to.equal('***Total of 0 users***');
+    //Global
+    expect(embed.fields[1].value).to.equal('***Total of 0 users***');
   });
-  describe('Test getTops', function() {
-    var getTops = top.__get__('getTops');
-    it('Should return empty tops', async function() {
-      await purgeUsers();
-      var response = await getTops(msg, 10);
-      expect(response.local.length).to.equal(0);
-      expect(response.global.length).to.equal(0);
-    });
-    it('Should return one user in each tops', async function() {
-      await insertUser(msg.guild.id, '01', 0);
-      await insertUser(msg.guild.id, '02', 15);
-      var response = await getTops(msg, 1);
-      var expectedResponse = {
-        "level": 1,
-        "user_id": "02",
-        "xp": 15,
-        "username": "The02"
-      }
-      expect(response.local.length).to.equal(1);
-      expect(response.local[0]).to.deep.equal(expectedResponse);
-      expect(response.global.length).to.equal(1);
-      expect(response.global[0]).to.deep.equal(expectedResponse);
-    });
-    it('Should return two user in each tops', async function() {
-      //Also test when not enough users
-      var response = await getTops(msg, 3);
-      expect(response.local.length).to.equal(2);
-      expect(response.global.length).to.equal(2);
-    });
-    it('Global should merge same user', async function() {
-      await insertUser('1', '02', 10);
-      var response = await getTops(msg, 10);
-      expect(response.global[0]).to.deep.equal({
-        "level": 1,
-        "user_id": "02",
-        "xp": 25,
-        "username": "The02"
-      });
-    });
-    it('Test ordering of users', async function() {
-      //Add users
-      await insertUsers(msg.guild.id, 20);
-      await insertUsers('2', 20);
-      var response = await getTops(msg, 10);
-      //Check if response is correctly ordered
-      //Local
-      expect(response.local.length).to.equal(10);
-      for (var i = 0; i < response.local.length - 1; i++) {
-        expect(response.local[i].xp > response.local[i + 1].xp).to.equal(true);
-      }
-      //Global
-      expect(response.global.length).to.equal(10);
-      for (i = 0; i < response.global.length - 1; i++) {
-        expect(response.global[i].xp > response.global[i + 1].xp).to.equal(true);
-      }
-    });
+  it('Should return local with 1 user and global with 2 users', async function() {
+    await insertUser(msg.guild.id, '01', 0);
+    await insertUser('1289021', '02', 15);
+    await commands.executeCmd(msg, ['top']);
+    var embed = msgSend.lastCall.returnValue.content;
+    //Local
+    expect(embed.fields[0].value).to.equal(
+      '**1. The01 🥇**\n⤷ Level: 1 | XP: 0\n***Total of 1 users***');
+    //Global
+    expect(embed.fields[1].value).to.equal(
+      '**1. The02 🥇**\n⤷ Level: 1 | XP: 15\n**2. The01 🥈**\n⤷ Level: 1 ' +
+      '| XP: 0\n***Total of 2 users***');
   });
-  describe('Test getUsersCount', function() {
-    it('Should get users count', async function() {
-      var response = await top.__get__('getUsersCount')(msg);
-      expect(response.local['COUNT(user_id)']).to.equal(22);
-      expect(response.global['COUNT(DISTINCT user_id)']).to.equal(22);
-    });
+  it('Global should merge same user', async function() {
+    await insertUser('1289021', '01', 10);
+    await commands.executeCmd(msg, ['top']);
+    var embed = msgSend.lastCall.returnValue.content;
+    //Local
+    expect(embed.fields[0].value).to.equal(
+      '**1. The01 🥇**\n⤷ Level: 1 | XP: 0\n***Total of 1 users***');
+    //Global
+    expect(embed.fields[1].value).to.equal(
+      '**1. The02 🥇**\n⤷ Level: 1 | XP: 15\n**2. The01 🥈**\n⤷ Level: 1 ' +
+      '| XP: 10\n***Total of 2 users***');
   });
-  describe('Execute the actual command', function() {
-    it('Should return a nice embed', async function() {
-      await commands.executeCmd(msg, ['top']);
-      var embed = msgSend.lastCall.returnValue.content;
-      //Only check for title to check if it was sent
-      expect(embed.title).to.equal('__**Leaderboards:**__');
-    });
+  it('Test ordering of users', async function() {
+    //Add users
+    await insertUsers(msg.guild.id, 20);
+    await insertUsers('2', 20);
+    await commands.executeCmd(msg, ['top']);
+    var embed = msgSend.lastCall.returnValue.content;
+    //Local
+    expect(embed.fields[0].value).to.equal(
+      '**1. The19 🥇**\n⤷ Level: 2 | XP: 190\n**2. The18 🥈**\n⤷ Level: 2 ' +
+      '| XP: 180\n**3. The17 🥉**\n⤷ Level: 2 | XP: 170\n**4. The16 **\n' +
+      '⤷ Level: 2 | XP: 160\n**5. The15 **\n⤷ Level: 2 | XP: 150\n**6. ' +
+      'The14 **\n⤷ Level: 2 | XP: 140\n**7. The13 **\n⤷ Level: 2 | XP: 130' +
+      '\n**8. The12 **\n⤷ Level: 2 | XP: 120\n**9. The11 **\n⤷ Level: 2 | ' +
+      'XP: 110\n**10. The10 **\n⤷ Level: 2 | XP: 100\n***Total of 21 users***');
+    //Global
+    expect(embed.fields[1].value).to.equal(
+      '**1. The19 🥇**\n⤷ Level: 4 | XP: 380\n**2. The18 🥈**\n⤷ Level: 4 | ' +
+      'XP: 360\n**3. The17 🥉**\n⤷ Level: 4 | XP: 340\n**4. The16 **\n' +
+      '⤷ Level: 4 | XP: 320\n**5. The15 **\n⤷ Level: 3 | XP: 300\n**6.' +
+      ' The14 **\n⤷ Level: 3 | XP: 280\n**7. The13 **\n⤷ Level: 3 | XP: 260' +
+      '\n**8. The12 **\n⤷ Level: 3 | XP: 240\n**9. The11 **\n⤷ Level: 3 | ' +
+      'XP: 220\n**10. The10 **\n⤷ Level: 3 | XP: 200\n***Total of 22 users***');
   });
 });
 describe('Test the custom commands', function() {

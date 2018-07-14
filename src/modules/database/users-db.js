@@ -9,6 +9,16 @@ module.exports = {
     var response = await queries.runGetQuery(query, [serverId, userId]);
     return response != undefined;
   },
+  getLocalCount: async function(serverId) {
+    var query = 'SELECT COUNT(user_id) FROM user WHERE server_id = ?';
+    var response = await queries.runGetQuery(query, [serverId]);
+    return response['COUNT(user_id)'];
+  },
+  getGlobalCount: async function() {
+    var query = 'SELECT COUNT(DISTINCT user_id) FROM user';
+    var response = await queries.runGetQuery(query, []);
+    return response['COUNT(DISTINCT user_id)'];
+  },
   getAll: async function(serverId, userId) {
     var query = 'SELECT * FROM user WHERE server_id = ? AND user_id = ?';
     var user = await queries.runGetQuery(query, [serverId, userId]);
