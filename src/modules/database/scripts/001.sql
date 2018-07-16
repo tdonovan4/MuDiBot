@@ -22,11 +22,10 @@ CREATE TABLE users(
 
 DELETE
 FROM temp_users
-WHERE rowid NOT IN
-    (SELECT min(rowid)
-     FROM temp_users
-     GROUP BY userId, serverId
-     ORDER BY xp);
+WHERE (rowid, xp) NOT IN
+    (SELECT rowid, MAX(xp)
+    FROM temp_users
+    GROUP BY userId, serverId);
 
 
 INSERT INTO users
