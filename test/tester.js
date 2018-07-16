@@ -1371,7 +1371,7 @@ describe('Test commands', function() {
       config.superusers = ['041025599435591424'];
       await commands.executeCmd(msg, ['profile']);
       var embed = msgSend.lastCall.returnValue.content.embed;
-      expect(embed.fields[3].value).to.equal('Superuser, Member, User');
+      expect(embed.fields[3].value).to.equal('Superuser, Member, \nUser');
     });
     it('Should add bio, birthday, and location', async function() {
       //Setup
