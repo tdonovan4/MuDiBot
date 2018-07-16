@@ -6,7 +6,8 @@ exports.msg1 = {
   content: '$help',
   author: {
     username: 'TestUser',
-    id: '041025599435591424'
+    id: '041025599435591424',
+    createdAt: new Date(2009, 11, 24)
   },
   member: {
     addRole: function(role) {

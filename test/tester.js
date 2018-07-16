@@ -162,8 +162,12 @@ describe('Test users-db', function() {
       var response = await db.user.getAll('1', '2');
       expect(response).to.equal(undefined);
     });
-    it('getXp() should return 0', async function() {
+    it('getXP() should return 0', async function() {
       var response = await db.user.getXP('1', '2');
+      expect(response).to.equal(0);
+    });
+    it('getSumXP() should return 0', async function() {
+      var response = await db.user.getSumXP('2');
       expect(response).to.equal(0);
     });
     it('getWarnings() should return 0', async function() {
@@ -229,6 +233,12 @@ describe('Test users-db', function() {
         "warning": 1
       }]);
     });
+    it('getSumXP should merge same user XP', async function() {
+      //Add user in another server
+      await db.user.updateXP('3', '3', 10000);
+      var response = await db.user.getSumXP('3');
+      expect(response).to.equal(20000);
+    })
   });
   describe('Test user count', function() {
     it('getLocalCount should return 1', async function() {
@@ -417,32 +427,49 @@ describe('Test custom-cmd-db.js', function() {
   })
 });
 describe('Test leaderboard.js', function() {
-  it('getLocalTop should return the correct leaderboard', async function() {
-    var response = await db.leaderboard.getLocalTop('1', 10);
-    /*eslint-disable camelcase*/
-    expect(response).to.deep.equal([
-      {
-        user_id: '3', xp: 15000
-      }, {
-        user_id: '2', xp: 0
-      }, {
-        user_id: '4', xp: 0
+  describe('Test tops', function() {
+    before(async function() {
+      //Spice things up
+      await db.user.updateXP('1', '2', 150);
+      await db.user.updateXP('2', '2', 250);
+    })
+    it('getLocalTop should return the correct leaderboard', async function() {
+      var response = await db.leaderboard.getLocalTop('1', 10);
+      /*eslint-disable camelcase*/
+      expect(response).to.deep.equal([
+        {
+          user_id: '3', xp: 15000
+        }, {
+          user_id: '2', xp: 150
+        }, {
+          user_id: '4', xp: 0
       }]);
-  })
-  it('getGlobalTop should return the correct leaderboard', async function() {
-    var response = await db.leaderboard.getGlobalTop(10);
-    expect(response).to.deep.equal([
-      {
-        user_id: '1', xp: 15000
-      }, {
-        user_id: '3', xp: 15000
-      }, {
-        user_id: '2', xp: 0
-      }, {
-        user_id: '4', xp: 0
+    });
+    it('getGlobalTop should return the correct leaderboard', async function() {
+      var response = await db.leaderboard.getGlobalTop(10);
+      expect(response).to.deep.equal([
+        {
+          user_id: '3', xp: 25000
+        }, {
+          user_id: '1', xp: 15000
+        }, {
+          user_id: '2', xp: 400
+        }, {
+          user_id: '4', xp: 0
       }]);
+      /*eslint-enable camelcase*/
+    });
   });
-  /*eslint-enable camelcase*/
+  describe('Test positions', function() {
+    it('getUserLocalPos should return 2', async function() {
+      var response = await db.leaderboard.getUserLocalPos('1', '2');
+      expect(response).to.equal(2);
+    });
+    it('getUserGlobalPos should return 3', async function() {
+      var response = await db.leaderboard.getUserGlobalPos('2');
+      expect(response).to.equal(3);
+    });
+  })
 });
 describe('Test permission groups', function() {
   describe('Test setGroup', function() {
@@ -1321,41 +1348,70 @@ describe('Test commands', function() {
     it('Should return the message author\'s (TestUser) profile', async function() {
       //Add XP
       await db.user.updateXP(msg.guild.id, msg.author.id, 11685);
+      await db.user.updateXP('9', msg.author.id, 8908);
       //Add member to groups
       await permGroups.setGroup(msg, msg.author, 'Member');
       msg.content = '$profile';
       await commands.executeCmd(msg, ['profile']);
       var embed = msgSend.lastCall.returnValue.content.embed;
       expect(embed.title).to.equal('TestUser\'s profile');
-      expect(embed.fields[0].value).to.equal('Emperor ');
-      expect(embed.fields[1].value).to.equal('Member, User');
-      expect(embed.fields[2].value).to.exist;
-      expect(embed.fields[3].value).to.exist;
+      expect(embed.fields[0].value).to.equal('**Bio:** ```null```\n' +
+        '**Birthday:** null | **Location** null\n' +
+        '**Account created since:** 2009-12-24');
+      expect(embed.fields[1].value).to.equal('Rank: Emperor\n' +
+        'Position: #1\nLevel: 50 (0/450)\nTotal XP: 11685');
+      expect(embed.fields[2].value).to.equal('Rank: XP Master\n' +
+        'Position: #1\nLevel: 66 (358/635)\nTotal XP: 20593');
+      expect(embed.fields[3].value).to.equal('Member, User');
       expect(embed.fields[4].value).to.equal('0');
+      expect(embed.footer).to.exist;
     });
-    it('Should add superuser in the groups', async function() {
+    it('Should add superuser to list of permission groups', async function() {
       msg.content = '$profile';
       config.superusers = ['041025599435591424'];
       await commands.executeCmd(msg, ['profile']);
       var embed = msgSend.lastCall.returnValue.content.embed;
-      expect(embed.fields[1].value).to.equal('Superuser, Member, User');
+      expect(embed.fields[3].value).to.equal('Superuser, Member, User');
+    });
+    it('Should add bio, birthday, and location', async function() {
+      //Setup
+      await db.user.updateBio(msg.guild.id, msg.author.id, 'Test bio');
+      await db.user.updateBirthday(msg.guild.id, msg.author.id, '--02-01');
+      await db.user.updateLocation(msg.guild.id, msg.author.id, 'There');
+      //Actual command
+      msg.content = '$profile';
+      await commands.executeCmd(msg, ['profile']);
+      var embed = msgSend.lastCall.returnValue.content.embed;
+      expect(embed.fields[0].value).to.equal('**Bio:** ```Test bio```\n' +
+        '**Birthday:** --02-01 | **Location** There\n' +
+        '**Account created since:** 2009-12-24');
     });
     it('Should return George\'s profile', async function() {
       var id = '357156661105365963';
       //Add mention
       msg.mentions.users.set(id, {
         id: id,
-        username: 'George'
+        username: 'George',
+        createdAt: new Date(1985, 10, 16)
       });
       msg.content = `$profile <#${id}>`;
       await commands.executeCmd(msg, ['profile', `<#${id}>`])
       var embed = msgSend.lastCall.returnValue.content.embed;
-      expect(embed.title).to.equal('George\'s profile');
-      expect(embed.fields[0].value).to.equal('Vagabond ');
-      expect(embed.fields[1].value).to.equal('User');
-      expect(embed.fields[2].value).to.exist;
-      expect(embed.fields[3].value).to.exist;
+      expect(embed.fields[0].value).to.equal('**Bio:** ```null```\n' +
+        '**Birthday:** null | **Location** null\n' +
+        '**Account created since:** 1985-11-16');
+      expect(embed.fields[1].value).to.equal('Rank: Vagabond\n' +
+        'Position: #23\nLevel: 1 (0/100)\nTotal XP: 0');
+      expect(embed.fields[2].value).to.equal('Rank: Vagabond\n' +
+        'Position: #24\nLevel: 1 (0/100)\nTotal XP: 0');
+      expect(embed.fields[3].value).to.equal('User');
       expect(embed.fields[4].value).to.equal('0');
+      expect(embed.footer).to.exist;
+    });
+    after(async function() {
+      await db.user.updateBio(msg.guild.id, msg.author.id, null);
+      await db.user.updateBirthday(msg.guild.id, msg.author.id, null);
+      await db.user.updateLocation(msg.guild.id, msg.author.id, null);
     });
   });
   describe('modifyprofile', function() {

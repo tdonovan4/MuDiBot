@@ -47,6 +47,15 @@ module.exports = {
     }
     return response.xp;
   },
+  getSumXP: async function(userId) {
+    var query = 'SELECT SUM(xp) FROM user GROUP BY user_id HAVING user_id = ?';
+    var response = await queries.runGetQuery(query, [userId]);
+    if (response == null || response['SUM(xp)'] == null) {
+      response = {};
+      response['SUM(xp)'] = 0;
+    }
+    return response['SUM(xp)'];
+  },
   getWarnings: async function(serverId, userId) {
     var query = 'SELECT warning FROM user WHERE server_id = ? AND user_id = ?';
     var response = await queries.runGetQuery(query, [serverId, userId]);

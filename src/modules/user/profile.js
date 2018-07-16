@@ -125,6 +125,9 @@ module.exports = {
       });
     }
     async execute(msg) {
+      //Start measuring time
+      var start = process.hrtime();
+
       let user = msg.mentions.users.first();
       if (user == undefined) {
         //There is no mentions
@@ -132,19 +135,25 @@ module.exports = {
       }
 
       let userData = await db.user.getAll(msg.guild.id, user.id);
-      let progression = levels.getProgression(userData.xp);
-      let level = progression[0];
-      let xpToNextLevel = `${progression[1]}/${levels.getXpForLevel(level)}`;
-      let rank = levels.getRank(progression[2]);
-      let groups = ['Ø'];
+      if (userData == null) {
+        /*eslint-disable camelcase*/
+        //User doesn't exist, using default
+        userData = {};
+        userData.xp = 0;
+        userData.warning = 0;
+        userData.permission_group = config.groups[0].name;
+        userData.bio = lang.profile.defaults.bio;
+        userData.birthday = lang.profile.defaults.birthday;
+        userData.location = lang.profile.defaults.location;
+        /*eslint-enable camelcase*/
+      }
 
       //Get groups
-      if (userData.permission_group != null) {
-        groups = userData.permission_group.split(',').sort(function(a, b) {
-          return config.groups.find(x => x.name == a).permLvl <
-            config.groups.find(x => x.name == b).permLvl;
-        });
-      }
+      var groups = userData.permission_group.split(',').sort(function(a, b) {
+        //Sorting by order of permission level
+        return config.groups.find(x => x.name == a).permLvl <
+          config.groups.find(x => x.name == b).permLvl;
+      });
 
       //If user is a superuser, add that to groups
       if (config.superusers.find(x => x == user.id) != null) {
@@ -156,17 +165,74 @@ module.exports = {
         groups[i] = '\n' + groups[i];
       }
 
+      let localPos = await db.leaderboard.getUserLocalPos(msg.guild.id, user.id);
+      let localProgression = levels.getProgression(userData.xp);
+      let localLevel = localProgression[0];
+      let localXPToNextLevel = `${localProgression[1]}/${levels.getXpForLevel(localLevel)}`;
+      let localRank = levels.getRank(localProgression[2]);
+
       var embed = new Discord.RichEmbed();
       embed.title = mustache.render(lang.profile.title, user);
-      embed.color = rank[2];
+      embed.color = localRank[2];
       embed.setThumbnail(user.avatarURL)
-      embed.addField(lang.profile.rank,
-        `${rank[0]} ${(rank[1] > 0) ? `(${rank[1]}:star:)` : ''}`, true)
-      embed.addField(lang.profile.groups, groups.join(', '), true)
-      embed.addField(lang.profile.level, `${level} (${xpToNextLevel})`, false)
-      embed.addField(lang.profile.xp, userData.xp, true)
-      embed.addField(lang.profile.warnings, userData.warning, true)
-      embed.setFooter(mustache.render(lang.profile.footer, user))
+      //Basic info: bio, birthday, location, and account creation time
+      embed.addField(lang.profile.basicInfo.name,
+        //Bio
+        `${lang.profile.basicInfo.bio} \`\`\`${userData.bio}\`\`\`` +
+        //Birthday
+        `\n${lang.profile.basicInfo.birthday} ${userData.birthday}` +
+        //Location
+        ` | ${lang.profile.basicInfo.location} ${userData.location}` +
+        //Account creation
+        `\n${lang.profile.basicInfo.accountCreation} ` +
+          `${user.createdAt.toISOString().slice(0, 10)}`
+      );
+      //Local experience
+      embed.addField(lang.profile.xp.local,
+        //Rank
+        `${lang.profile.xp.rank} ${localRank[0]}` +
+        `${(localRank[1] > 0) ? `(${localRank[1]}:star:)` : ''}` +
+        //Position
+        `\n${lang.profile.xp.position} #${localPos}` +
+        //Level
+        `\n${lang.profile.xp.level} ${localLevel} (${localXPToNextLevel})` +
+        //Total XP
+        `\n${lang.profile.xp.totalXP} ${userData.xp}`,
+        //Inline
+        true
+      );
+      //Global experience
+      let globalPos = await db.leaderboard.getUserGlobalPos(user.id);
+      let globalXP = await db.user.getSumXP(user.id);
+      let globalProgression = levels.getProgression(globalXP);
+      let globalLevel = globalProgression[0];
+      let globalXPToNextLevel = `${globalProgression[1]}/${levels.getXpForLevel(globalLevel)}`;
+      let globalRank = levels.getRank(globalProgression[2]);
+      embed.addField(lang.profile.xp.global,
+        //Rank
+        `${lang.profile.xp.rank} ${globalRank[0]}` +
+        `${(globalRank[1] > 0) ? `(${globalRank[1]}:star:)` : ''}` +
+        //Position
+        `\n${lang.profile.xp.position} #${globalPos}` +
+        //Level
+        `\n${lang.profile.xp.level} ${globalLevel} (${globalXPToNextLevel})` +
+        //Total XP
+        `\n${lang.profile.xp.totalXP} ${globalXP}`,
+        //Inline
+        true
+      );
+      //Permission groups
+      embed.addField(lang.profile.groups, groups.join(', '), true);
+      //Warnings
+      embed.addField(lang.profile.warnings, userData.warning, true);
+      //Time it took
+      var end = process.hrtime(start);
+      var took = end[0] * 1000 + end[1] / 1000000;
+      //Footer
+      embed.setFooter(mustache.render(lang.profile.footer, {
+        id: user.id,
+        time: took.toFixed(2)
+      }));
       msg.channel.send({
         embed
       });
