@@ -111,8 +111,13 @@ async function updateDatabase(version, lastVersion) {
     try {
       var file = fs.readFileSync('./src/modules/database/scripts/' +
         `${versionString(i)}.sql`);
-      //Parse variable
-      file = file.toString().replace('$[default_group]', config.groups[0].name);
+      file = file.toString();
+      //Add variables
+      file = file.replace('$[default_group]', config.groups[0].name);
+      file = file.replace('$[default_bio]', lang.profile.defaults.bio);
+      file = file.replace('$[default_birthday]', lang.profile.defaults.birthday);
+      file = file.replace('$[default_location]', lang.profile.defaults.location);
+      //Execute update
       await sql.exec(file);
       //Update database with new version
       await updateDatabaseVersion(i);
