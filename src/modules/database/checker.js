@@ -37,6 +37,22 @@ var baselineTables = [
   ])
 ];
 
+function getLastVersion() {
+  //Get last database version using the last scripts
+  var scripts = fs.readdirSync('./src/modules/database/scripts');
+  scripts = scripts.map(script => {
+    //Get only first 3 characters and try to convert them to int
+    script = Number(script.slice(0, 3));
+    if (isNaN(script)) {
+      //This is not a valid version number, change it to 0
+      script = 0;
+    }
+    return script;
+  });
+  //Return max number from the array of script versions
+  return Math.max(...scripts);
+}
+
 async function getDatabaseVersion() {
   var version;
   var databaseSettings = await sql.get('SELECT count(*) FROM sqlite_master ' +
@@ -118,10 +134,8 @@ module.exports.check = async function() {
     fs.mkdirSync(dbFolder);
   }
   await sql.open(config.pathDatabase);
-  //Get last version using the last scripts
-  var scripts = fs.readdirSync('./src/modules/database/scripts');
-  var lastVersion = scripts[scripts.length - 1].slice(0, 3);
-
+  //Get last database version
+  var lastVersion = getLastVersion();
   //Get database version
   var version = await getDatabaseVersion();
   //Handle if verson is null
