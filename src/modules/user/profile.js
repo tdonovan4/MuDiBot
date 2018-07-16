@@ -37,12 +37,12 @@ class MaxCharLengthCondition extends Condition {
 class FormatCondition extends Condition {
   constructor(regex) {
     super('format',
-    regex,
-    lang.error.formatError);
+      regex,
+      lang.error.formatError);
   }
   validate(input) {
     var result = true;
-    if(this.value != undefined) {
+    if (this.value != undefined) {
       //Test the input against the provided regex
       result = this.value.test(input);
     }
@@ -73,7 +73,7 @@ class ProfileField {
   isInputValid(msg, input) {
     var isValid = true;
     //Check each conditions to make sure the input is valid
-    for(var condition of this.conditions) {
+    for (var condition of this.conditions) {
       var result = condition.validate(input);
       if (result === false) {
         //If one condition failed, the input is not valid
@@ -149,20 +149,25 @@ module.exports = {
       }
 
       //Get groups
-      var groups = userData.permission_group.split(',').sort(function(a, b) {
-        //Sorting by order of permission level
-        return config.groups.find(x => x.name == a).permLvl <
-          config.groups.find(x => x.name == b).permLvl;
-      });
-
-      //If user is a superuser, add that to groups
-      if (config.superusers.find(x => x == user.id) != null) {
-        groups.unshift('Superuser');
-      }
-
-      //Put newline at every 4 groups
-      for (let i = 3; i < groups.length; i += 3) {
-        groups[i] = '\n' + groups[i];
+      var groups = userData.permission_group;
+      if (groups != null) {
+        groups = groups.split(',').sort(function(a, b) {
+          //Sorting by order of permission level
+          return config.groups.find(x => x.name == a).permLvl <
+            config.groups.find(x => x.name == b).permLvl;
+        });
+        //If user is a superuser, add that to groups
+        if (config.superusers.find(x => x == user.id) != null) {
+          groups.unshift('Superuser');
+        }
+        //Put newline at every 2 groups
+        for (let i = 2; i < groups.length; i += 2) {
+          groups[i] = '\n' + groups[i];
+        }
+        groups = groups.join(', ');
+      } else {
+        //Default
+        groups = config.groups[0].name;
       }
 
       let localPos = await db.leaderboard.getUserLocalPos(msg.guild.id, user.id);
@@ -185,7 +190,7 @@ module.exports = {
         ` | ${lang.profile.basicInfo.location} ${userData.location}` +
         //Account creation
         `\n${lang.profile.basicInfo.accountCreation} ` +
-          `${user.createdAt.toISOString().slice(0, 10)}`
+        `${user.createdAt.toISOString().slice(0, 10)}`
       );
       //Local experience
       embed.addField(lang.profile.xp.local,
@@ -222,7 +227,7 @@ module.exports = {
         true
       );
       //Permission groups
-      embed.addField(lang.profile.groups, groups.join(', '), true);
+      embed.addField(lang.profile.groups, groups, true);
       //Warnings
       embed.addField(lang.profile.warnings, userData.warning, true);
       //Time it took
@@ -250,8 +255,8 @@ module.exports = {
     }
     async execute(msg, args) {
       //Check args
-      if(args.length < 2) {
-        if(args.length < 1) {
+      if (args.length < 2) {
+        if (args.length < 1) {
           //No field
           msg.channel.send(lang.error.missingArg.field);
         } else {
