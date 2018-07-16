@@ -113,10 +113,10 @@ async function updateDatabase(version, lastVersion) {
         `${versionString(i)}.sql`);
       file = file.toString();
       //Add variables
-      file = file.replace('$[default_group]', config.groups[0].name);
-      file = file.replace('$[default_bio]', lang.profile.defaults.bio);
-      file = file.replace('$[default_birthday]', lang.profile.defaults.birthday);
-      file = file.replace('$[default_location]', lang.profile.defaults.location);
+      file = file.replace(/\$\[default_group]/g, config.groups[0].name);
+      file = file.replace(/\$\[default_bio]/g, lang.profile.defaults.bio);
+      file = file.replace(/\$\[default_birthday]/g, lang.profile.defaults.birthday);
+      file = file.replace(/\$\[default_location]/g, lang.profile.defaults.location);
       //Execute update
       await sql.exec(file);
       //Update database with new version

@@ -141,6 +141,9 @@ describe('Test database checker', function() {
   it('Should update v002 to last version', async function() {
     await checkDatabaseUpdating('002');
   })
+  it('Should update v003 to last version', async function() {
+    await checkDatabaseUpdating('003');
+  })
   it('Should make a fresh new database for rest of tests', async function() {
     //Delete old database
     await deleteDatabase();
@@ -1355,8 +1358,8 @@ describe('Test commands', function() {
       await commands.executeCmd(msg, ['profile']);
       var embed = msgSend.lastCall.returnValue.content.embed;
       expect(embed.title).to.equal('TestUser\'s profile');
-      expect(embed.fields[0].value).to.equal('**Bio:** ```null```\n' +
-        '**Birthday:** null | **Location** null\n' +
+      expect(embed.fields[0].value).to.equal('**Bio:** ```This user doesn\'t ' +
+        'have a bio!```\n**Birthday:** Unknown | **Location** Unknown\n' +
         '**Account created since:** 2009-12-24');
       expect(embed.fields[1].value).to.equal('Rank: Emperor\n' +
         'Position: #1\nLevel: 50 (0/450)\nTotal XP: 11685');
@@ -1397,8 +1400,8 @@ describe('Test commands', function() {
       msg.content = `$profile <#${id}>`;
       await commands.executeCmd(msg, ['profile', `<#${id}>`])
       var embed = msgSend.lastCall.returnValue.content.embed;
-      expect(embed.fields[0].value).to.equal('**Bio:** ```null```\n' +
-        '**Birthday:** null | **Location** null\n' +
+      expect(embed.fields[0].value).to.equal('**Bio:** ```This user doesn\'t ' +
+        'have a bio!```\n**Birthday:** Unknown | **Location** Unknown\n' +
         '**Account created since:** 1985-11-16');
       expect(embed.fields[1].value).to.equal('Rank: Vagabond\n' +
         'Position: #23\nLevel: 1 (0/100)\nTotal XP: 0');
