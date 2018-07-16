@@ -243,19 +243,29 @@
   },
   "profile": {
     "title": "{{username}}'s profile",
+    "defaults": {
+      "bio": "This user doesn't have a bio!",
+      "birthday": "Unknown",
+      "location": "Unknown"
+    },
     "basicInfo": {
-      "name": "__**General info:**__",
+      "name": "__**General Info:**__",
       "bio": "**Bio:**",
       "birthday": "**Birthday:**",
       "location": "**Location**",
       "accountCreation": "**Account created since:**"
     },
-    "rank": "Rank:",
-    "groups": "Permission groups",
-    "level": "Level:",
-    "warnings": "Warnings:",
-    "xp": "Total XP:",
-    "footer": "Client id: {{id}}"
+    "xp": {
+      "local": "__**Local Experience**__",
+      "global": "__**Global Experience**__",
+      "rank": "Rank:",
+      "position": "Position:",
+      "level": "Level:",
+      "totalXP": "Total XP:"
+    },
+    "groups": "Permission group(s)",
+    "warnings": "Warning(s):",
+    "footer": "Client id: {{id}} | request took {{time}} ms"
   },
   "modifyProfile": {
     "modified": "Profile field modified!"
