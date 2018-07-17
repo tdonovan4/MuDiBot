@@ -114,7 +114,11 @@
     },
     "profile": {
       "usages": ["<utilisateur>"],
-      "msg": "Donne le profile d'un joueur"
+      "msg": "Donne le profil d'un joueur"
+    },
+    "modifyprofile": {
+      "usages": ["<champ> <valeur>"],
+      "msg": "Modifie un champ du profil de l'utilisateur"
     },
     "setgroup": {
       "usages": ["<utilisateur> <groupe>"],
@@ -268,7 +272,7 @@
     "footer": "ID du client: {{id}} | ce message a pris {{time}} ms"
   },
   "modifyProfile": {
-    "modified": "Champ du profile modifié"
+    "modified": "Champ du profil modifié"
   },
   "setgroup": {
     "newGroup": "Groupe ajouté!"
