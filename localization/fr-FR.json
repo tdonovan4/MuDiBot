@@ -244,15 +244,15 @@
   "profile": {
     "title": "Profit de {{username}}",
     "defaults": {
-      "bio": "Cet utilisateur n'a pas de bio!!",
+      "bio": "Cet utilisateur n'a pas de bio!",
       "birthday": "Inconnu",
       "location": "Inconnu"
     },
     "basicInfo": {
-      "name": "__**Information général:**__",
+      "name": "__**Information général**__",
       "bio": "**Bio:**",
       "birtday": "**Anniversaire:**",
-      "location": "**Emplacement**",
+      "location": "**Emplacement:**",
       "accountCreation": "**Compte créé depuis:**"
     },
     "xp": {
@@ -263,7 +263,7 @@
       "level": "Niveau:",
       "totalXP": "XP total:"
     },
-    "groups": "Groupe(s) de permission",
+    "groups": "Groupe(s) de permission:",
     "warnings": "Avertissement(s):",
     "footer": "ID du client: {{id}} | ce message a pris {{time}} ms"
   },
