@@ -1359,7 +1359,7 @@ describe('Test commands', function() {
       var embed = msgSend.lastCall.returnValue.content.embed;
       expect(embed.title).to.equal('TestUser\'s profile');
       expect(embed.fields[0].value).to.equal('**Bio:** ```This user doesn\'t ' +
-        'have a bio!```\n**Birthday:** Unknown | **Location** Unknown\n' +
+        'have a bio!```\n**Birthday:** Unknown | **Location:** Unknown\n' +
         '**Account created since:** 2009-12-24');
       expect(embed.fields[1].value).to.equal('Rank: Emperor\n' +
         'Position: #1\nLevel: 50 (0/450)\nTotal XP: 11685');
@@ -1386,7 +1386,7 @@ describe('Test commands', function() {
       await commands.executeCmd(msg, ['profile']);
       var embed = msgSend.lastCall.returnValue.content.embed;
       expect(embed.fields[0].value).to.equal('**Bio:** ```Test bio```\n' +
-        '**Birthday:** --02-01 | **Location** There\n' +
+        '**Birthday:** --02-01 | **Location:** There\n' +
         '**Account created since:** 2009-12-24');
     });
     it('Should return George\'s profile', async function() {
@@ -1401,7 +1401,7 @@ describe('Test commands', function() {
       await commands.executeCmd(msg, ['profile', `<#${id}>`])
       var embed = msgSend.lastCall.returnValue.content.embed;
       expect(embed.fields[0].value).to.equal('**Bio:** ```This user doesn\'t ' +
-        'have a bio!```\n**Birthday:** Unknown | **Location** Unknown\n' +
+        'have a bio!```\n**Birthday:** Unknown | **Location:** Unknown\n' +
         '**Account created since:** 1985-11-16');
       expect(embed.fields[1].value).to.equal('Rank: Vagabond\n' +
         'Position: #23\nLevel: 1 (0/100)\nTotal XP: 0');
