@@ -116,6 +116,10 @@
       "usages": ["<user>"],
       "msg": "Get an user profile"
     },
+    "modifyprofile": {
+      "usages": ["<field> <value>"],
+      "msg": "Modify a user profile field"
+    },
     "setgroup": {
       "usages": ["<user> <group>"],
       "msg": "Add a group to user"
