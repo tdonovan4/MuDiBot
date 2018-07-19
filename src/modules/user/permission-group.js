@@ -1,10 +1,11 @@
-const bot = require('../../bot.js');
+const { printMsg } = require('../../util.js');
+const { Command } = require('../../commands.js');
 const db = require('../database/database.js');
-const config = require('../../args.js').getConfig()[1];
+const config = require('../../util.js').getConfig()[1];
 var lang = require('../../localization.js').getLocalization();
 
 module.exports = {
-  SetGroupCommand: class extends bot.Command {
+  SetGroupCommand: class extends Command {
     constructor() {
       super({
         name: 'setgroup',
@@ -18,7 +19,7 @@ module.exports = {
       await module.exports.setGroup(msg, msg.mentions.users.first(), args[1]);
     }
   },
-  UnsetGroupCommand: class extends bot.Command {
+  UnsetGroupCommand: class extends Command {
     constructor() {
       super({
         name: 'unsetgroup',
@@ -32,7 +33,7 @@ module.exports = {
       await module.exports.unsetGroup(msg, msg.mentions.users.first(), args[1]);
     }
   },
-  PurgeGroupsCommand: class extends bot.Command {
+  PurgeGroupsCommand: class extends Command {
     constructor() {
       super({
         name: 'purgegroups',
@@ -52,13 +53,13 @@ module.exports = {
     //Check if there is a user in msg
     if (user == undefined) {
       //Invalid argument: user
-      bot.printMsg(msg, lang.error.invalidArg.user);
+      printMsg(msg, lang.error.invalidArg.user);
       return;
     }
     //Check if there is a group in msg
     if (group == undefined) {
       //Missing argument: group
-      bot.printMsg(msg, lang.error.missingArg.group);
+      printMsg(msg, lang.error.missingArg.group);
       return;
     }
 
@@ -75,16 +76,16 @@ module.exports = {
       userGroups = userGroups.filter(e => String(e).trim());
       //Check for duplicate
       if (userGroups.find(x => x == group)) {
-        bot.printMsg(msg, lang.error.groupDuplicate);
+        printMsg(msg, lang.error.groupDuplicate);
         return;
       }
       //Update row
       userGroups.push(group);
       await db.user.updatePermGroups(msg.guild.id, user.id, userGroups.toString());
-      bot.printMsg(msg, lang.setgroup.newGroup);
+      printMsg(msg, lang.setgroup.newGroup);
     } else {
       //Group don't exists
-      bot.printMsg(msg, lang.error.notFound.group);
+      printMsg(msg, lang.error.notFound.group);
     }
   },
   unsetGroup: async function(msg, user, group) {
@@ -93,13 +94,13 @@ module.exports = {
     //Check if there is a user in msg
     if (user == undefined) {
       //Invalid argument: user
-      bot.printMsg(msg, lang.error.invalidArg.user);
+      printMsg(msg, lang.error.invalidArg.user);
       return;
     }
     //Check if there is a group in msg
     if (group == undefined) {
       //Missing argument: group
-      bot.printMsg(msg, lang.error.missingArg.group);
+      printMsg(msg, lang.error.missingArg.group);
       return;
     }
 
@@ -123,13 +124,13 @@ module.exports = {
           userGroups = userGroups.toString()
         }
         await db.user.updatePermGroups(msg.guild.id, user.id, userGroups);
-        bot.printMsg(msg, lang.unsetgroup.removed);
+        printMsg(msg, lang.unsetgroup.removed);
       } else {
-        bot.printMsg(msg, lang.unsetgroup.notInGroup);
+        printMsg(msg, lang.unsetgroup.notInGroup);
       }
     } else {
       //Group don't exists
-      bot.printMsg(msg, lang.error.notFound.group);
+      printMsg(msg, lang.error.notFound.group);
     }
   },
 }
@@ -140,10 +141,10 @@ async function purgeGroups(msg) {
   //Check if there is a user in msg
   if (user == undefined) {
     //Invalid argument: user
-    bot.printMsg(msg, lang.error.invalidArg.user);
+    printMsg(msg, lang.error.invalidArg.user);
     return;
   }
   //Back to default group
   await db.user.updatePermGroups(msg.guild.id, user.id, config.groups[0].name);
-  bot.printMsg(msg, lang.purgegroups.purged);
+  printMsg(msg, lang.purgegroups.purged);
 }

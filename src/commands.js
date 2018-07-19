@@ -1,17 +1,39 @@
-const bot = require('./bot.js');
 const fs = require('fs');
 const db = require('./modules/database/database.js');
-var args = require('./args.js');
-var config = args.getConfig()[1];
+const util = require('./util.js');
+var config = util.getConfig()[1];
 var lang = require('./localization.js').getLocalization();
 
+class Command {
+  constructor(commandInfo) {
+    this.name = commandInfo.name;
+    this.aliases = commandInfo.aliases;
+    this.category = commandInfo.category;
+    this.priority = commandInfo.priority;
+    this.permLvl = commandInfo.permLvl;
+  }
+}
+
+class Category {
+  constructor(categoryInfo) {
+    this.name = categoryInfo.name;
+    this.priority = categoryInfo.priority;
+    this.commands = new Map();
+  }
+  addCommand(command) {
+    this.commands.set(command.name, command);
+  }
+}
+
 module.exports = {
+  Command: Command,
+  Category: Category,
   commands: new Map(),
   categories: new Map(),
   registerCategories: function(categories) {
     for (category of categories) {
       //Add the category
-      var category = new bot.Category(category);
+      var category = new Category(category);
       this.categories.set(category.name, category);
     }
   },
@@ -32,7 +54,7 @@ module.exports = {
           }
           for (var key in keys) {
             //Check if the key is a subclass of Command
-            if (keys[key].prototype instanceof bot.Command) {
+            if (keys[key].prototype instanceof Command) {
               var command = new keys[key]();
               if (!this.categories.has(module)) {
                 this.registerCategories([module]);
@@ -82,7 +104,7 @@ module.exports = {
     if (userPermLevel >= permLevel) {
       return true;
     }
-    bot.printMsg(msg, lang.error.notEnoughPermissions);
+    util.printMsg(msg, lang.error.notEnoughPermissions);
     return false;
   },
   checkIfValidCmd: async function(msg, args) {

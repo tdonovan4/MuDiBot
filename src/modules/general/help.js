@@ -1,10 +1,11 @@
-const config = require('../../args.js').getConfig()[1];
-const bot = require('../../bot.js')
+const config = require('../../util.js').getConfig()[1];
+const { printMsg } = require('../../util.js')
+const { Command } = require('../../commands.js')
 const mustache = require('mustache');
 const commands = require('../../commands.js');
 var lang = require('../../localization.js').getLocalization();
 
-module.exports = class helpCommand extends bot.Command {
+module.exports = class helpCommand extends Command {
   constructor() {
     super({
       name: 'help',
@@ -21,7 +22,7 @@ module.exports = class helpCommand extends bot.Command {
         //Valid command
         printCmd(msg, args, commands.commands.get(args[0]));
       } else {
-        bot.printMsg(msg, lang.error.invalidArg.cmd);
+        printMsg(msg, lang.error.invalidArg.cmd);
       }
     } else {
       //Print all commands
@@ -70,7 +71,7 @@ function printCmds(msg) {
         if (!command.done) {
           chars = config.prefix + command.value.name;
         } else {
-          if(!category.done) {
+          if (!category.done) {
             //Category/column finished
             columnsFinished++;
             category.done = true;

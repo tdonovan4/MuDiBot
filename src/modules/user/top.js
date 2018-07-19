@@ -1,12 +1,12 @@
 const Discord = require("discord.js");
-const bot = require('../../bot.js');
+const mustache = require('mustache');
+const { Command } = require('../../commands.js');
+const { client } = require('discord.js');
 const db = require('../database/database.js');
 const levels = require('../../levels.js');
-const mustache = require('mustache');
-var client = bot.client();
 var lang = require('../../localization.js').getLocalization();
 
-module.exports = class TopCommand extends bot.Command {
+module.exports = class TopCommand extends Command {
   constructor() {
     super({
       name: 'top',

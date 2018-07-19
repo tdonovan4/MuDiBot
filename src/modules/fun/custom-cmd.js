@@ -1,6 +1,7 @@
-const bot = require('../../bot.js');
-const config = require('../../args.js').getConfig()[1];
 const mustache = require('mustache');
+const { printMsg } = require('../../util.js');
+const { Command } = require('../../commands.js');
+const config = require('../../util.js').getConfig()[1];
 const db = require('../database/database.js');
 const player = require('../music/audio-player.js');
 var lang = require('../../localization.js').getLocalization();
@@ -49,12 +50,12 @@ async function printAllCmds(msg, args) {
       }))
     }
   } else {
-    bot.printMsg(msg, lang.custcmdlist.empty);
+    printMsg(msg, lang.custcmdlist.empty);
   }
 }
 
 module.exports = {
-  CustCmdCommand: class extends bot.Command {
+  CustCmdCommand: class extends Command {
     constructor() {
       super({
         name: 'custcmd',
@@ -75,7 +76,7 @@ module.exports = {
         cmds.filter(x => x.author_id == msg.author.id).length < config.custcmd.maxCmdsPerUser) {
         //Check if cmd already exists
         if (cmds.find(x => x.name == args[0]) != undefined) {
-          bot.printMsg(msg, lang.error.cmdAlreadyExists);
+          printMsg(msg, lang.error.cmdAlreadyExists);
         } else {
           //Max number of custom commands is 100
           if (cmds.length <= 100) {
@@ -89,24 +90,24 @@ module.exports = {
                   args[0],
                   args[1],
                   args.slice(2).join(' '));
-                bot.printMsg(msg, lang.custcmd.cmdAdded);
+                printMsg(msg, lang.custcmd.cmdAdded);
                 return;
               }
             }
             //Wrong usage
-            bot.printMsg(msg, lang.error.usage);
+            printMsg(msg, lang.error.usage);
           } else {
             //Too much commands
-            bot.printMsg(msg, lang.error.tooMuch.cmds);
+            printMsg(msg, lang.error.tooMuch.cmds);
           }
         }
       } else {
         //User have too much commands
-        bot.printMsg(msg, lang.error.tooMuch.cmdsUser);
+        printMsg(msg, lang.error.tooMuch.cmdsUser);
       }
     }
   },
-  CustCmdListCommand: class extends bot.Command {
+  CustCmdListCommand: class extends Command {
     constructor() {
       super({
         name: 'custcmdlist',
@@ -126,7 +127,7 @@ module.exports = {
       }
     }
   },
-  CustCmdRemoveCommand: class extends bot.Command {
+  CustCmdRemoveCommand: class extends Command {
     constructor() {
       super({
         name: 'custcmdremove',
@@ -143,10 +144,10 @@ module.exports = {
       if (cmd != undefined) {
         //Command exist, deleting
         await db.customCmd.deleteCmd(msg.guild.id, name);
-        bot.printMsg(msg, lang.custcmdremove.cmdRemoved);
+        printMsg(msg, lang.custcmdremove.cmdRemoved);
       } else {
         //Command not found
-        bot.printMsg(msg, lang.error.notFound.cmd);
+        printMsg(msg, lang.error.notFound.cmd);
       }
     }
   },

@@ -1,4 +1,4 @@
-const config = require('../../args.js').getConfig()[1];
+const config = require('../../util.js').getConfig()[1];
 var queries = require('./queries.js');
 
 const insertQuery = 'INSERT OR IGNORE INTO user (server_id, user_id) VALUES (?, ?)'

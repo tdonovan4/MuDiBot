@@ -217,7 +217,7 @@
         "object-curly-newline": "error",
         "object-curly-spacing": [
             "error",
-            "never"
+            "always"
         ],
         "object-shorthand": "off",
         "one-var": "off",

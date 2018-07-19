@@ -1,10 +1,10 @@
-const bot = require('../../bot.js');
-const configPath = require('../../args.js').getConfig()[0].slice(1);
-const config = require('../../args.js').getConfig()[1];
 const fs = require('fs');
-var client = bot.client();
+const configPath = require('../../util.js').getConfig()[0].slice(1);
+const config = require('../../util.js').getConfig()[1];
+const { Command } = require('../../commands.js');
+const { client } = require('discord.js');
 
-module.exports = class StatusCommand extends bot.Command {
+module.exports = class StatusCommand extends Command {
   constructor() {
     super({
       name: 'status',

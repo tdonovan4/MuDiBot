@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-var args = require('../src/args.js');
+var args = require('../src/util.js');
 
 exports.setTestConfig = function() {
   var newConfig = args.getConfig();

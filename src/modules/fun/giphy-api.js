@@ -1,9 +1,9 @@
-const bot = require('../../bot.js');
+const { Command } = require('../../commands.js');
 const https = require('https');
-var config = require('../../args.js').getConfig()[1];
+var config = require('../../util.js').getConfig()[1];
 
 module.exports = {
-  GifCommand: class extends bot.Command {
+  GifCommand: class extends Command {
     constructor() {
       super({
         name: 'gif',
@@ -20,7 +20,7 @@ module.exports = {
       }
     }
   },
-  GifRandomCommand: class extends bot.Command {
+  GifRandomCommand: class extends Command {
     constructor() {
       super({
         name: 'gifrandom',

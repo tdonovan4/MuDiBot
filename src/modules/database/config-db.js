@@ -1,6 +1,5 @@
 var queries = require('./queries.js');
-var bot = require('../../bot.js');
-var client = bot.client();
+const { client } = require('discord.js');
 
 const insertQuery = 'INSERT OR IGNORE INTO config (server_id) VALUES (?)';
 
@@ -24,10 +23,10 @@ module.exports = {
     var query = 'SELECT default_channel FROM config WHERE server_id = ?';
     var response = await queries.runGetQuery(query, serverId);
     var channel;
-    if(response == null || response.default_channel == null) {
+    if (response == null || response.default_channel == null) {
       //No channel in database, using backup
       channel = getBackupChannel(serverId);
-    } else  {
+    } else {
       //Channel found, checking
       channel = client.channels.get(response.default_channel);
       if (channel == undefined) {

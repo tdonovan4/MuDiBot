@@ -1,8 +1,8 @@
-const bot = require('../../bot.js');
+const { Command } = require('../../commands.js');
 const db = require('../database/database.js');
 var lang = require('../../localization.js').getLocalization();
 
-module.exports = class SetChannelCommand extends bot.Command {
+module.exports = class SetChannelCommand extends Command {
   constructor() {
     super({
       name: 'setchannel',

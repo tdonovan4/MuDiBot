@@ -1,8 +1,8 @@
-const bot = require('../../bot.js');
+const { Command } = require('../../commands.js');
+const { client } = require('discord.js');
 var lang = require('../../localization.js').getLocalization();
-var client = bot.client();
 
-module.exports = class SayCommand extends bot.Command {
+module.exports = class SayCommand extends Command {
   constructor() {
     super({
       name: 'say',

@@ -1,12 +1,12 @@
 //Play requested audio when called
+const mustache = require('mustache');
 const ytdl = require('ytdl-core');
 const https = require('https');
-const bot = require('../../bot.js');
-const config = require('../../args.js').getConfig()[1];
-const mustache = require('mustache');
+const { printMsg } = require('../../util.js');
+const { Command } = require('../../commands.js');
+const config = require('../../util.js').getConfig()[1];
 var lang = require('../../localization.js').getLocalization();
 var guildQueues = new Map();
-
 
 class GuildQueue {
   constructor(id) {
@@ -132,7 +132,7 @@ function printVideos(msg, queue, num) {
 }
 
 module.exports = {
-  PlayCommand: class extends bot.Command {
+  PlayCommand: class extends Command {
     constructor() {
       super({
         name: 'play',
@@ -147,7 +147,7 @@ module.exports = {
     }
   },
   //Stop playing the audio and leave channel
-  StopCommand: class extends bot.Command {
+  StopCommand: class extends Command {
     constructor() {
       super({
         name: 'stop',
@@ -165,15 +165,15 @@ module.exports = {
         //Reset
         guildQueue.connection = undefined;
         guildQueue.queue = [];
-        bot.printMsg(msg, lang.play.disconnected);
+        printMsg(msg, lang.play.disconnected);
       } else {
         //Not in a channel
-        bot.printMsg(msg, lang.error.notPlaying);
+        printMsg(msg, lang.error.notPlaying);
       }
     }
   },
   //Skip song
-  SkipCommand: class extends bot.Command {
+  SkipCommand: class extends Command {
     constructor() {
       super({
         name: 'skip',
@@ -187,16 +187,16 @@ module.exports = {
       var guildQueue = getQueue(msg.guild.id);
       if (guildQueue.connection != undefined) {
         //Must print before so that it is in order
-        bot.printMsg(msg, lang.play.skipped);
+        printMsg(msg, lang.play.skipped);
         //End stream
         guildQueue.connection.dispatcher.end();
       } else {
         //Not in a channel
-        bot.printMsg(msg, lang.error.notPlaying);
+        printMsg(msg, lang.error.notPlaying);
       }
     }
   },
-  QueueCommand: class extends bot.Command {
+  QueueCommand: class extends Command {
     constructor() {
       super({
         name: 'queue',
@@ -224,7 +224,7 @@ module.exports = {
     //Check if user is an a channel
     if (msg.member.voiceChannel == null) {
       //Not in a channel
-      bot.printMsg(msg, lang.error.notFound.voiceChannel);
+      printMsg(msg, lang.error.notFound.voiceChannel);
       return;
     }
     var videoId;
