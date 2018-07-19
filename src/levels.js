@@ -1,8 +1,8 @@
-const bot = require('./bot.js');
 const mustache = require('mustache');
+const { printMsg } = require('./util.js');
 const permGroups = require('./modules/user/permission-group.js');
 const db = require('./modules/database/database.js');
-const config = require('./args.js').getConfig()[1];
+const config = require('./util.js').getConfig()[1];
 const lastMessages = [];
 var lang = require('./localization.js').getLocalization();
 var maxValue = 1000;
@@ -191,12 +191,12 @@ module.exports = {
             }
           } else {
             //TODO: maybe remove
-            bot.printMsg(msg, lang.error.notFound.rankReward);
+            printMsg(msg, lang.error.notFound.rankReward);
           }
           //Add exclamation mark at the end
           message += '!';
         }
-        bot.printMsg(msg, message);
+        printMsg(msg, message);
       }
     }
   }

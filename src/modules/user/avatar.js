@@ -1,7 +1,8 @@
-const bot = require('../../bot.js');
+const { printMsg } = require('../../util.js');
+const { Command } = require('../../commands.js');
 var lang = require('../../localization.js').getLocalization();
 
-module.exports = class AvatarCommand extends bot.Command {
+module.exports = class AvatarCommand extends Command {
   constructor() {
     super({
       name: 'avatar',
@@ -14,9 +15,9 @@ module.exports = class AvatarCommand extends bot.Command {
   execute(msg) {
     var user = msg.mentions.users.first()
     if (user != undefined && user != null) {
-      bot.printMsg(msg, user.avatarURL);
+      printMsg(msg, user.avatarURL);
     } else {
-      bot.printMsg(msg, lang.error.invalidArg.user);
+      printMsg(msg, lang.error.invalidArg.user);
     }
   }
 }

@@ -1,11 +1,12 @@
 //Handle warnings
 const db = require('../database/database.js');
-const bot = require('../../bot.js');
+const { printMsg } = require('../../util.js');
+const { Command } = require('../../commands.js');
 const mustache = require('mustache');
 var lang = require('../../localization.js').getLocalization();
 
 module.exports = {
-  WarnCommand: class extends bot.Command {
+  WarnCommand: class extends Command {
     constructor() {
       super({
         name: 'warn',
@@ -19,7 +20,7 @@ module.exports = {
       module.exports.warn(msg, 1);
     }
   },
-  UnwarnCommand: class extends bot.Command {
+  UnwarnCommand: class extends Command {
     constructor() {
       super({
         name: 'unwarn',
@@ -33,7 +34,7 @@ module.exports = {
       module.exports.warn(msg, -1);
     }
   },
-  WarnListCommand: class extends bot.Command {
+  WarnListCommand: class extends Command {
     constructor() {
       super({
         name: 'warnlist',
@@ -63,21 +64,21 @@ module.exports = {
         if (output === '') {
           output = lang.warn.noWarns;
         }
-        bot.printMsg(msg, output);
+        printMsg(msg, output);
       } else if (mention != undefined) {
         //List the user's warnings
         var warnings = await db.user.getWarnings(msg.guild.id, mention.id);
 
-        bot.printMsg(msg, mustache.render(lang.warn.list, {
+        printMsg(msg, mustache.render(lang.warn.list, {
           userId: mention.id,
           warning: warnings
         }));
       } else {
-        bot.printMsg(msg, lang.error.usage);
+        printMsg(msg, lang.error.usage);
       }
     }
   },
-  WarnPurgeCommand: class extends bot.Command {
+  WarnPurgeCommand: class extends Command {
     constructor() {
       super({
         name: 'warnpurge',
@@ -91,7 +92,7 @@ module.exports = {
       if (args == 'all') {
         //Purge all users
         await db.user.updateUsersWarnings(msg.guild.id, 0);
-        bot.printMsg(msg, lang.warn.usersCleared);
+        printMsg(msg, lang.warn.usersCleared);
       } else if (msg.mentions.users.first() != undefined) {
         //Purge the user
         var mention = msg.mentions.users.first();
@@ -99,12 +100,12 @@ module.exports = {
 
         if (userExists) {
           await db.user.updateUsersWarnings(msg.guild.id, 0);
-          bot.printMsg(msg, lang.warn.userCleared);
+          printMsg(msg, lang.warn.userCleared);
         } else {
-          bot.printMsg(msg, lang.error.invalidArg.user);
+          printMsg(msg, lang.error.invalidArg.user);
         }
       } else {
-        bot.printMsg(msg, lang.error.usage);
+        printMsg(msg, lang.error.usage);
       }
     }
   },
@@ -120,11 +121,11 @@ module.exports = {
       //User warnings found!
       warnings += num;
       await db.user.updateWarnings(msg.guild.id, mention.id, warnings);
-      bot.printMsg(msg, mustache.render(lang.warn.list, {
+      printMsg(msg, mustache.render(lang.warn.list, {
         warnings: warnings
       }));
     } else {
-      bot.printMsg(msg, lang.error.usage);
+      printMsg(msg, lang.error.usage);
     }
   }
 }

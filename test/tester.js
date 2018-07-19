@@ -8,17 +8,17 @@ const sql = require('sqlite');
 const fs = require('fs');
 const rewire = require('rewire');
 const youtube = require('./test-resources/test-youtube.js');
+const util = require('../src/util.js');
 var testMessages = rewire('./test-resources/test-messages.js');
 var msg = testMessages.msg1;
 
 //Add test values to config
 require('./set-config.js').setTestConfig();
-var config = require('../src/args.js').getConfig()[1];
+var config = require('../src/util.js').getConfig()[1];
 
 //Set some stubs and spies
-var client = sinon.stub(Discord, 'Client');
-var testClient = require('./test-resources/test-client.js');
-client.returns(testClient);
+Discord.client = require('./test-resources/test-client.js');
+var printMsg = sinon.stub(util, 'printMsg');
 var msgSend = sinon.spy(msg.channel, 'send')
 var reply = sinon.spy(msg, 'reply')
 const giphy = rewire('../src/modules/fun/giphy-api.js');
@@ -35,15 +35,10 @@ const levels = rewire('../src/levels.js');
 const permGroups = rewire('../src/modules/user/permission-group.js');
 const warnings = require('../src/modules/warnings/warnings.js');
 
-//Init bot
-const bot = require('../src/bot.js');
-
-//Init stuff that need bot
 const db = require('../src/modules/database/database.js');
 const audioPlayer = rewire('../src/modules/music/audio-player.js');
-var setActivity = sinon.spy(bot.client().user, 'setActivity');
-var channelSend = sinon.spy(bot.client().channels.get('42'), 'send');
-var printMsg = sinon.stub(bot, 'printMsg');
+var setActivity = sinon.spy(Discord.client.user, 'setActivity');
+var channelSend = sinon.spy(Discord.client.channels.get('42'), 'send');
 printMsg.returnsArg(1);
 
 //Init commands
@@ -60,17 +55,17 @@ if (!fs.existsSync(dbFolder)) {
 }
 
 //Because promises are better than callbacks
-const util = require('util');
-const readdir = util.promisify(fs.readdir);
-const readFile = util.promisify(fs.readFile);
-const writeFile = util.promisify(fs.writeFile);
-const stat = util.promisify(fs.stat);
-const unlink = util.promisify(fs.unlink);
+const { promisify } = require('util');
+const readdir = promisify(fs.readdir);
+const readFile = promisify(fs.readFile);
+const writeFile = promisify(fs.writeFile);
+const stat = promisify(fs.stat);
+const unlink = promisify(fs.unlink);
 
 async function deleteDatabase() {
   var filesToDelete = await readdir(dbFolder);
   filesToDelete.forEach(async file => {
-    await unlink(dbFolder+file);
+    await unlink(dbFolder + file);
   });
 }
 
@@ -303,7 +298,7 @@ describe('Test users-db', function() {
   });
 });
 //Setting channels
-testClient.channels.set('1', {
+Discord.client.channels.set('1', {
   position: 0,
   name: '1',
   guild: {
@@ -312,7 +307,7 @@ testClient.channels.set('1', {
   id: '1',
   type: 'text'
 });
-testClient.channels.set('2', {
+Discord.client.channels.set('2', {
   position: 1,
   name: 'general',
   guild: {
@@ -321,7 +316,7 @@ testClient.channels.set('2', {
   id: '2',
   type: 'text'
 });
-testClient.channels.set('3', {
+Discord.client.channels.set('3', {
   position: 1,
   name: 'test',
   guild: {
@@ -439,26 +434,31 @@ describe('Test leaderboard.js', function() {
     it('getLocalTop should return the correct leaderboard', async function() {
       var response = await db.leaderboard.getLocalTop('1', 10);
       /*eslint-disable camelcase*/
-      expect(response).to.deep.equal([
-        {
-          user_id: '3', xp: 15000
-        }, {
-          user_id: '2', xp: 150
-        }, {
-          user_id: '4', xp: 0
+      expect(response).to.deep.equal([{
+        user_id: '3',
+        xp: 15000
+      }, {
+        user_id: '2',
+        xp: 150
+      }, {
+        user_id: '4',
+        xp: 0
       }]);
     });
     it('getGlobalTop should return the correct leaderboard', async function() {
       var response = await db.leaderboard.getGlobalTop(10);
-      expect(response).to.deep.equal([
-        {
-          user_id: '3', xp: 25000
-        }, {
-          user_id: '1', xp: 15000
-        }, {
-          user_id: '2', xp: 400
-        }, {
-          user_id: '4', xp: 0
+      expect(response).to.deep.equal([{
+        user_id: '3',
+        xp: 25000
+      }, {
+        user_id: '1',
+        xp: 15000
+      }, {
+        user_id: '2',
+        xp: 400
+      }, {
+        user_id: '4',
+        xp: 0
       }]);
       /*eslint-enable camelcase*/
     });
@@ -666,11 +666,10 @@ async function purgeUsers() {
 }
 async function insertUser(serverId, userId, xp) {
   await sql.open(config.pathDatabase);
-  await sql.run('INSERT INTO user (server_id, user_id, xp, warning, permission_group) VALUES (?, ?, ?, ?, ?)',
-    [serverId, userId, xp, 0, null]);
+  await sql.run('INSERT INTO user (server_id, user_id, xp, warning, permission_group) VALUES (?, ?, ?, ?, ?)', [serverId, userId, xp, 0, null]);
   await sql.close();
   //Add user to collection
-  testClient.users.set(`${userId}`, {
+  Discord.client.users.set(`${userId}`, {
     username: `The${userId}`
   });
 }
@@ -683,7 +682,7 @@ async function insertUsers(serverId, num) {
     //Add to list
     users.push(`(${serverId}, ${i}, ${value}, ${0}, ${null})`);
     //Add user to collection
-    testClient.users.set(`${i}`, {
+    Discord.client.users.set(`${i}`, {
       username: `The${i}`
     });
   }

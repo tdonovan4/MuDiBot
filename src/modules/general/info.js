@@ -1,11 +1,11 @@
 const Discord = require("discord.js");
-const bot = require('../../bot.js');
-const config = require('../../args.js').getConfig()[1];
+const config = require('../../util.js').getConfig()[1];
+const { Command } = require('../../commands.js');
+const { client } = require('discord.js');
 var lang = require('../../localization.js').getLocalization();
-var client = bot.client();
 var pjson = require('../../../package.json');
 
-module.exports = class InfoCommand extends bot.Command {
+module.exports = class InfoCommand extends Command {
   constructor() {
     super({
       name: 'info',

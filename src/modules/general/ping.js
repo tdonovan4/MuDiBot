@@ -1,7 +1,7 @@
-const bot = require('../../bot.js');
+const { Command } = require('../../commands.js');
 var lang = require('../../localization.js').getLocalization();
 
-module.exports = class PingCommand extends bot.Command {
+module.exports = class PingCommand extends Command {
   constructor() {
     super({
       name: 'ping',

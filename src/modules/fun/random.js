@@ -1,8 +1,8 @@
-const bot = require('../../bot.js');
+const { Command } = require('../../commands.js');
 var lang = require('../../localization.js').getLocalization();
 
 module.exports = {
-  FlipCoinCommand: class extends bot.Command {
+  FlipCoinCommand: class extends Command {
     constructor() {
       super({
         name: 'flipcoin',
@@ -16,7 +16,7 @@ module.exports = {
       msg.reply(Math.floor(Math.random() * 2) == 0 ? lang.flipcoin.heads : lang.flipcoin.tails);
     }
   },
-  RollCommand: class extends bot.Command {
+  RollCommand: class extends Command {
     constructor() {
       super({
         name: 'roll',
@@ -29,8 +29,9 @@ module.exports = {
     execute(msg, args) {
       args = msg.content.split(/[ d+]|(?=-)/g).slice(1);
       var invalid = false;
+
       function checkIfValid(string) {
-        if(string == /\s/g.test(string)) {
+        if (string == /\s/g.test(string)) {
           return false;
         }
         var result = isNaN(string) || string > 50 || string < 1;
@@ -38,17 +39,17 @@ module.exports = {
       }
       //Get values
       var values = [1, 6, 0];
-      for(var i = 0; i < 2; i++) {
-        if(checkIfValid(args[i])) {
+      for (var i = 0; i < 2; i++) {
+        if (checkIfValid(args[i])) {
           values[i] = parseInt(args[i]);
         } else {
           invalid = true;
         }
       }
       //Special for bonus
-      if(!isNaN(args[2]) && args[2] <= 50) {
+      if (!isNaN(args[2]) && args[2] <= 50) {
         values[2] = parseInt(args[2]);
-      } else if(args[2] != undefined) {
+      } else if (args[2] != undefined) {
         invalid = true;
       }
       //RNG
@@ -65,7 +66,7 @@ module.exports = {
       reply += `(${dice.join(' + ')})`;
       if (values[2] > 0) {
         reply += ` + ${values[2]}`;
-      } else if(values[2] < 0) {
+      } else if (values[2] < 0) {
         reply += ` - ${Math.abs(values[2])}`;
       }
       //Add total

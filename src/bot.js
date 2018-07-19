@@ -2,44 +2,18 @@
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const mustache = require('mustache');
-var config = require('./args.js').getConfig()[1];
+var config = require('./util.js').getConfig()[1];
 //For localization
 var lang = require('./localization.js').getLocalization();
 
-module.exports = {
-  printMsg: function(msg, text) {
-    console.log(text);
-    msg.channel.send(text);
-  },
-  client: function() {
-    return client;
-  },
-  Command: class {
-    constructor(commandInfo) {
-      this.name = commandInfo.name;
-      this.aliases = commandInfo.aliases;
-      this.category = commandInfo.category;
-      this.priority = commandInfo.priority;
-      this.permLvl = commandInfo.permLvl;
-    }
-  },
-  Category: class {
-    constructor(categoryInfo) {
-      this.name = categoryInfo.name;
-      this.priority = categoryInfo.priority;
-      this.commands = new Map();
-    }
-    addCommand(command) {
-      this.commands.set(command.name, command);
-    }
-  }
-}
+//Put client in discord.js to share it with other files
+Discord.client = client;
 
 //Log to the discord user with the token
 var startTime = Date.now()
 try {
   client.login(config.botToken);
-} catch(e) {
+} catch (e) {
   console.log(lang.error.invalidArg.token);
   process.exitCode = 1;
   process.exit();

@@ -1,7 +1,7 @@
 const sql = require('sqlite');
 const mustache = require('mustache');
 const fs = require('fs');
-const config = require('../../args.js').getConfig()[1];
+const config = require('../../util.js').getConfig()[1];
 var lang = require('../../localization.js').getLocalization();
 
 var Table = class {

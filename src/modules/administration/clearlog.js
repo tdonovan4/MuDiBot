@@ -1,11 +1,10 @@
-const bot = require('../../bot.js');
-const config = require('../../args.js').getConfig()[1];
-const commands = require('../../commands.js').commands;
+const config = require('../../util.js').getConfig()[1];
+const commands = require('../../commands.js');
 const mustache = require('mustache');
-var client = bot.client();
+const { client } = require('discord.js');
 var lang = require('../../localization.js').getLocalization();
 
-module.exports = class ClearlogCommand extends bot.Command {
+module.exports = class ClearlogCommand extends commands.Command {
   constructor() {
     super({
       name: 'clearlog',
@@ -37,15 +36,15 @@ module.exports = class ClearlogCommand extends bot.Command {
       if (mention != undefined) {
         usersToClear.push(mention.id);
         //Delete mention in args (handle username and nickname)
-        args[args.findIndex(x => x == `<@${mention.id}>`
-          || x == `<@!${mention.id}>`)] = '';
+        args[args.findIndex(x => x == `<@${mention.id}>` ||
+          x == `<@!${mention.id}>`)] = '';
       }
       clearList.push(args.slice(0, args.length).filter(x => x != '').join(' '));
       filter = true;
     } else {
       //Remove regular commands + configured commands and users
       //Add bot commands to list
-      commands.forEach(function(val) {
+      commands.commands.forEach(function(val) {
         clearList.push(config.prefix + val.name);
       });
       //Add specials commands to clear to list
@@ -63,10 +62,10 @@ module.exports = class ClearlogCommand extends bot.Command {
     //Collect reactions by author for the next 5 seconds
     var reaction = await confirmationMsg.awaitReactions((reaction, user) => {
       return ['✅', '❌'].indexOf(reaction.emoji.name) > -1 && user.id === msg.author.id;
-    }, {max: 1, time: 5000});
+    }, { max: 1, time: 5000 });
 
     //Check if should delete the messages
-    if(reaction.first() != undefined && reaction.first().emoji.name === '✅') {
+    if (reaction.first() != undefined && reaction.first().emoji.name === '✅') {
       deleteAll(messages);
     }
     //Delete the confirmation message
@@ -90,7 +89,7 @@ async function getMsgToDelete(msg, strings, users, num, filter) {
     var messages = await msg.channel.fetchMessages({
       limit: parseInt(num)
     })
-  } catch(e) {
+  } catch (e) {
     console.log(e);
   }
   messages = messages.array();

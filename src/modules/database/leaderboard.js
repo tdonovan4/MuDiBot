@@ -25,7 +25,7 @@ module.exports = {
       user.xp = user['SUM(xp)'];
       delete user['SUM(xp)'];
       return user;
-      });
+    });
     return response;
   },
   getUserGlobalPos: async function(userId) {

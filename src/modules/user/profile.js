@@ -1,9 +1,9 @@
 const Discord = require("discord.js");
-const bot = require('../../bot.js');
+const mustache = require('mustache');
+const { Command } = require('../../commands.js');
 const db = require('../database/database.js');
 const levels = require('../../levels.js');
-const mustache = require('mustache');
-var config = require('../../args.js').getConfig()[1];
+var config = require('../../util.js').getConfig()[1];
 var lang = require('../../localization.js').getLocalization();
 
 class Condition {
@@ -114,7 +114,7 @@ profileFields.set('location', new ProfileField('location', {
 }));
 
 module.exports = {
-  ProfileCommand: class extends bot.Command {
+  ProfileCommand: class extends Command {
     constructor() {
       super({
         name: 'profile',
@@ -243,7 +243,7 @@ module.exports = {
       });
     }
   },
-  ModifyProfileCommand: class extends bot.Command {
+  ModifyProfileCommand: class extends Command {
     constructor() {
       super({
         name: 'modifyprofile',

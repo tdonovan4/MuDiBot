@@ -1,8 +1,8 @@
-const bot = require('../../bot.js');
+const { Command } = require('../../commands.js');
 var lang = require('../../localization.js').getLocalization();
 
 module.exports = {
-  KillCommand: class extends bot.Command {
+  KillCommand: class extends Command {
     constructor() {
       super({
         name: 'kill',
@@ -18,7 +18,7 @@ module.exports = {
       process.exit();
     }
   },
-  RestartCommand: class extends bot.Command {
+  RestartCommand: class extends Command {
     constructor() {
       super({
         name: 'restart',

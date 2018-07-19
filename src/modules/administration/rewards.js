@@ -1,13 +1,14 @@
-const bot = require('../../bot.js');
+const { printMsg } = require('../../util.js');
+const { Command } = require('../../commands.js');
 const levels = require('../../levels.js');
 const db = require('../database/database.js');
-const config = require('../../args.js').getConfig()[1];
+const config = require('../../util.js').getConfig()[1];
 var lang = require('../../localization.js').getLocalization();
 
 function getRewardInMsg(msg, args) {
   var role = msg.mentions.roles.first();
   if (args[1] == undefined) {
-    bot.printMsg(msg, lang.error.missingArg.reward);
+    printMsg(msg, lang.error.missingArg.reward);
     return;
   }
   var group = args[1].charAt(0).toUpperCase() + args[1].slice(1);
@@ -20,18 +21,18 @@ function getRewardInMsg(msg, args) {
     }
   } else if (group == null) { //Check if reward is a group
     //No reward
-    bot.printMsg(msg, lang.error.missingArg.reward);
+    printMsg(msg, lang.error.missingArg.reward);
     return;
   } else if (config.groups.find(x => x.name == group) != undefined) {
     //Reward is group;
     return group;
   }
-  bot.printMsg(msg, lang.error.invalidArg.reward);
+  printMsg(msg, lang.error.invalidArg.reward);
   return;
 }
 
 module.exports = {
-  SetRewardCommand: class extends bot.Command {
+  SetRewardCommand: class extends Command {
     constructor() {
       super({
         name: 'setreward',
@@ -46,7 +47,7 @@ module.exports = {
       //Check if there is a rank in msg
       if (rank == undefined) {
         //Missing argument: rank
-        bot.printMsg(msg, lang.error.missingArg.rank);
+        printMsg(msg, lang.error.missingArg.rank);
         return;
       }
       var reward = getRewardInMsg(msg, args);
@@ -64,11 +65,11 @@ module.exports = {
         msg.channel.send(lang.setreward.newReward);
       } else {
         //Rank don't exists
-        bot.printMsg(msg, lang.error.notFound.rank);
+        printMsg(msg, lang.error.notFound.rank);
       }
     }
   },
-  UnsetRewardCommand: class extends bot.Command {
+  UnsetRewardCommand: class extends Command {
     constructor() {
       super({
         name: 'unsetreward',
@@ -83,26 +84,26 @@ module.exports = {
       //Check if there is a rank in msg
       if (rank == undefined) {
         //Missing argument: rank
-        bot.printMsg(msg, lang.error.missingArg.rank);
+        printMsg(msg, lang.error.missingArg.rank);
         return;
       }
       //Put first character of rank in uppercase
       rank = rank.charAt(0).toUpperCase() + rank.slice(1);
       //Check if it's a valid rank
       if (levels.ranks.find(x => x.name == rank) == undefined) {
-        bot.printMsg(msg, lang.error.notFound.rank);
+        printMsg(msg, lang.error.notFound.rank);
         return;
       }
       //Check if this rank as a reward
       var reward = await db.reward.getRankReward(msg.guild.id, rank);
       if (reward == null) {
         //Reward not found
-        bot.printMsg(msg, lang.error.notFound.rankReward);
+        printMsg(msg, lang.error.notFound.rankReward);
         return;
       }
       //Delete reward
       await db.reward.deleteRankReward(msg.guild.id, rank);
-      bot.printMsg(msg, lang.unsetreward.rewardUnset);
+      printMsg(msg, lang.unsetreward.rewardUnset);
     }
   }
 }
