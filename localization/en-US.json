@@ -21,12 +21,15 @@
     "missingArg": {
       "channel": "Missing argument: channel",
       "message": "Missing argument: message",
+      "user": "Missing argument: user",
       "rank": "Missing argument: rank",
       "reward": "Missing argument: reward",
       "role": "Missing argument: role",
       "group": "Missing argument: group",
       "field": "Missing argument: field",
-      "value": "Missing argument: field value"
+      "value": "Missing argument: field value",
+      "action": "Missing argument: action",
+      "name": "Missing argument: name"
     },
     "invalidArg": {
       "token": "The provided token is invalid!",
@@ -35,7 +38,8 @@
       "user": "Invalid user",
       "role": "Invalid role",
       "reward": "Invalid reward",
-      "field": "Invalid field"
+      "field": "Invalid field",
+      "action": "Invalid argument: action (it must be `say` or `play`)"
     },
     "notLocalized": {
       "cmd": "Error: this command is not localized!",
@@ -51,7 +55,6 @@
       "user": "User not found"
     },
     "tooMuch": {
-      "cmds": "There is too much custom commands!",
       "cmdsUser": "You have too many custom commands!",
       "chars": "You have more than {{max}} characters! Please enter less."
     },
@@ -105,7 +108,7 @@
       "msg": "Change bot status"
     },
     "say": {
-      "usages": ["<channel> <message>"],
+      "usages": ["<message>", "<channel> <message>"],
       "msg": "Send a message into the channel"
     },
     "avatar": {
@@ -113,7 +116,7 @@
       "msg": "Get an user avatar"
     },
     "profile": {
-      "usages": ["<user>"],
+      "usages": ["", "<user>"],
       "msg": "Get an user profile"
     },
     "modifyprofile": {
@@ -157,7 +160,7 @@
       "msg": "Add a custom cmd. <action> can be `say` or `play`, <arg> is the argument of the action."
     },
     "custcmdlist": {
-      "usages": ["", "<user>", "<cmd>"],
+      "usages": ["", "<user>", "<command>"],
       "msg": "List all custom commands by default. You can add an user to list all of his commands or you can add a command for more information about it."
     },
     "custcmdremove": {
@@ -165,7 +168,7 @@
       "msg": "Remove a custom command"
     },
     "play": {
-      "usages": ["<song url", "tags>"],
+      "usages": ["<video url>", "<tags>"],
       "msg": "Put a song in queue and play it"
     },
     "stop": {
@@ -189,7 +192,7 @@
       "msg": "Remove a warning from user"
     },
     "warnlist": {
-      "usages": ["<user>", "all"],
+      "usages": ["<user>", ""],
       "msg": "List warnings of an user or all users"
     },
     "warnpurge": {
@@ -300,7 +303,8 @@
     "invalid": "Wrong usage! Make sure to follow `<# of dice>d<# of faces><modifier>` and keep inputs bellow 50.\n"
   },
   "custcmd": {
-    "cmdAdded": "Command added"
+    "cmdAdded": "Command added",
+    "tooLong": "Please keep the name under 25 characters"
   },
   "custcmdlist": {
     "empty": "No custom commands found",

@@ -42,7 +42,15 @@ exports.msg1 = {
   guild: {
     id: '357156661105365963',
     roles: new Discord.Collection(),
+    channels: new Discord.Collection(),
     members: {
+      has: function(id) {
+        if (id == '1' || '041025599435591424') {
+          return true;
+        } else {
+          return false;
+        }
+      },
       get: function(id) {
         var username = 'TestUser';
         if (id == '357156661105365963') {
@@ -170,3 +178,9 @@ exports.msg1 = {
     roles: new Discord.Collection()
   },
 }
+
+exports.msg1.guild.channels.set('42', {
+  send: function(text) {
+    return text;
+  }
+});

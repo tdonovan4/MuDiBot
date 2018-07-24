@@ -1,44 +1,68 @@
 //Handle warnings
 const db = require('../database/database.js');
 const { printMsg } = require('../../util.js');
-const { Command } = require('../../commands.js');
+const commands = require('../../commands.js');
 const mustache = require('mustache');
 var lang = require('../../localization.js').getLocalization();
 
 module.exports = {
-  WarnCommand: class extends Command {
+  WarnCommand: class extends commands.Command {
     constructor() {
       super({
         name: 'warn',
         aliases: [],
+        args: [
+          new commands.Argument({
+            optional: false,
+            type: 'mention',
+            missingError: lang.error.missingArg.user,
+            invalidError: lang.error.invalidArg.user
+          }),
+        ],
         category: 'warnings',
         priority: 10,
         permLvl: 2
       });
     }
-    execute(msg) {
-      module.exports.warn(msg, 1);
+    async execute(msg) {
+      await module.exports.warn(msg, 1);
     }
   },
-  UnwarnCommand: class extends Command {
+  UnwarnCommand: class extends commands.Command {
     constructor() {
       super({
         name: 'unwarn',
         aliases: [],
+        args: [
+          new commands.Argument({
+            optional: false,
+            type: 'mention',
+            missingError: lang.error.missingArg.user,
+            invalidError: lang.error.invalidArg.user
+          }),
+        ],
         category: 'warnings',
         priority: 9,
         permLvl: 2
       });
     }
-    execute(msg) {
-      module.exports.warn(msg, -1);
+    async execute(msg) {
+      await module.exports.warn(msg, -1);
     }
   },
-  WarnListCommand: class extends Command {
+  WarnListCommand: class extends commands.Command {
     constructor() {
       super({
         name: 'warnlist',
         aliases: [],
+        args: [
+          new commands.Argument({
+            optional: true,
+            type: 'mention',
+            failOnInvalid: true,
+            invalidError: lang.error.invalidArg.user
+          }),
+        ],
         category: 'warnings',
         priority: 8,
         permLvl: 1
@@ -46,6 +70,7 @@ module.exports = {
     }
     async execute(msg, args) {
       var mention = msg.mentions.users.first();
+      console.log(args);
       if (args.length == 0) {
         //List all users warnings
         var users = await db.user.getUsersWarnings(msg.guild.id);
@@ -78,11 +103,23 @@ module.exports = {
       }
     }
   },
-  WarnPurgeCommand: class extends Command {
+  WarnPurgeCommand: class extends commands.Command {
     constructor() {
       super({
         name: 'warnpurge',
         aliases: [],
+        args: [
+          new commands.Argument({
+            optional: true,
+            type: 'mention',
+          }),
+          new commands.Argument({
+            optional: true,
+            possibleValues: ['all'],
+            failOnInvalid: true,
+            invalidError: lang.error.invalidArg.user
+          }),
+        ],
         category: 'warnings',
         priority: 7,
         permLvl: 2
@@ -111,21 +148,17 @@ module.exports = {
   },
   warn: async function(msg, num) {
     var mention = msg.mentions.users.first();
-    if (mention != undefined) {
-      //There is a mention
-      var warnings = await db.user.getWarnings(msg.guild.id, mention.id);
-      if (warnings == undefined) {
-        //Default
-        warnings = 0;
-      }
-      //User warnings found!
-      warnings += num;
-      await db.user.updateWarnings(msg.guild.id, mention.id, warnings);
-      printMsg(msg, mustache.render(lang.warn.list, {
-        warnings: warnings
-      }));
-    } else {
-      printMsg(msg, lang.error.usage);
+    var warnings = await db.user.getWarnings(msg.guild.id, mention.id);
+    if (warnings == undefined) {
+      //Default
+      warnings = 0;
     }
+    //User warnings found!
+    warnings += num;
+    await db.user.updateWarnings(msg.guild.id, mention.id, warnings);
+    printMsg(msg, mustache.render(lang.warn.list, {
+      userId: mention.id,
+      warning: warnings
+    }));
   }
 }

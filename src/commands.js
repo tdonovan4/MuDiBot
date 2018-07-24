@@ -6,11 +6,132 @@ var lang = require('./localization.js').getLocalization();
 
 class Command {
   constructor(commandInfo) {
+    //The name of the command
     this.name = commandInfo.name;
+    //The aliases
     this.aliases = commandInfo.aliases;
+    //The wanted arguments
+    this.args = commandInfo.args;
+    //The category for help
     this.category = commandInfo.category;
+    //The priority for the position in help
     this.priority = commandInfo.priority;
+    //The required permission level to use this command
     this.permLvl = commandInfo.permLvl;
+  }
+  checkArgs(msg, msgArgs) {
+    var valid = true;
+    if (this.args != undefined) {
+      var msgArgPos = 0;
+      for (var cmdArg of this.args) {
+        //Check if missing
+        if (msgArgs == undefined || msgArgs[msgArgPos] == undefined) {
+          if (!cmdArg.optional) {
+            //Throw error
+            msg.channel.send(cmdArg.missingError);
+            valid = false;
+            break;
+          }
+        } else {
+          //Check if valid
+          if (!cmdArg.checkArg(msg, msgArgs[msgArgPos])) {
+            if (!cmdArg.optional || cmdArg.failOnInvalid) {
+              //Throw error
+              msg.channel.send(cmdArg.invalidError);
+              valid = false;
+              break;
+            }
+          } else {
+            //Increment for new message argument
+            msgArgPos++;
+          }
+        }
+      }
+    }
+    return valid;
+  }
+}
+
+class Argument {
+  constructor(argInfo) {
+    //Is it optional?
+    this.optional = argInfo.optional;
+    //The type (int, channel, mention or nothing)
+    this.type = argInfo.type;
+    //An array of possible values for this arg (empty array to disable)
+    this.possibleValues = argInfo.possibleValues;
+    //If true, the argument will throw an error when invalid even if optional
+    this.failOnInvalid = argInfo.failOnInvalid;
+    //When the argument is missing
+    this.missingError = argInfo.missingError;
+    //When the argument is not valid
+    this.invalidError = argInfo.invalidError;
+  }
+  checkArg(msg, msgArg) {
+    var valid = true
+    var group;
+    //TODO: make an argument class
+    //Check input
+    switch (this.type) {
+      case 'int':
+        if (Number(msgArg)) {
+          //Argument is not a number
+          valid = false;
+        }
+        break;
+      case 'channel':
+        var channelID = msgArg.match(/<#(.*?)>/);
+        if (channelID == null || !msg.guild.channels.has(channelID[1])) {
+          //Argument is not a channel
+          valid = false;
+        }
+        break;
+      case 'mention':
+        //Checking mention manually, because I care about it's position
+        var mentionID = msgArg.match(/<@(.*?)>/);
+        if (mentionID == null || !msg.guild.members.has(mentionID[1])) {
+          //Argument is not a mention
+          valid = false;
+        }
+        break;
+      case 'group':
+        group = msgArg.charAt(0).toUpperCase() + msgArg.slice(1);
+        if (config.groups.find(x => x.name == group) == undefined) {
+          //Argument is not a group
+          valid = false;
+        }
+        break;
+      case 'rank':
+        //Put first character of rank in uppercase
+        var rank = msgArg.charAt(0).toUpperCase() + msgArg.slice(1);
+        //Change underscore to space
+        rank = rank.replace('_', ' ');
+        //To search for the ranks in the correct language
+        if (Object.keys(lang.ranks).find(x => lang.ranks[x] === rank) == undefined) {
+          //Argument is not a rank
+          valid = false;
+        }
+        break;
+      case 'reward':
+        var groupName = msgArg.charAt(0).toUpperCase() + msgArg.slice(1);
+        group = config.groups.find(x => x.name == groupName);
+        var groupID = msgArg.match(/<@&(.*?)>/);
+        if (groupID != undefined) {
+          var role = msg.guild.roles.get(groupID[1]);
+        }
+        if (group == undefined && role == undefined) {
+          //Argument is not a group or a role
+          valid = false;
+        }
+        break;
+    }
+    //Check if the message argument is in possible values
+    if (this.possibleValues != undefined &&
+      this.possibleValues.indexOf(msgArg) == -1) {
+      //Not in possible values
+      valid = false;
+    }
+    return valid;
   }
 }
 
@@ -27,8 +148,14 @@ class Category {
 
 module.exports = {
   Command: Command,
+  Argument: Argument,
   Category: Category,
   commands: new Map(),
+  /*
+   * We need an array with reference for help because else it won't
+   * get the commands after for checking the argument
+   */
+  namesAndAliases: [],
   categories: new Map(),
   registerCategories: function(categories) {
     for (category of categories) {
@@ -61,6 +188,8 @@ module.exports = {
               }
               //Add command to the list of commands
               this.commands.set(command.name, command);
+              //Add command name and alias(es)
+              this.namesAndAliases.push(command.name, ...command.aliases);
               //Add command to the category
               this.categories.get(module).addCommand(command);
             }
@@ -107,8 +236,25 @@ module.exports = {
     util.printMsg(msg, lang.error.notEnoughPermissions);
     return false;
   },
+  getCmd: function(arg) {
+    var command = this.commands.get(arg);
+    if (!command) {
+      //Search if alias
+      this.commands.forEach(function(aCommand) {
+        if (aCommand.aliases.includes(arg)) {
+          command = aCommand;
+          return;
+        }
+      });
+    }
+    //Check if activated
+    var cmdActivated = config[arg] != undefined ? config[arg].activated : true;
+    if (cmdActivated) {
+      return command;
+    }
+  },
   checkIfValidCmd: async function(msg, args) {
-    var command = getCmd(args[0]);
+    var command = this.getCmd(args[0]);
 
     //Check if message begins with prefix, if cmd is a valid command
     if (msg.content.startsWith(config.prefix) && command != null) {
@@ -125,25 +271,11 @@ module.exports = {
     return false;
   },
   executeCmd: async function(msg, args) {
-    //Execute the commandd
-    await getCmd(args[0]).execute(msg, msg.content.split(" ").slice(1));
-  },
-}
-
-function getCmd(arg) {
-  var command = module.exports.commands.get(arg);
-  if (!command) {
-    //Search if alias
-    module.exports.commands.forEach(function(aCommand) {
-      if (aCommand.aliases.includes(arg)) {
-        command = aCommand;
-        return;
-      }
-    });
-  }
-  //Check if activated
-  var cmdActivated = config[arg] != undefined ? config[arg].activated : true;
-  if (cmdActivated) {
-    return command;
+    //Check the arguments before executing
+    var cmd = this.getCmd(args[0]);
+    if (cmd.checkArgs(msg, args.slice(1))) {
+      //Execute the commandd
+      await cmd.execute(msg, args.slice(1));
+    }
   }
 }

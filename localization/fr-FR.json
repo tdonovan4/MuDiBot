@@ -21,21 +21,25 @@
     "missingArg": {
       "channel": "Argument manquant: salon",
       "message": "Argument manquant: message",
+      "user": "Argument manquant: utilisateur",
       "rank": "Argument manquant: rang",
       "reward": "Argument manquant: récompense",
       "role": "Argument manquant: role",
       "group": "Argument manquant: groupe",
       "field": "Argument manquant: champ",
-      "value": "Argument manquant: valeur du champ"
+      "value": "Argument manquant: valeur du champ",
+      "action": "Argument manquant: action",
+      "name": "Argument manquant: nom"
     },
     "invalidArg": {
       "token": "Le token n'est pas valide!",
       "cmd": "Cette commande n'est pas valide",
       "category": "Attention: {{cmds}} n'a pas de catégorie valide",
-      "user": "Utilisateur non valide",
-      "role": "Role non valide",
-      "reward": "Récompense non valide",
-      "field": "Champ non valide"
+      "user": "Utilisateur invalide",
+      "role": "Role invalide",
+      "reward": "Récompense invalide",
+      "field": "Champ invalide",
+      "action": "Argument invalide: action (cela doit être `say` ou `play`)"
     },
     "notLocalized": {
       "cmd": "Erreur: cette commande n'est pas traduite!",
@@ -51,7 +55,6 @@
       "user": "Utilisateur non trouvé"
     },
     "tooMuch": {
-      "cmds": "Il y a trop de commandes personnalisée!",
       "cmdsUser:": "Vous avez trop de commandes personnalisée!",
       "chars": "Vous avez plus de {{max}} charactères! Veuillez en entrer moins."
     },
@@ -105,7 +108,7 @@
       "msg": "Change le status"
     },
     "say": {
-      "usages": ["<salon> <message>"],
+      "usages": ["<message>", "<salon> <message>"],
       "msg": "Envoie un message dans le salon"
     },
     "avatar": {
@@ -113,7 +116,7 @@
       "msg": "Donne l'avatar d'un utilisateur"
     },
     "profile": {
-      "usages": ["<utilisateur>"],
+      "usages": ["", "<utilisateur>"],
       "msg": "Donne le profil d'un joueur"
     },
     "modifyprofile": {
@@ -157,7 +160,7 @@
       "msg": "Ajoute une commande personnalisée. <action> peut être `say` ou `play`, <arg> est l'argument de l'action."
     },
     "custcmdlist": {
-      "usages": ["", "<utilisateur>", "<cmd>"],
+      "usages": ["", "<utilisateur>", "<commande>"],
       "msg": "Par défaut, liste toutes les commandes personnalisée. Vous pouvez ajouter un utilisateur pour trouver ses commandes ou une commande pour plus d'information sur celle-ci."
     },
     "custcmdremove": {
@@ -189,7 +192,7 @@
       "msg": "Enlève un avertissement de l'utilisateur"
     },
     "warnlist": {
-      "usages": ["<utilisateur>", "all"],
+      "usages": ["<utilisateur>", ""],
       "msg": "Liste les avertissements d'un utilisateur ou de tous les utilisateurs"
     },
     "warnpurge": {

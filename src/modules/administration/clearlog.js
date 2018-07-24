@@ -9,6 +9,19 @@ module.exports = class ClearlogCommand extends commands.Command {
     super({
       name: 'clearlog',
       aliases: ['clearlogs', 'clear'],
+      args: [
+        new commands.Argument({
+          optional: true,
+          type: 'mention',
+        }),
+        new commands.Argument({
+          optional: true,
+        }),
+        new commands.Argument({
+          optional: true,
+          type: 'int'
+        }),
+      ],
       category: 'administration',
       priority: 10,
       permLvl: 3

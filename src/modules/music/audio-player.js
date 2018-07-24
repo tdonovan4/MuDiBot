@@ -3,7 +3,7 @@ const mustache = require('mustache');
 const ytdl = require('ytdl-core');
 const https = require('https');
 const { printMsg } = require('../../util.js');
-const { Command } = require('../../commands.js');
+const commands = require('../../commands.js');
 const config = require('../../util.js').getConfig()[1];
 var lang = require('../../localization.js').getLocalization();
 var guildQueues = new Map();
@@ -132,11 +132,17 @@ function printVideos(msg, queue, num) {
 }
 
 module.exports = {
-  PlayCommand: class extends Command {
+  PlayCommand: class extends commands.Command {
     constructor() {
       super({
         name: 'play',
         aliases: [],
+        args: [
+          new commands.Argument({
+            optional: false,
+            missingError: lang.error.usage
+          }),
+        ],
         category: 'music',
         priority: 10,
         permLvl: 0
@@ -147,7 +153,7 @@ module.exports = {
     }
   },
   //Stop playing the audio and leave channel
-  StopCommand: class extends Command {
+  StopCommand: class extends commands.Command {
     constructor() {
       super({
         name: 'stop',
@@ -173,7 +179,7 @@ module.exports = {
     }
   },
   //Skip song
-  SkipCommand: class extends Command {
+  SkipCommand: class extends commands.Command {
     constructor() {
       super({
         name: 'skip',
@@ -196,7 +202,7 @@ module.exports = {
       }
     }
   },
-  QueueCommand: class extends Command {
+  QueueCommand: class extends commands.Command {
     constructor() {
       super({
         name: 'queue',
@@ -218,7 +224,6 @@ module.exports = {
     if (args.length == 0) {
       //Missing argument;
       msg.channel.send(lang.error.usage);
-
       return;
     }
     //Check if user is an a channel
