@@ -93,7 +93,6 @@ module.exports = {
     userGroups = userGroups.split(',');
     //Remove whitespace
     userGroups = userGroups.filter(e => String(e).trim());
-    console.log(userGroups);
     //Check for duplicate
     if (userGroups.find(x => x == group)) {
       printMsg(msg, lang.error.groupDuplicate);

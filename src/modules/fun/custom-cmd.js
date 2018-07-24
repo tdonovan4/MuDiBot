@@ -128,10 +128,12 @@ module.exports = {
     }
     async execute(msg, args) {
       var cmd = await db.customCmd.getCmd(msg.guild.id, args[0]);
+      var mention = msg.mentions.users.first();
       if (cmd != undefined) {
         //Print info about the command
         printSingleCmd(msg, cmd);
       } else {
+        //Print all commands
         await printAllCmds(msg, args);
       }
     }
