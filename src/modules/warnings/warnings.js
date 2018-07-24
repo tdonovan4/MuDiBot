@@ -70,7 +70,6 @@ module.exports = {
     }
     async execute(msg, args) {
       var mention = msg.mentions.users.first();
-      console.log(args);
       if (args.length == 0) {
         //List all users warnings
         var users = await db.user.getUsersWarnings(msg.guild.id);

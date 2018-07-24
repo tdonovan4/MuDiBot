@@ -960,22 +960,21 @@ describe('Test the custom commands', function() {
       msg.author.id = '357156661105365963';
       //Add another custom cmd
       await db.customCmd.insertCmd(msg.guild.id, msg.author.id, 'testCmd2', 'say', '2');
-      msg.author.id = '041025599435591424';
       await commands.executeCmd(msg, ['custcmdlist']);
       var response = msgSend.getCall(msgSend.callCount - 2).returnValue.content;
       expect(response).to.have.string('testCmd1');
       expect(response).to.have.string('testCmd2');
     })
-    //TODO: fix
-    /*it('Should return all TestUser\'s custom commands', async function() {
+    it('Should return all TestUser\'s custom commands', async function() {
       //Add another custom cmd
+      msg.author.id = '041025599435591424';
       await db.customCmd.insertCmd(msg.guild.id, msg.author.id, 'testCmd3', 'say', '3');
-      await commands.executeCmd(msg, ['custcmdlist']);
+      await commands.executeCmd(msg, ['custcmdlist', '<@041025599435591424>']);
       var response = msgSend.getCall(msgSend.callCount - 2).returnValue.content;
       expect(response).to.have.string('testCmd1');
       expect(response).to.not.have.string('testCmd2');
       expect(response).to.have.string('testCmd3');
-    });*/
+    });
     it('Should return that the list is empty', async function() {
       //Remove all inside of table
       await sql.open(config.pathDatabase);
