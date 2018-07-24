@@ -1,15 +1,22 @@
 const config = require('../../util.js').getConfig()[1];
-const { printMsg } = require('../../util.js')
-const { Command } = require('../../commands.js')
-const mustache = require('mustache');
 const commands = require('../../commands.js');
+const mustache = require('mustache');
 var lang = require('../../localization.js').getLocalization();
 
-module.exports = class helpCommand extends Command {
+module.exports = class helpCommand extends commands.Command {
   constructor() {
     super({
       name: 'help',
       aliases: [],
+      args: [
+        new commands.Argument({
+          position: 0,
+          optional: true,
+          failOnInvalid: true,
+          possibleValues: commands.namesAndAliases,
+          invalidError: lang.error.invalidArg.cmd
+        })
+      ],
       category: 'general',
       priority: 10,
       permLvl: 0
@@ -17,13 +24,8 @@ module.exports = class helpCommand extends Command {
   }
   execute(msg, args) {
     if (args[0] != undefined) {
-      //Check if args is a valid command
-      if (commands.commands.has(args[0])) {
-        //Valid command
-        printCmd(msg, args, commands.commands.get(args[0]));
-      } else {
-        printMsg(msg, lang.error.invalidArg.cmd);
-      }
+      //Print one command
+      printCmd(msg, args, commands.commands.get(args[0]));
     } else {
       //Print all commands
       printCmds(msg);

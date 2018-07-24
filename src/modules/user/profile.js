@@ -1,6 +1,6 @@
 const Discord = require("discord.js");
 const mustache = require('mustache');
-const { Command } = require('../../commands.js');
+const commands = require('../../commands.js');
 const db = require('../database/database.js');
 const levels = require('../../levels.js');
 var config = require('../../util.js').getConfig()[1];
@@ -114,11 +114,18 @@ profileFields.set('location', new ProfileField('location', {
 }));
 
 module.exports = {
-  ProfileCommand: class extends Command {
+  ProfileCommand: class extends commands.Command {
     constructor() {
       super({
         name: 'profile',
         aliases: [],
+        args: [
+          new commands.Argument({
+            optional: true,
+            type: 'mention',
+            invalidError: lang.error.invalidArg.user
+          })
+        ],
         category: 'user',
         priority: 10,
         permLvl: 0
@@ -243,36 +250,32 @@ module.exports = {
       });
     }
   },
-  ModifyProfileCommand: class extends Command {
+  ModifyProfileCommand: class extends commands.Command {
     constructor() {
       super({
         name: 'modifyprofile',
         aliases: [],
+        args: [
+          new commands.Argument({
+            optional: false,
+            possibleValues: ['bio', 'birthday', 'location'],
+            missingError: lang.error.missingArg.field,
+            invalidError: lang.error.invalidArg.field
+          }),
+          new commands.Argument({
+            optional: false,
+            missingError: lang.error.missingArg.value
+          })
+        ],
         category: 'user',
         priority: 9,
         permLvl: 0
       });
     }
     async execute(msg, args) {
-      //Check args
-      if (args.length < 2) {
-        if (args.length < 1) {
-          //No field
-          msg.channel.send(lang.error.missingArg.field);
-        } else {
-          //No value
-          msg.channel.send(lang.error.missingArg.value);
-        }
-        return;
-      }
       var field = profileFields.get(args[0].toLowerCase());
-      if (field != undefined) {
-        //Add input to db
-        await field.updateDB(msg, args.slice(1).join(' '));
-      } else {
-        //Bad field
-        msg.channel.send(lang.error.invalidArg.field);
-      }
+      //Add input to db
+      await field.updateDB(msg, args.slice(1).join(' '));
     }
   }
 }

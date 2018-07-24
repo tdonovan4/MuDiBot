@@ -1,6 +1,6 @@
 const mustache = require('mustache');
 const { printMsg } = require('../../util.js');
-const { Command } = require('../../commands.js');
+const commands = require('../../commands.js');
 const config = require('../../util.js').getConfig()[1];
 const db = require('../database/database.js');
 const player = require('../music/audio-player.js');
@@ -31,7 +31,7 @@ async function printAllCmds(msg, args) {
       //User's commands
       names = cmds.filter(x => x.author_id == msg.mentions.users.first().id).map(x => x.name);
     }
-    if (names != undefined) {
+    if (names[0] != undefined) {
       var output = '';
       var spaces = 25;
 
@@ -48,6 +48,8 @@ async function printAllCmds(msg, args) {
       msg.channel.send(mustache.render(lang.custcmdlist.msg, {
         config
       }))
+    } else {
+      printMsg(msg, lang.custcmdlist.empty);
     }
   } else {
     printMsg(msg, lang.custcmdlist.empty);
@@ -55,11 +57,27 @@ async function printAllCmds(msg, args) {
 }
 
 module.exports = {
-  CustCmdCommand: class extends Command {
+  CustCmdCommand: class extends commands.Command {
     constructor() {
       super({
         name: 'custcmd',
         aliases: ['cc'],
+        args: [
+          new commands.Argument({
+            optional: false,
+            missingError: lang.error.missingArg.name,
+          }),
+          new commands.Argument({
+            optional: false,
+            possibleValues: ['say', 'play'],
+            missingError: lang.error.missingArg.action,
+            invalidError: lang.error.invalidArg.action
+          }),
+          new commands.Argument({
+            optional: false,
+            missingError: lang.error.missingArg.message,
+          })
+        ],
         category: 'fun',
         priority: 2,
         permLvl: 1
@@ -78,27 +96,18 @@ module.exports = {
         if (cmds.find(x => x.name == args[0]) != undefined) {
           printMsg(msg, lang.error.cmdAlreadyExists);
         } else {
-          //Max number of custom commands is 100
-          if (cmds.length <= 100) {
-            //Check if there is enough args and if length of name < 25 characters
-            if (args.length >= 3 && args[0].length < 25) {
-              //Add command to db
-              if (args[1] == 'say' || args[1] == 'play') {
-                await db.customCmd.insertCmd(
-                  msg.guild.id,
-                  msg.author.id,
-                  args[0],
-                  args[1],
-                  args.slice(2).join(' '));
-                printMsg(msg, lang.custcmd.cmdAdded);
-                return;
-              }
-            }
-            //Wrong usage
-            printMsg(msg, lang.error.usage);
+          //length of name < 25 characters
+          if (args[0].length < 25) {
+            //Add command to db
+            await db.customCmd.insertCmd(
+              msg.guild.id,
+              msg.author.id,
+              args[0],
+              args[1],
+              args.slice(2).join(' '));
+            printMsg(msg, lang.custcmd.cmdAdded);
           } else {
-            //Too much commands
-            printMsg(msg, lang.error.tooMuch.cmds);
+            printMsg(msg, lang.custcmd.tooLong);
           }
         }
       } else {
@@ -107,7 +116,7 @@ module.exports = {
       }
     }
   },
-  CustCmdListCommand: class extends Command {
+  CustCmdListCommand: class extends commands.Command {
     constructor() {
       super({
         name: 'custcmdlist',
@@ -127,7 +136,7 @@ module.exports = {
       }
     }
   },
-  CustCmdRemoveCommand: class extends Command {
+  CustCmdRemoveCommand: class extends commands.Command {
     constructor() {
       super({
         name: 'custcmdremove',
@@ -141,6 +150,7 @@ module.exports = {
     async execute(msg, args) {
       var name = args[0]
       var cmd = await db.customCmd.getCmd(msg.guild.id, name);
+      //Can't use args because it needs the database :/
       if (cmd != undefined) {
         //Command exist, deleting
         await db.customCmd.deleteCmd(msg.guild.id, name);

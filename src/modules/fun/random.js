@@ -21,6 +21,7 @@ module.exports = {
       super({
         name: 'roll',
         aliases: [],
+        //Using custom arg system
         category: 'fun',
         priority: 7,
         permLvl: 0
