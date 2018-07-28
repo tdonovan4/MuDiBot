@@ -58,7 +58,9 @@ exports.msg1 = {
         }
         return {
           user: {
-            username: username
+            username: username,
+            avatarURL: 'https://cdn.discordapp.com/avatars/041025599435591424/',
+            id: id
           }
         }
       }
@@ -90,6 +92,12 @@ exports.msg1 = {
           return;
         }
       }
+    },
+    messages: [],
+    awaitMessages: function() {
+      var msg = new Discord.Collection().set('1', this.messages[0])
+      this.messages.splice(0, 1);
+      return msg;
     },
     fetchMessages: function(args) {
       var predefinedMsg = [{

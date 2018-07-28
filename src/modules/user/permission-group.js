@@ -1,4 +1,4 @@
-const { printMsg } = require('../../util.js');
+const util = require('../../util.js');
 const commands = require('../../commands.js');
 const db = require('../database/database.js');
 const config = require('../../util.js').getConfig()[1];
@@ -13,12 +13,14 @@ module.exports = {
         args: [
           new commands.Argument({
             optional: false,
+            interactiveMsg: lang.setgroup.interactiveMode.user,
             type: 'mention',
             missingError: lang.error.missingArg.user,
             invalidError: lang.error.invalidArg.user
           }),
           new commands.Argument({
             optional: false,
+            interactiveMsg: lang.setgroup.interactiveMode.group,
             type: 'group',
             missingError: lang.error.missingArg.group,
             invalidError: lang.error.notFound.group
@@ -30,7 +32,8 @@ module.exports = {
       });
     }
     async execute(msg, args) {
-      await module.exports.setGroup(msg, msg.mentions.users.first(), args[1]);
+      var user = util.getUserFromArg(msg, args[0]);
+      await module.exports.setGroup(msg, user, args[1]);
     }
   },
   UnsetGroupCommand: class extends commands.Command {
@@ -41,12 +44,14 @@ module.exports = {
         args: [
           new commands.Argument({
             optional: false,
+            interactiveMsg: lang.setgroup.interactiveMode.user,
             type: 'mention',
             missingError: lang.error.missingArg.user,
             invalidError: lang.error.invalidArg.user
           }),
           new commands.Argument({
             optional: false,
+            interactiveMsg: lang.setgroup.interactiveMode.group,
             type: 'group',
             missingError: lang.error.missingArg.group,
             invalidError: lang.error.notFound.group
@@ -58,7 +63,8 @@ module.exports = {
       });
     }
     async execute(msg, args) {
-      await module.exports.unsetGroup(msg, msg.mentions.users.first(), args[1]);
+      var user = util.getUserFromArg(msg, args[0]);
+      await module.exports.unsetGroup(msg, user, args[1]);
     }
   },
   PurgeGroupsCommand: class extends commands.Command {
@@ -69,6 +75,7 @@ module.exports = {
         args: [
           new commands.Argument({
             optional: false,
+            interactiveMsg: lang.setgroup.interactiveMode.user,
             type: 'mention',
             missingError: lang.error.missingArg.user,
             invalidError: lang.error.invalidArg.user
@@ -86,7 +93,6 @@ module.exports = {
   setGroup: async function(msg, user, group) {
     //Put first character of group in uppercase
     group = group.charAt(0).toUpperCase() + group.slice(1);
-
     //Get existing groups
     var userGroups = await db.user.getPermGroups(msg.guild.id, user.id);
     //Split groups
@@ -95,13 +101,13 @@ module.exports = {
     userGroups = userGroups.filter(e => String(e).trim());
     //Check for duplicate
     if (userGroups.find(x => x == group)) {
-      printMsg(msg, lang.error.groupDuplicate);
+      util.printMsg(msg, lang.error.groupDuplicate);
       return;
     }
     //Update row
     userGroups.push(group);
     await db.user.updatePermGroups(msg.guild.id, user.id, userGroups.toString());
-    printMsg(msg, lang.setgroup.newGroup);
+    util.printMsg(msg, lang.setgroup.newGroup);
   },
   unsetGroup: async function(msg, user, group) {
     //Put first character of group in uppercase
@@ -122,9 +128,9 @@ module.exports = {
         userGroups = userGroups.toString()
       }
       await db.user.updatePermGroups(msg.guild.id, user.id, userGroups);
-      printMsg(msg, lang.unsetgroup.removed);
+      util.printMsg(msg, lang.unsetgroup.removed);
     } else {
-      printMsg(msg, lang.unsetgroup.notInGroup);
+      util.printMsg(msg, lang.unsetgroup.notInGroup);
     }
   },
 }
@@ -135,10 +141,10 @@ async function purgeGroups(msg) {
   //Check if there is a user in msg
   if (user == undefined) {
     //Invalid argument: user
-    printMsg(msg, lang.error.invalidArg.user);
+    util.printMsg(msg, lang.error.invalidArg.user);
     return;
   }
   //Back to default group
   await db.user.updatePermGroups(msg.guild.id, user.id, config.groups[0].name);
-  printMsg(msg, lang.purgegroups.purged);
+  util.printMsg(msg, lang.purgegroups.purged);
 }

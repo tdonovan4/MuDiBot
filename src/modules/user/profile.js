@@ -89,7 +89,7 @@ class ProfileField {
     //Check input
     if (this.isInputValid(msg, input)) {
       await this.dbModifyFunction(msg.guild.id, msg.author.id, input);
-      msg.channel.send(lang.modifyProfile.modified);
+      msg.channel.send(lang.modifyprofile.modified);
     }
   }
 }
@@ -258,12 +258,14 @@ module.exports = {
         args: [
           new commands.Argument({
             optional: false,
+            interactiveMsg: lang.modifyprofile.interactiveMode.field,
             possibleValues: ['bio', 'birthday', 'location'],
             missingError: lang.error.missingArg.field,
             invalidError: lang.error.invalidArg.field
           }),
           new commands.Argument({
             optional: false,
+            interactiveMsg: lang.modifyprofile.interactiveMode.value,
             missingError: lang.error.missingArg.value
           })
         ],

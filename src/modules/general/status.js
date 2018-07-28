@@ -28,7 +28,6 @@ function modifyText(file, text, value) {
       return console.log(err);
     }
     var result = data.replace(text, value);
-
     fs.writeFile(file, result, 'utf8', function(err) {
       if (err) return console.log(err);
     });
