@@ -87,7 +87,7 @@ async function getInfo(users) {
     }
     //Get progession
     var progression = levels.getProgression(user.xp);
-    user.level = progression[0];
+    user.level = progression[2];
   }
   return users;
 }
