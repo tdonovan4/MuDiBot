@@ -3,6 +3,7 @@
 ![node version](https://img.shields.io/badge/node-%3E%3D8.0.0-green.svg)
 ![version](https://img.shields.io/github/release/tdonovan4/MuDiBot.svg)
 ![license](https://img.shields.io/github/license/tdonovan4/MuDiBot.svg)
+![pipeline status](https://gitlab.com/tdonovan4/MuDiBot/badges/master/pipeline.svg)
 
 > MuDiBot is a multipurpose Discord bot made using discord.js
 
