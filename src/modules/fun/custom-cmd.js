@@ -65,16 +65,19 @@ module.exports = {
         args: [
           new commands.Argument({
             optional: false,
+            interactiveMsg: lang.custcmd.interactiveMode.name,
             missingError: lang.error.missingArg.name,
           }),
           new commands.Argument({
             optional: false,
+            interactiveMsg: lang.custcmd.interactiveMode.action,
             possibleValues: ['say', 'play'],
             missingError: lang.error.missingArg.action,
             invalidError: lang.error.invalidArg.action
           }),
           new commands.Argument({
             optional: false,
+            interactiveMsg: lang.custcmd.interactiveMode.arg,
             missingError: lang.error.missingArg.message,
           })
         ],
@@ -128,7 +131,6 @@ module.exports = {
     }
     async execute(msg, args) {
       var cmd = await db.customCmd.getCmd(msg.guild.id, args[0]);
-      var mention = msg.mentions.users.first();
       if (cmd != undefined) {
         //Print info about the command
         printSingleCmd(msg, cmd);
@@ -143,6 +145,13 @@ module.exports = {
       super({
         name: 'custcmdremove',
         aliases: ['ccrem'],
+        args: [
+          new commands.Argument({
+            optional: false,
+            interactiveMsg: lang.custcmdremove.interactiveMode.command,
+            missingError: lang.error.missingArg.cmd,
+          })
+        ],
         category: 'fun',
         priority: 0,
         //TODO: Reduce to 1, execute only if creator or permLvl >= 3

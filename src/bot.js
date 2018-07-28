@@ -59,8 +59,11 @@ async function onMessage(msg) {
   //Just to make it async
   //Ignore bot
   if (msg.author.bot) return;
-  //Check if the author is not the bot
-  if (msg.author != client.user) {
+  //Check author is not in interactive mode
+  var interactiveMember = commands.inInteractiveMode.find(x => {
+    return x.guild == msg.guild.id && x.user == msg.author.id;
+  });
+  if (interactiveMember == undefined) {
     let cmd = msg.content.slice(config.prefix.length);
     if (cmd != undefined) {
       cmd = cmd.split(' ');

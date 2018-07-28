@@ -4,6 +4,9 @@ const util = require('./util.js');
 var config = util.getConfig()[1];
 var lang = require('./localization.js').getLocalization();
 
+//The users in interactive mode (to disable their command permissions)
+var inInteractiveMode = [];
+
 class Command {
   constructor(commandInfo) {
     //The name of the command
@@ -22,10 +25,19 @@ class Command {
   checkArgs(msg, msgArgs) {
     var valid = true;
     if (this.args != undefined) {
+      /*
+       *Check if there is no arguments in the message and there is
+       *not just one optional argument
+       */
+      if (msgArgs.length == 0 && this.args.find(x => !x.optional) != undefined) {
+        //Enable interactive mode
+        this.interactiveMode(msg);
+        return false;
+      }
       var msgArgPos = 0;
       for (var cmdArg of this.args) {
         //Check if missing
-        if (msgArgs == undefined || msgArgs[msgArgPos] == undefined) {
+        if (msgArgs[msgArgPos] == undefined) {
           if (!cmdArg.optional) {
             //Throw error
             msg.channel.send(cmdArg.missingError);
@@ -42,6 +54,9 @@ class Command {
               break;
             }
           } else {
+            if (cmdArg.breakOnValid) {
+              break;
+            }
             //Increment for new message argument
             msgArgPos++;
           }
@@ -50,18 +65,91 @@ class Command {
     }
     return valid;
   }
+  async interactiveMode(msg) {
+    //An alternative mode to enter arguments
+    var valid = true;
+    var newArgs = [];
+    //Mark that the member is in interactive mode
+    var member = {
+      guild: msg.guild.id,
+      user: msg.author.id
+    }
+    inInteractiveMode.push(member);
+    for (var cmdArg of this.args) {
+      if (cmdArg.interactiveMsg == undefined) {
+        //This should not happen
+        msg.channel.send(lang.error.notInteractiveMode);
+        valid = false;
+        break
+      }
+      var message = cmdArg.interactiveMsg;
+      if (cmdArg.optional) {
+        //Add little addendum at the end of the message to tell the argument is optional
+        message += ` ${lang.general.interactiveMode.optional}`;
+      }
+      //Send the little message
+      msg.channel.send(message);
+      //Wait for a response by author for 30 seconds
+      try {
+        var msgArg = (await msg.channel.awaitMessages(response => {
+          return response.author.id == msg.author.id;
+        }, {
+          maxMatches: 1,
+          time: 30000,
+          errors: ['time']
+        })).first();
+      } catch (e) {
+        console.error(e);
+        //Time run out!
+        valid = false;
+        break;
+      }
+      //Check if skipping argument
+      if (msgArg.content == '$skip' && cmdArg.optional) {
+        //Send message
+        msg.channel.send(lang.general.interactiveMode.skipped);
+      } else {
+        //Test arg
+        if (!cmdArg.checkArg(msg, msgArg.content)) {
+          //Invalid, check if not optional
+          if (!cmdArg.optional) {
+            //Throw error, else just don't add arg
+            msg.channel.send(cmdArg.invalidError);
+            valid = false;
+            break;
+          }
+        } else {
+          //Add arg to the list of new args
+          newArgs.push(msgArg.content);
+          if (cmdArg.breakOnValid) {
+            break;
+          }
+        }
+      }
+    }
+    //Remove user from interactive mode
+    inInteractiveMode.splice(inInteractiveMode.indexOf(member), 1);
+    if (valid) {
+      //Execute command with new args
+      await this.execute(msg, newArgs);
+    }
+  }
 }
 
 class Argument {
   constructor(argInfo) {
     //Is it optional?
     this.optional = argInfo.optional;
+    //The message for interactive mode
+    this.interactiveMsg = argInfo.interactiveMsg;
     //The type (int, channel, mention or nothing)
     this.type = argInfo.type;
     //An array of possible values for this arg (empty array to disable)
     this.possibleValues = argInfo.possibleValues;
     //If true, the argument will throw an error when invalid even if optional
     this.failOnInvalid = argInfo.failOnInvalid;
+    //If true, it won't execute arguments after this one if valid
+    this.breakOnValid = argInfo.breakOnValid;
     //When the argument is missing
     this.missingError = argInfo.missingError;
     //When the argument is not valid
@@ -149,6 +237,7 @@ class Category {
 module.exports = {
   Command: Command,
   Argument: Argument,
+  inInteractiveMode: inInteractiveMode,
   Category: Category,
   commands: new Map(),
   /*

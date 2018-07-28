@@ -4,7 +4,11 @@ const db = require('../database/database.js');
 var lang = require('../../localization.js').getLocalization();
 
 function getRewardInMsg(msg, args) {
-  var role = msg.mentions.roles.first();
+  var roleId = args[1].match(/<@&(.*?)>/)
+  var role;
+  if (roleId != undefined) {
+    role = msg.guild.roles.get(roleId[1]);
+  }
   var group = args[1].charAt(0).toUpperCase() + args[1].slice(1);
   if (role != null) {
     //Reward is a role
@@ -24,12 +28,14 @@ module.exports = {
         args: [
           new commands.Argument({
             optional: false,
+            interactiveMsg: lang.setreward.interactiveMode.rank,
             type: 'rank',
             missingError: lang.error.missingArg.rank,
             invalidError: lang.error.notFound.rank
           }),
           new commands.Argument({
             optional: false,
+            interactiveMsg: lang.setreward.interactiveMode.reward,
             type: 'reward',
             missingError: lang.error.missingArg.reward,
             invalidError: lang.error.invalidArg.reward
@@ -64,6 +70,7 @@ module.exports = {
         args: [
           new commands.Argument({
             optional: false,
+            interactiveMsg: lang.setreward.interactiveMode.rank,
             type: 'rank',
             missingError: lang.error.missingArg.rank,
             invalidError: lang.error.notFound.rank

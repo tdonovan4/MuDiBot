@@ -477,7 +477,7 @@ describe('Test leaderboard.js', function() {
 describe('Test Command.checkArgs', function() {
   describe('Test commands without args', function() {
     it('$ping without arguments should return true', function() {
-      var response = commands.getCmd('ping').checkArgs(msg);
+      var response = commands.getCmd('ping').checkArgs(msg, []);
       expect(response).to.equal(true);
     });
     it('$ping with an argument should return true', function() {
@@ -487,7 +487,7 @@ describe('Test Command.checkArgs', function() {
   });
   describe('Test command with an optional arg', function() {
     it('$status should return true without args', function() {
-      var response = commands.getCmd('status').checkArgs(msg);
+      var response = commands.getCmd('status').checkArgs(msg, []);
       expect(response).to.equal(true);
     });
     it('$status should return true with arg', function() {
@@ -496,10 +496,6 @@ describe('Test Command.checkArgs', function() {
     });
   });
   describe('Test command with a mention', function() {
-    it('$avatar should return false without args', function() {
-      var response = commands.getCmd('avatar').checkArgs(msg);
-      expect(response).to.equal(false);
-    });
     it('$avatar should return false with wrong mention', function() {
       var response = commands.getCmd('avatar').checkArgs(msg, ['test']);
       expect(response).to.equal(false);
@@ -511,7 +507,7 @@ describe('Test Command.checkArgs', function() {
   })
   describe('Test command with an array of possible values', function() {
     it('$help should return true without args (optional)', function() {
-      var response = commands.getCmd('help').checkArgs(msg);
+      var response = commands.getCmd('help').checkArgs(msg, []);
       expect(response).to.equal(true);
     });
     it('$help should return true without a right command', function() {
@@ -527,10 +523,6 @@ describe('Test Command.checkArgs', function() {
     msg.guild.channels.set('1', {});
   });
   describe('Test command with two args, one requiring a channel type', function() {
-    it('$say should return false without args', function() {
-      var response = commands.getCmd('say').checkArgs(msg);
-      expect(response).to.equal(false);
-    });
     it('$say should return true with only the message', function() {
       var response = commands.getCmd('say').checkArgs(msg, ['message']);
       expect(response).to.equal(true);
@@ -546,10 +538,6 @@ describe('Test Command.checkArgs', function() {
     });
   });
   describe('Test command with two args, one requiring a group type', function() {
-    it('$setgroup should return false with no args', function() {
-      var response = commands.getCmd('setgroup').checkArgs(msg);
-      expect(response).to.equal(false);
-    });
     it('$setgroup should return false with only a mention', function() {
       var response = commands.getCmd('setgroup').checkArgs(msg, ['<@1>']);
       expect(response).to.equal(false);
@@ -564,10 +552,6 @@ describe('Test Command.checkArgs', function() {
     });
   });
   describe('Test command with rank and rewards', function() {
-    it('$setreward should return false with no args', function() {
-      var response = commands.getCmd('setreward').checkArgs(msg);
-      expect(response).to.equal(false);
-    });
     it('$setreward should return false with wrong rank', function() {
       var response = commands.getCmd('setreward').checkArgs(msg, ['test', 'Member']);
       expect(response).to.equal(false);
@@ -590,14 +574,80 @@ describe('Test Command.checkArgs', function() {
       expect(response).to.equal(true);
     });
   });
+  describe('Test commands with breakOnValid', function() {
+    it('$warnpurge should return false with test', function() {
+      var response = commands.getCmd('warnpurge').checkArgs(msg, ['test']);
+      expect(response).to.equal(false);
+    });
+    it('$warnpurge should return true with all', function() {
+      var response = commands.getCmd('warnpurge').checkArgs(msg, ['all']);
+      expect(response).to.equal(true);
+    });
+    it('$warnpurge should return true with player', function() {
+      var response = commands.getCmd('warnpurge').checkArgs(msg, ['<@1>']);
+      expect(response).to.equal(true);
+    });
+  })
+});
+describe('Test interactive mode', function() {
+  describe('Test interactive mode for 1 argument', function() {
+    it('Should return invalid user', async function() {
+      msg.channel.messages = [
+        { ...msg, ...{ content: 'test' } }
+      ];
+      await commands.getCmd('avatar').interactiveMode(msg);
+      expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
+        lang.avatar.interactiveMode.user);
+      expect(msgSend.lastCall.returnValue.content).to.equal(
+        lang.error.invalidArg.user);
+    });
+  });
+  describe('Test interactive mode for 2 arguments', function() {
+    it('Should return invalid user', async function() {
+      msg.channel.messages = [
+        { ...msg, ...{ content: 'test' } }
+      ];
+      await commands.getCmd('setgroup').interactiveMode(msg);
+      expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
+        lang.setgroup.interactiveMode.user);
+      expect(msgSend.lastCall.returnValue.content).to.equal(
+        lang.error.invalidArg.user);
+    });
+    it('Should return group not found', async function() {
+      msg.channel.messages = [
+        { ...msg, ...{ content: `<@${msg.author.id}>` } },
+        { ...msg, ...{ content: 'test' } }
+      ];
+      await commands.getCmd('setgroup').interactiveMode(msg);
+      expect(msgSend.getCall(msgSend.callCount - 3).returnValue.content).to.equal(
+        lang.setgroup.interactiveMode.user);
+      expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
+        lang.setgroup.interactiveMode.group);
+      expect(msgSend.lastCall.returnValue.content).to.equal(
+        lang.error.notFound.group);
+    });
+  });
+  describe('Test interactive mode with optional argument', function() {
+    it('Should skip alternative argument', async function() {
+      msg.channel.messages = [
+        { ...msg, ...{ content: '$skip' } },
+        { ...msg, ...{ content: 'test' } }
+      ];
+      await commands.getCmd('say').interactiveMode(msg);
+      expect(msgSend.getCall(msgSend.callCount - 4).returnValue.content).to.equal(
+        lang.say.interactiveMode.channel + ` ${lang.general.interactiveMode.optional}`);
+      expect(msgSend.getCall(msgSend.callCount - 3).returnValue.content).to.equal(
+        lang.general.interactiveMode.skipped);
+      expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
+        lang.say.interactiveMode.message);
+      expect(msgSend.lastCall.returnValue.content).to.equal(
+        'test');
+    });
+  });
 });
 describe('Test permission groups', function() {
   describe('Test setGroup', function() {
     //Test Args
-    it('Should return missing argument: user', function() {
-      commands.getCmd('setgroup').checkArgs(msg);
-      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.missingArg.user);
-    });
     it('Should return invalid user', function() {
       commands.getCmd('setgroup').checkArgs(msg, ['test']);
       expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.invalidArg.user);
@@ -613,21 +663,31 @@ describe('Test permission groups', function() {
     //Real tests
     it('Should add "User" to the list of groups of TestUser', async function() {
       await permGroups.setGroup(msg, msg.author, 'User');
-      var response = await db.user.getPermGroups(msg.guild.id, '041025599435591424');
+      var response = await db.user.getPermGroups(msg.guild.id, msg.author.id);
       expect(response).to.equal('User');
     });
     it('Should add "Member" to the list of groups of TestUser', async function() {
       await permGroups.setGroup(msg, msg.author, 'Member');
-      var response = await db.user.getPermGroups(msg.guild.id, '041025599435591424');
+      var response = await db.user.getPermGroups(msg.guild.id, msg.author.id);
       expect(response).to.equal('User,Member');
+    });
+    //Test interactive mode
+    it('Should use interactive mode to add "Mod" to TestUser', async function() {
+      msg.channel.messages = [
+        { ...msg, ...{ content: `<@${msg.author.id}>` } },
+        { ...msg, ...{ content: 'Mod' } }
+      ];
+      await commands.getCmd('setgroup').interactiveMode(msg);
+      expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
+        lang.setgroup.interactiveMode.user);
+      expect(msgSend.lastCall.returnValue.content).to.equal(
+        lang.setgroup.interactiveMode.group);
+      var response = await db.user.getPermGroups(msg.guild.id, msg.author.id);
+      expect(response).to.equal('User,Member,Mod');
     });
   });
   describe('Test unsetGroup', function() {
     //Test args
-    it('Should return missing argument: user', function() {
-      commands.getCmd('unsetgroup').checkArgs(msg);
-      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.missingArg.user);
-    });
     it('Should return invalid user', function() {
       commands.getCmd('unsetgroup').checkArgs(msg, ['test']);
       expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.invalidArg.user);
@@ -644,12 +704,24 @@ describe('Test permission groups', function() {
     it('Should remove "User" from the list of groups of TestUser', async function() {
       await permGroups.unsetGroup(msg, msg.author, 'User');
       var response = await db.user.getPermGroups(msg.guild.id, '041025599435591424');
-      expect(response).to.equal('Member');
+      expect(response).to.equal('Member,Mod');
     });
     it('Should return that the user is not in this group', async function() {
       await permGroups.unsetGroup(msg, msg.author, 'Admin');
       expect(printMsg.lastCall.returnValue).to.equal(lang.unsetgroup.notInGroup);
     })
+    //Test interactive mode
+    it('Should use interactive mode to remove "Mod" from TestUser', async function() {
+      msg.channel.messages = [
+        { ...msg, ...{ content: `<@${msg.author.id}>` } },
+        { ...msg, ...{ content: 'Mod' } }
+      ];
+      await commands.getCmd('unsetgroup').interactiveMode(msg);
+      expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
+        lang.setgroup.interactiveMode.user);
+      expect(msgSend.lastCall.returnValue.content).to.equal(
+        lang.setgroup.interactiveMode.group);
+    });
   });
   describe('Test purgeGroups', function() {
     it('Should return invalid user', function() {
@@ -662,9 +734,21 @@ describe('Test permission groups', function() {
         id: '041025599435591424'
       });
       await permGroups.__get__('purgeGroups')(msg);
-      var response = await db.user.getPermGroups(msg.guild.id, '041025599435591424');
+      var response = await db.user.getPermGroups(msg.guild.id, msg.author.id);
       expect(response).to.equal('User');
     })
+    //Test interactive mode
+    it('Should use interactive mode to purge TestUser\'s groups', async function() {
+      await permGroups.setGroup(msg, msg.author, 'Mod');
+      msg.channel.messages = [
+        { ...msg, ...{ content: `<@${msg.author.id}>` } }
+      ];
+      await commands.getCmd('purgegroups').interactiveMode(msg);
+      expect(msgSend.lastCall.returnValue.content).to.equal(
+        lang.setgroup.interactiveMode.user);
+      var response = await db.user.getPermGroups(msg.guild.id, msg.author.id);
+      expect(response).to.equal('User');
+    });
   });
 });
 describe('Test levels', function() {
@@ -881,10 +965,6 @@ describe('Test top', function() {
 describe('Test the custom commands', function() {
   describe('Test custcmd', function() {
     //Test args
-    it('custcmd should return missing name', async function() {
-      await commands.executeCmd(msg, ['custcmd']);
-      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.missingArg.name);
-    });
     it('custcmd should return missing action', async function() {
       await commands.executeCmd(msg, ['custcmd', 'test1']);
       expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.missingArg.action);
@@ -934,6 +1014,23 @@ describe('Test the custom commands', function() {
       expect(response.name).to.equal('testCmd2');
       expect(printMsg.lastCall.returnValue).to.equal(lang.custcmd.cmdAdded);
     });
+    //Test interactive mode
+    it('Should use interactive mode to add a custom command', async function() {
+      msg.channel.messages = [
+        { ...msg, ...{ content: 'interactive' } },
+        { ...msg, ...{ content: 'say' } },
+        { ...msg, ...{ content: 'mode' } }
+      ];
+      await commands.getCmd('custcmd').interactiveMode(msg);
+      expect(msgSend.getCall(msgSend.callCount - 3).returnValue.content).to.equal(
+        lang.custcmd.interactiveMode.name);
+      expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
+        lang.custcmd.interactiveMode.action);
+      expect(msgSend.lastCall.returnValue.content).to.equal(
+        lang.custcmd.interactiveMode.arg);
+      var response = await db.customCmd.getCmd(msg.guild.id, 'interactive');
+      expect(response.name).to.equal('interactive');
+    });
   });
   describe('Test removeCmd', function() {
     it('Should return command not found', async function() {
@@ -945,6 +1042,16 @@ describe('Test the custom commands', function() {
       var response = await db.customCmd.getCmd(msg.guild.id, 'testCmd2');
       expect(response).to.equal(undefined);
       expect(printMsg.lastCall.returnValue).to.equal(lang.custcmdremove.cmdRemoved);
+    });
+    it('Should use interactive mode to remove a custom command', async function() {
+      msg.channel.messages = [
+        { ...msg, ...{ content: 'interactive' } }
+      ];
+      await commands.getCmd('custcmdremove').interactiveMode(msg);
+      expect(msgSend.lastCall.returnValue.content).to.equal(
+        lang.custcmdremove.interactiveMode.command);
+      var response = await db.customCmd.getCmd(msg.guild.id, 'interactive');
+      expect(response).to.equal(undefined);
     });
   });
   describe('Test custcmdlist', function() {
@@ -1212,89 +1319,115 @@ describe('Test the audio player', function() {
   });
 });
 describe('Test warnings', function() {
-  describe('Test args', function() {
-    it('Should return missing argument: user', function() {
-      commands.getCmd('warn').checkArgs(msg);
-      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.missingArg.user);
-    });
+  describe('Test warn', function() {
     it('Should return invalid user', function() {
       commands.getCmd('warn').checkArgs(msg, ['test']);
       expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.invalidArg.user);
     });
-  });
-  describe('Test warn', function() {
     it('Should increase TestUser\'s warnings by one', async function() {
-      msg.mentions.users.set('041025599435591424', {
-        id: '041025599435591424'
-      });
-      await warnings.warn(msg, 1);
-      var response = await db.user.getWarnings(msg.guild.id, '041025599435591424');
+      await warnings.warn(msg, msg.author, 1);
+      var response = await db.user.getWarnings(msg.guild.id, msg.author.id);
       expect(response).to.equal(1);
     });
     it('Should decrease TestUser\'s warnings by one', async function() {
-      await warnings.warn(msg, -1);
-      var response = await db.user.getWarnings(msg.guild.id, '041025599435591424');
+      await warnings.warn(msg, msg.author, -1);
+      var response = await db.user.getWarnings(msg.guild.id, msg.author.id);
+      expect(response).to.equal(0);
+    });
+    it('Should use interactive mode to warn user', async function() {
+      msg.channel.messages = [
+        { ...msg, ...{ content: `<@${msg.author.id}>` } },
+      ];
+      await commands.getCmd('warn').interactiveMode(msg);
+      expect(msgSend.lastCall.returnValue.content).to.equal(
+        lang.warn.interactiveMode.user);
+      var response = await db.user.getWarnings(msg.guild.id, msg.author.id);
+      expect(response).to.equal(1);
+    });
+    it('Should use interactive mode to unwarn user', async function() {
+      msg.channel.messages = [
+        { ...msg, ...{ content: `<@${msg.author.id}>` } },
+      ];
+      await commands.getCmd('unwarn').interactiveMode(msg);
+      expect(msgSend.lastCall.returnValue.content).to.equal(
+        lang.warn.interactiveMode.user);
+      var response = await db.user.getWarnings(msg.guild.id, msg.author.id);
       expect(response).to.equal(0);
     });
   });
-  describe('Test list', function() {
-    it('Should return no warnings', async function() {
-      await commands.executeCmd(msg, ['warnlist']);
-      expect(printMsg.lastCall.returnValue).to.equal(lang.warn.noWarns);
-    });
-    it('Should return all warnings', async function() {
-      //Add warnings to users
-      msg.mentions.users.clear();
-      msg.mentions.users.set('357156661105365963', {
-        id: '357156661105365963'
-      });
-      await warnings.warn(msg, 3);
-      msg.mentions.users.clear();
-
-      msg.mentions.users.set('041025599435591424', {
-        id: '041025599435591424'
-      });
-      await warnings.warn(msg, 2);
-
-      await commands.executeCmd(msg, ['warnlist']);
-      expect(printMsg.lastCall.returnValue).to.equal(
-        '<@041025599435591424>: 2 warnings\n<@357156661105365963>: 3 warnings');
-    });
-    it('Should return TestUser\'s warnings', async function() {
-      await commands.executeCmd(msg, ['warnlist', '<@041025599435591424>']);
-      expect(printMsg.lastCall.returnValue).to.equal('<@041025599435591424>: 2 warnings');
-    });
+});
+describe('Test list', function() {
+  it('Should return no warnings', async function() {
+    await commands.executeCmd(msg, ['warnlist']);
+    expect(printMsg.lastCall.returnValue).to.equal(lang.warn.noWarns);
   });
-  describe('Test purge', function() {
-    it('Should return wrong usage', async function() {
-      msg.mentions.users.clear();
-      await commands.executeCmd(msg, ['warnpurge']);
-      expect(printMsg.lastCall.returnValue).to.equal(lang.error.usage);
-    });
-    it('Should purge TestUser', async function() {
-      msg.mentions.users.set('041025599435591424', {
-        id: '041025599435591424'
-      });
-      await commands.executeCmd(msg, ['warnpurge']);
-      var response = await db.user.getWarnings(msg.guild.id, '041025599435591424');
-      expect(response).to.equal(0);
-    });
-    it('Should purge all', async function() {
-      await warnings.warn(msg, 1);
-      await commands.executeCmd(msg, ['warnpurge', 'all']);
-      var response = await db.user.getUsersWarnings(msg.guild.id);
-      expect(response[0].warning).to.equal(0);
-      expect(response[1].warning).to.equal(0);
-    });
+  it('Should return all warnings', async function() {
+    //Add warnings to users
+    await warnings.warn(msg, { id: '357156661105365963' }, 3);
+    await warnings.warn(msg, msg.author, 2);
+    //Real test
+    await commands.executeCmd(msg, ['warnlist']);
+    expect(printMsg.lastCall.returnValue).to.equal(
+      '<@041025599435591424>: 2 warnings\n<@357156661105365963>: 3 warnings');
+  });
+  it('Should return TestUser\'s warnings', async function() {
+    await commands.executeCmd(msg, ['warnlist', '<@041025599435591424>']);
+    expect(printMsg.lastCall.returnValue).to.equal('<@041025599435591424>: 2 warnings');
+  });
+});
+describe('Test purge', function() {
+  //Test args
+  it('Should return invalid user', function() {
+    commands.getCmd('warnpurge').checkArgs(msg, ['test']);
+    expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.invalidArg.user);
+  });
+  //Real tests
+  it('Should purge TestUser', async function() {
+    await commands.executeCmd(msg, ['warnpurge', `<@${msg.author.id}>`]);
+    var response = await db.user.getWarnings(msg.guild.id, msg.author.id);
+    expect(response).to.equal(0);
+  });
+  it('Should purge all', async function() {
+    await warnings.warn(msg, '357156661105365963', 1);
+    await commands.executeCmd(msg, ['warnpurge', 'all']);
+    var response = await db.user.getUsersWarnings(msg.guild.id);
+    expect(response[0].warning).to.equal(0);
+    expect(response[1].warning).to.equal(0);
+  });
+  //Test interactive mode
+  it('Should use interactive mode to purge user', async function() {
+    await warnings.warn(msg, msg.author.id, 1);
+    msg.channel.messages = [
+      { ...msg, ...{ content: `$skip` } },
+      { ...msg, ...{ content: `<@${msg.author.id}>` } }
+    ];
+    await commands.getCmd('warnpurge').interactiveMode(msg);
+    expect(msgSend.getCall(msgSend.callCount - 3).returnValue.content).to.equal(
+      lang.warn.interactiveMode.all + ` ${lang.general.interactiveMode.optional}`);
+    expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
+      lang.general.interactiveMode.skipped);
+    expect(msgSend.lastCall.returnValue.content).to.equal(
+      lang.warn.interactiveMode.user);
+    var response = await db.user.getWarnings(msg.guild.id, msg.author.id);
+    expect(response).to.equal(0);
+  });
+  it('Should use interactive mode to purge all', async function() {
+    await warnings.warn(msg, '357156661105365963', 1);
+    await warnings.warn(msg, msg.author.id, 1);
+    msg.channel.messages = [
+      { ...msg, ...{ content: `all` } },
+    ];
+    await commands.getCmd('warnpurge').interactiveMode(msg);
+    expect(msgSend.lastCall.returnValue.content).to.equal(
+      lang.warn.interactiveMode.all + ` ${lang.general.interactiveMode.optional}`);
+    var response = await db.user.getWarnings(msg.guild.id, '357156661105365963');
+    expect(response).to.equal(0);
   });
 });
 describe('Test checkPerm', function() {
   it('Should return true when user has the permLvl', async function() {
     //Setup
-    msg.mentions.users.set(msg.author.id, {
-      id: msg.author.id
-    });
-    await commands.executeCmd(msg, ['purgegroups']);
+    await commands.executeCmd(msg, ['purgegroups', `<@${msg.author.id}>`]);
     msg.member.permissions.clear();
     var response = await commands.checkPerm(msg, 0);
     expect(response).to.equal(true);
@@ -1327,7 +1460,7 @@ describe('Test checkPerm', function() {
   after(async function() {
     //Clean up
     config.superusers = [''];
-    await commands.executeCmd(msg, ['purgegroups']);
+    await commands.executeCmd(msg, ['purgegroups', `<@${msg.author.id}>`]);
   })
 });
 //Future stub
@@ -1442,9 +1575,9 @@ describe('Test commands', function() {
   describe('say', function() {
     //Test args
     it('Should return missing argument: message', function() {
-      commands.executeCmd(msg, ['say']);
+      commands.executeCmd(msg, ['say', '<#42>']);
       expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.missingArg.message);
-    })
+    });
     //Real tests
     it('Should return the message', function() {
       commands.executeCmd(msg, ['say', 'test']);
@@ -1454,32 +1587,62 @@ describe('Test commands', function() {
       commands.executeCmd(msg, ['say', '<#42>', 'test']);
       expect(channelSend.lastCall.returnValue).to.equal('test');
     });
+    //Test interactiveMode
+    it('Should use interactive mode to send message to current channel', async function() {
+      msg.channel.messages = [
+        { ...msg, ...{ content: '$skip' } },
+        { ...msg, ...{ content: 'This an interactive test!' } }
+      ];
+      await commands.getCmd('say').interactiveMode(msg);
+      expect(msgSend.getCall(msgSend.callCount - 4).returnValue.content).to.equal(
+        lang.say.interactiveMode.channel + ` ${lang.general.interactiveMode.optional}`);
+      expect(msgSend.getCall(msgSend.callCount - 3).returnValue.content).to.equal(
+        lang.general.interactiveMode.skipped);
+      expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
+        lang.say.interactiveMode.message);
+      expect(msgSend.lastCall.returnValue.content).to.equal(
+        'This an interactive test!');
+    });
+    it('Should use interactive mode to send message to other channel', async function() {
+      msg.channel.messages = [
+        { ...msg, ...{ content: '<#42>' } },
+        { ...msg, ...{ content: 'This an interactive test!' } }
+      ];
+      await commands.getCmd('say').interactiveMode(msg);
+      expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
+        lang.say.interactiveMode.channel + ` ${lang.general.interactiveMode.optional}`);
+      expect(msgSend.lastCall.returnValue.content).to.equal(
+        lang.say.interactiveMode.message);
+      expect(channelSend.lastCall.returnValue).to.equal('This an interactive test!');
+    });
   });
+  var url = 'https://cdn.discordapp.com/avatars/041025599435591424/';
   describe('avatar', function() {
     //Test args
-    it('Should return missing arg: user', function() {
-      commands.getCmd('avatar').checkArgs(msg);
-      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.missingArg.user);
-    });
     it('Should return invalid arg: user', function() {
       commands.getCmd('avatar').checkArgs(msg, ['test']);
       expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.invalidArg.user);
     });
     //Actual tests
     it('Should return TestUser\'s avatar', function() {
-      var id = '041025599435591424';
-      var url = 'https://cdn.discordapp.com/avatars/041025599435591424/';
       //Add mention
-      msg.mentions.users.set(id, {
-        avatarURL: url
-      });
-      commands.executeCmd(msg, ['avatar', `<@${id}>`]);
+      commands.executeCmd(msg, ['avatar', `<@${msg.author.id}>`]);
       expect(msgSend.lastCall.returnValue.content).to.equal(url);
-      msg.mentions.users.delete(id);
+    });
+    //Test interactive mode
+    it('Should use interactive mode to get TestUser\'s avatar', async function() {
+      msg.channel.messages = [
+        { ...msg, ...{ content: `<@${msg.author.id}>` } }
+      ];
+      await commands.getCmd('avatar').interactiveMode(msg);
+      expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
+        lang.avatar.interactiveMode.user);
+      expect(msgSend.lastCall.returnValue.content).to.equal(url);
     });
   });
   describe('profile', function() {
     it('Should return the message author\'s (TestUser) profile', async function() {
+      msg.mentions.users.set(msg.author.id, msg.author);
       //Add XP
       await db.user.updateXP(msg.guild.id, msg.author.id, 11685);
       await db.user.updateXP('9', msg.author.id, 8908);
@@ -1521,6 +1684,7 @@ describe('Test commands', function() {
         '**Account created since:** 2009-12-24');
     });
     it('Should return George\'s profile', async function() {
+      msg.mentions.users.clear();
       var id = '357156661105365963';
       //Add mention
       msg.mentions.users.set(id, {
@@ -1535,9 +1699,9 @@ describe('Test commands', function() {
         'have a bio!```\n**Birthday:** Unknown | **Location:** Unknown\n' +
         '**Account created since:** 1985-11-16');
       expect(embed.fields[1].value).to.equal('Rank: Vagabond\n' +
-        'Position: #23\nLevel: 1 (0/100)\nTotal XP: 0');
+        'Position: #27\nLevel: 1 (0/100)\nTotal XP: 0');
       expect(embed.fields[2].value).to.equal('Rank: Vagabond\n' +
-        'Position: #24\nLevel: 1 (0/100)\nTotal XP: 0');
+        'Position: #25\nLevel: 1 (0/100)\nTotal XP: 0');
       expect(embed.fields[3].value).to.equal('User');
       expect(embed.fields[4].value).to.equal('0');
       expect(embed.footer).to.exist;
@@ -1550,12 +1714,6 @@ describe('Test commands', function() {
   });
   describe('modifyprofile', function() {
     describe('Test bad arguments', function() {
-      it('Should return missing argument field', async function() {
-        msg.content = '$modifyprofile';
-        await commands.executeCmd(msg, ['modifyprofile']);
-        var result = msgSend.lastCall.returnValue.content;
-        expect(result).to.equal(lang.error.missingArg.field);
-      });
       it('Should return invalid field', async function() {
         await commands.executeCmd(msg, ['modifyprofile', 'test']);
         var result = msgSend.lastCall.returnValue.content;
@@ -1615,6 +1773,23 @@ describe('Test commands', function() {
         await commands.executeCmd(msg, ['modifyprofile', 'location', 'there']);
         var response = await db.user.getAll(msg.guild.id, msg.author.id);
         expect(response.location).to.equal('there');
+      });
+    });
+    describe('Test interactive mode', function() {
+      it('Should use interactive mode to change location to somewhere', async function() {
+        msg.channel.messages = [
+          { ...msg, ...{ content: 'location' } },
+          { ...msg, ...{ content: 'somewhere' } }
+        ];
+        await commands.getCmd('modifyprofile').interactiveMode(msg);
+        expect(msgSend.getCall(msgSend.callCount - 3).returnValue.content).to.equal(
+          lang.modifyprofile.interactiveMode.field);
+        expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
+          lang.modifyprofile.interactiveMode.value);
+        expect(msgSend.lastCall.returnValue.content).to.equal(
+          lang.modifyprofile.modified);
+        var response = await db.user.getAll(msg.guild.id, msg.author.id);
+        expect(response.location).to.equal('somewhere');
       });
     });
   });
@@ -1768,10 +1943,7 @@ describe('Test commands', function() {
     });
   });
   describe('Test setreward', function() {
-    it('Should return missing argument: rank', async function() {
-      await commands.executeCmd(msg, ['setreward']);
-      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.missingArg.rank);
-    })
+    //Test args
     it('Should return missing argument: reward', async function() {
       await commands.executeCmd(msg, ['setreward', 'farmer']);
       expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.missingArg.reward);
@@ -1784,6 +1956,7 @@ describe('Test commands', function() {
       await commands.executeCmd(msg, ['setreward', 'King', 'string']);
       expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.invalidArg.reward);
     });
+    //Real tests
     it('Should set the reward for king (permission group) and create table', async function() {
       await commands.executeCmd(msg, ['setreward', 'King', 'member']);
       var response = await db.reward.getRankReward(msg.guild.id, 'King');
@@ -1794,50 +1967,79 @@ describe('Test commands', function() {
       msg.guild.roles.set('1', {
         id: '1'
       });
-      msg.mentions.roles.set('1', {
-        id: '1'
-      });
       await commands.executeCmd(msg, ['setreward', 'emperor', '<@&1>']);
       var response = await db.reward.getRankReward(msg.guild.id, 'Emperor');
       expect(response).to.equal('1');
     });
     it('Should update the reward for emperor', async function() {
-      msg.guild.roles.clear();
-      msg.mentions.roles.clear();
-      //Add roles
       msg.guild.roles.set('2', {
-        id: '2'
-      });
-      msg.mentions.roles.set('2', {
         id: '2'
       });
       await commands.executeCmd(msg, ['setreward', 'emperor', '<@&2>']);
       var response = await db.reward.getRankReward(msg.guild.id, 'Emperor');
       expect(response).to.equal('2');
     });
-    after(function() {
-      msg.guild.roles.clear();
-      msg.mentions.roles.clear();
+    //Test interactive mode
+    it('Should use interactive mode to modify the reward for emperor (rank)', async function() {
+      msg.channel.messages = [
+        { ...msg, ...{ content: 'emperor' } },
+        { ...msg, ...{ content: 'Member' } }
+      ];
+      await commands.getCmd('setreward').interactiveMode(msg);
+      expect(msgSend.getCall(msgSend.callCount - 3).returnValue.content).to.equal(
+        lang.setreward.interactiveMode.rank);
+      expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
+        lang.setreward.interactiveMode.reward);
+      expect(msgSend.lastCall.returnValue.content).to.equal(
+        lang.setreward.newReward);
+      var response = await db.reward.getRankReward(msg.guild.id, 'Emperor');
+      expect(response).to.equal('Member');
+    });
+    it('Should use interactive mode to modify the reward for emperor (role)', async function() {
+      msg.channel.messages = [
+        { ...msg, ...{ content: 'emperor' } },
+        { ...msg, ...{ content: '<@&2>' } }
+      ];
+      await commands.getCmd('setreward').interactiveMode(msg);
+      expect(msgSend.getCall(msgSend.callCount - 3).returnValue.content).to.equal(
+        lang.setreward.interactiveMode.rank);
+      expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
+        lang.setreward.interactiveMode.reward);
+      expect(msgSend.lastCall.returnValue.content).to.equal(
+        lang.setreward.newReward);
+      var response = await db.reward.getRankReward(msg.guild.id, 'Emperor');
+      expect(response).to.equal('2');
     });
   });
-  describe('Test unsetreward', function() {
-    it('Should return missing argument: rank', async function() {
-      await commands.executeCmd(msg, ['unsetreward']);
-      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.missingArg.rank);
-    });
-    it('Should return rank not found', async function() {
-      await commands.executeCmd(msg, ['unsetreward', 'random']);
-      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.notFound.rank);
-    });
-    it('Should return rank reward not found', async function() {
-      await commands.executeCmd(msg, ['unsetreward', 'farmer']);
-      expect(printMsg.lastCall.returnValue).to.equal(lang.error.notFound.rankReward);
-    });
-    it('Should remove the reward for emperor', async function() {
-      await commands.executeCmd(msg, ['unsetreward', 'emperor']);
-      var response = await db.reward.getRankReward(msg.guild.id, 'Emperor');
-      expect(response).to.equal(undefined);
-    });
+  after(function() {
+    msg.guild.roles.clear();
+    msg.mentions.roles.clear();
+  });
+});
+describe('Test unsetreward', function() {
+  it('Should return rank not found', async function() {
+    await commands.executeCmd(msg, ['unsetreward', 'random']);
+    expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.notFound.rank);
+  });
+  it('Should return rank reward not found', async function() {
+    await commands.executeCmd(msg, ['unsetreward', 'farmer']);
+    expect(printMsg.lastCall.returnValue).to.equal(lang.error.notFound.rankReward);
+  });
+  it('Should remove the reward for emperor', async function() {
+    await commands.executeCmd(msg, ['unsetreward', 'emperor']);
+    var response = await db.reward.getRankReward(msg.guild.id, 'Emperor');
+    expect(response).to.equal(undefined);
+  });
+  it('Should use interactive mode to remove the reward for emperor', async function() {
+    await commands.executeCmd(msg, ['setreward', 'emperor', 'member']);
+    msg.channel.messages = [
+      { ...msg, ...{ content: 'emperor' } }
+    ];
+    await commands.getCmd('unsetreward').interactiveMode(msg);
+    expect(msgSend.lastCall.returnValue.content).to.equal(
+      lang.setreward.interactiveMode.rank);
+    var response = await db.reward.getRankReward(msg.guild.id, 'Emperor');
+    expect(response).to.equal(undefined);
   });
 });
 

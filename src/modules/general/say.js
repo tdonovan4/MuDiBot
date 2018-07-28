@@ -9,10 +9,12 @@ module.exports = class SayCommand extends commands.Command {
       args: [
         new commands.Argument({
           optional: true,
+          interactiveMsg: lang.say.interactiveMode.channel,
           type: 'channel',
         }),
         new commands.Argument({
           position: 1,
+          interactiveMsg: lang.say.interactiveMode.message,
           optional: false,
           missingError: lang.error.missingArg.message
         })

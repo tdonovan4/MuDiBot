@@ -140,6 +140,7 @@ module.exports = {
         args: [
           new commands.Argument({
             optional: false,
+            interactiveMsg: lang.play.interactiveMode.video,
             missingError: lang.error.usage
           }),
         ],

@@ -14,6 +14,10 @@
       "reward": "et reçoit le role {{role}} comme récompense",
       "addReward": "Récompense pour promotion",
       "removeOldReward": "Ancienne récompense enlevée"
+    },
+    "interactiveMode": {
+      "optional": "(cet argument est facultative, utilisez `$skip` pour la sauter)",
+      "skipped": "Argument sauté"
     }
   },
   "error": {
@@ -29,7 +33,8 @@
       "field": "Argument manquant: champ",
       "value": "Argument manquant: valeur du champ",
       "action": "Argument manquant: action",
-      "name": "Argument manquant: nom"
+      "name": "Argument manquant: nom",
+      "cmd": "Argument manquant: commande"
     },
     "invalidArg": {
       "token": "Le token n'est pas valide!",
@@ -63,7 +68,8 @@
     "notEnoughPermissions": "Permissions insuffisantes",
     "ytdlError": "Cette vidéo n'a pas pu être télécharger (peut-être indisponible?).",
     "notPlaying": "Aucune vidéo ne joue!",
-    "formatError": "Veuillez formater la date avec ISO 8601 (aaaa-mm-qq or --mm-qq)"
+    "formatError": "Veuillez formater la date avec ISO 8601 (aaaa-mm-qq or --mm-qq)",
+        "notInteractiveMode": "Erreur: cette commande ne supporte par encore le mode interactif"
   },
   "database": {
     "noVersion": "La version de la base de donnée n'a pas pu être trouvée. Utilisation de la première version.",
@@ -248,6 +254,17 @@
       "clientId": "ID du client:"
     }
   },
+  "say": {
+    "interactiveMode": {
+      "channel": "Veuillez entrer un salon où envoyer le message",
+      "message": "Veuillez entrer le message"
+    }
+  },
+  "avatar": {
+    "interactiveMode": {
+      "user": "Veuillez entrer un utilisateur pour avoir sa photo de profile"
+    }
+  },
   "profile": {
     "title": "Profit de {{username}}",
     "defaults": {
@@ -274,10 +291,18 @@
     "warnings": "Avertissement(s):",
     "footer": "ID du client: {{id}} | ce message a pris {{time}} ms"
   },
-  "modifyProfile": {
+  "modifyprofile": {
+    "interactiveMode": {
+      "field": "Veuillez entrer un champ (`bio`, `birthday` ou `location`)",
+      "value": "Veuillez entrer une valeur pour le champ"
+    },
     "modified": "Champ du profil modifié"
   },
   "setgroup": {
+    "interactiveMode": {
+      "user": "Veuillez entrer un utilisateur",
+      "group": "Veuillez entrer un groupe de permission"
+    },
     "newGroup": "Groupe ajouté!"
   },
   "unsetgroup": {
@@ -303,6 +328,11 @@
     "invalid": "Utilisation incorrecte! Veuillez suivre `<# de dés>d<# de faces><modifieur>` et de garder les nombres en bas de 50.\n"
   },
   "customcmd": {
+    "interactiveMode": {
+      "name": "Veuillez entrer le nom de la nouvelle commande personnalisée",
+      "action": "Veuillez entrer l'action de la commande (`say` ou `play`)",
+      "arg": "Veuillez entrer le message de la commande"
+    },
     "cmdAdded": "Commande ajoutée"
   },
   "custcmdlist": {
@@ -313,9 +343,15 @@
     "arg": "Argument"
   },
   "custcmdremove": {
+    "interactiveMode": {
+      "command": "Veuillez entrer le nom de la commande personnalisée"
+    },
     "cmdRemoved": "Commande supprimée"
   },
   "play": {
+    "interactiveMode": {
+      "video": "Veuillez entrer l'url d'une vidéo ou des tags"
+    },
     "added": "```css\n{{{title}}} ~ [{{duration}}]\n``` a été ajouté à la file d'attente",
     "skipped": "Vidéo passé!",
     "playing": "Joue présentement: ```css\n{{{title}}} ~ [{{duration}}]\n```",
@@ -329,6 +365,10 @@
     "deleted": "{{length}} message(s) supprimés!"
   },
   "warn": {
+    "interactiveMode": {
+      "user": "Veuillez entrer un utilisateur",
+      "all": "Veuillez entrer `all` si vous voulez supprimer tout les avertissements du serveur"
+    },
     "list": "<@{{userId}}>: {{warning}} avertissement",
     "noWarns": "Il n'y pas avertissement",
     "usersCleared": "Tous les utilisateurs ont été purgés",
@@ -338,6 +378,10 @@
     "newDefaultChannel": "Nouveu salon par défaut sélectionné!"
   },
   "setreward": {
+    "interactiveMode": {
+      "rank": "Veuillez entrer un rang",
+      "reward": "Veuillez entrer une récompense (groupe de permission ou rôle)"
+    },
     "newReward": "Nouvelle récompense ajoutée"
   },
   "unsetreward": {

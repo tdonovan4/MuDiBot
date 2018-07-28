@@ -1,6 +1,6 @@
 //Handle warnings
 const db = require('../database/database.js');
-const { printMsg } = require('../../util.js');
+const util = require('../../util.js');
 const commands = require('../../commands.js');
 const mustache = require('mustache');
 var lang = require('../../localization.js').getLocalization();
@@ -14,6 +14,7 @@ module.exports = {
         args: [
           new commands.Argument({
             optional: false,
+            interactiveMsg: lang.warn.interactiveMode.user,
             type: 'mention',
             missingError: lang.error.missingArg.user,
             invalidError: lang.error.invalidArg.user
@@ -24,8 +25,9 @@ module.exports = {
         permLvl: 2
       });
     }
-    async execute(msg) {
-      await module.exports.warn(msg, 1);
+    async execute(msg, args) {
+      var user = util.getUserFromArg(msg, args[0]);
+      await module.exports.warn(msg, user, 1);
     }
   },
   UnwarnCommand: class extends commands.Command {
@@ -36,6 +38,7 @@ module.exports = {
         args: [
           new commands.Argument({
             optional: false,
+            interactiveMsg: lang.warn.interactiveMode.user,
             type: 'mention',
             missingError: lang.error.missingArg.user,
             invalidError: lang.error.invalidArg.user
@@ -46,8 +49,9 @@ module.exports = {
         permLvl: 2
       });
     }
-    async execute(msg) {
-      await module.exports.warn(msg, -1);
+    async execute(msg, args) {
+      var user = util.getUserFromArg(msg, args[0]);
+      await module.exports.warn(msg, user, -1);
     }
   },
   WarnListCommand: class extends commands.Command {
@@ -69,7 +73,7 @@ module.exports = {
       });
     }
     async execute(msg, args) {
-      var mention = msg.mentions.users.first();
+      var user = msg.mentions.users.first();
       if (args.length == 0) {
         //List all users warnings
         var users = await db.user.getUsersWarnings(msg.guild.id);
@@ -88,17 +92,17 @@ module.exports = {
         if (output === '') {
           output = lang.warn.noWarns;
         }
-        printMsg(msg, output);
-      } else if (mention != undefined) {
+        util.printMsg(msg, output);
+      } else if (user != undefined) {
         //List the user's warnings
-        var warnings = await db.user.getWarnings(msg.guild.id, mention.id);
+        var warnings = await db.user.getWarnings(msg.guild.id, user.id);
 
-        printMsg(msg, mustache.render(lang.warn.list, {
-          userId: mention.id,
+        util.printMsg(msg, mustache.render(lang.warn.list, {
+          userId: user.id,
           warning: warnings
         }));
       } else {
-        printMsg(msg, lang.error.usage);
+        util.printMsg(msg, lang.error.usage);
       }
     }
   },
@@ -110,14 +114,17 @@ module.exports = {
         args: [
           new commands.Argument({
             optional: true,
-            type: 'mention',
+            interactiveMsg: lang.warn.interactiveMode.all,
+            possibleValues: ['all'],
+            breakOnValid: true
           }),
           new commands.Argument({
-            optional: true,
-            possibleValues: ['all'],
+            optional: false,
+            interactiveMsg: lang.warn.interactiveMode.user,
+            type: 'mention',
             failOnInvalid: true,
             invalidError: lang.error.invalidArg.user
-          }),
+          })
         ],
         category: 'warnings',
         priority: 7,
@@ -125,38 +132,29 @@ module.exports = {
       });
     }
     async execute(msg, args) {
-      if (args == 'all') {
+      if (args[0] == 'all') {
         //Purge all users
         await db.user.updateUsersWarnings(msg.guild.id, 0);
-        printMsg(msg, lang.warn.usersCleared);
-      } else if (msg.mentions.users.first() != undefined) {
-        //Purge the user
-        var mention = msg.mentions.users.first();
-        var userExists = await db.user.exists(msg.guild.id, mention.id);
-
-        if (userExists) {
-          await db.user.updateUsersWarnings(msg.guild.id, 0);
-          printMsg(msg, lang.warn.userCleared);
-        } else {
-          printMsg(msg, lang.error.invalidArg.user);
-        }
+        util.printMsg(msg, lang.warn.usersCleared);
       } else {
-        printMsg(msg, lang.error.usage);
+        //Purge the user
+        var user = util.getUserFromArg(msg, args[0]);
+        await db.user.updateWarnings(msg.guild.id, user.id, 0);
+        util.printMsg(msg, lang.warn.userCleared);
       }
     }
   },
-  warn: async function(msg, num) {
-    var mention = msg.mentions.users.first();
-    var warnings = await db.user.getWarnings(msg.guild.id, mention.id);
+  warn: async function(msg, user, num) {
+    var warnings = await db.user.getWarnings(msg.guild.id, user.id);
     if (warnings == undefined) {
       //Default
       warnings = 0;
     }
     //User warnings found!
     warnings += num;
-    await db.user.updateWarnings(msg.guild.id, mention.id, warnings);
-    printMsg(msg, mustache.render(lang.warn.list, {
-      userId: mention.id,
+    await db.user.updateWarnings(msg.guild.id, user.id, warnings);
+    util.printMsg(msg, mustache.render(lang.warn.list, {
+      userId: user.id,
       warning: warnings
     }));
   }
