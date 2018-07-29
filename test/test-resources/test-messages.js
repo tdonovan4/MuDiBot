@@ -6,10 +6,11 @@ exports.msg1 = {
   content: '$help',
   author: {
     username: 'TestUser',
-    id: '041025599435591424'
+    id: '041025599435591424',
+    createdAt: new Date(2009, 11, 24)
   },
   member: {
-    addRole: function(role, reason) {
+    addRole: function(role) {
       return new Promise(resolve => {
         this.roles.set(role, {
           id: 2
@@ -35,13 +36,21 @@ exports.msg1 = {
         }
       },
     },
-    permissions: new Discord.Collection,
-    roles: new Discord.Collection
+    permissions: new Discord.Collection(),
+    roles: new Discord.Collection()
   },
   guild: {
     id: '357156661105365963',
-    roles: new Discord.Collection,
+    roles: new Discord.Collection(),
+    channels: new Discord.Collection(),
     members: {
+      has: function(id) {
+        if (id == '1' || '041025599435591424') {
+          return true;
+        } else {
+          return false;
+        }
+      },
       get: function(id) {
         var username = 'TestUser';
         if (id == '357156661105365963') {
@@ -49,7 +58,9 @@ exports.msg1 = {
         }
         return {
           user: {
-            username: username
+            username: username,
+            avatarURL: 'https://cdn.discordapp.com/avatars/041025599435591424/',
+            id: id
           }
         }
       }
@@ -76,10 +87,19 @@ exports.msg1 = {
             }
           }
         },
-        delete: function() {}
+        delete: function() {
+          //We don't actually delete
+          return;
+        }
       }
     },
-    fetchMessages: async function(args) {
+    messages: [],
+    awaitMessages: function() {
+      var msg = new Discord.Collection().set('1', this.messages[0])
+      this.messages.splice(0, 1);
+      return msg;
+    },
+    fetchMessages: function(args) {
       var predefinedMsg = [{
         content: 'Hello',
         author: {
@@ -154,7 +174,7 @@ exports.msg1 = {
         }
         returnedMsg[i] = predefinedMsg[i]
       }
-      var returnedCollection = new Discord.Collection;
+      var returnedCollection = new Discord.Collection();
       returnedCollection.array = function() {
         return returnedMsg;
       }
@@ -162,7 +182,13 @@ exports.msg1 = {
     }
   },
   mentions: {
-    users: new Discord.Collection,
-    roles: new Discord.Collection
+    users: new Discord.Collection(),
+    roles: new Discord.Collection()
   },
 }
+
+exports.msg1.guild.channels.set('42', {
+  send: function(text) {
+    return text;
+  }
+});

@@ -1,8 +1,8 @@
-const bot = require('../../bot.js');
+const { Command } = require('../../commands.js');
 var lang = require('../../localization.js').getLocalization();
 
 module.exports = {
-  KillCommand: class extends bot.Command {
+  KillCommand: class extends Command {
     constructor() {
       super({
         name: 'kill',
@@ -12,13 +12,13 @@ module.exports = {
         permLvl: 3
       });
     }
-    execute(msg, args) {
+    execute() {
       console.log(lang.general.stopping);
       process.exitCode = 0;
       process.exit();
     }
   },
-  RestartCommand: class extends bot.Command {
+  RestartCommand: class extends Command {
     constructor() {
       super({
         name: 'restart',
@@ -28,7 +28,7 @@ module.exports = {
         permLvl: 3
       });
     }
-    execute(msg, args) {
+    execute() {
       //Spawn new process
       var spawn = require('child_process').spawn;
 

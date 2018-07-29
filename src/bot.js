@@ -1,56 +1,36 @@
 //Main class
 const Discord = require("discord.js");
 const client = new Discord.Client();
-const defaultChannel = require('./default-channel.js');
 const mustache = require('mustache');
-var config = require('./args.js').getConfig()[1];
+var config = require('./util.js').getConfig()[1];
 //For localization
 var lang = require('./localization.js').getLocalization();
 
-module.exports = {
-  printMsg: function(msg, text) {
-    console.log(text);
-    msg.channel.send(text);
-  },
-  client: function() {
-    return client;
-  },
-  Command: class {
-    constructor(commandInfo) {
-      this.name = commandInfo.name;
-      this.aliases = commandInfo.aliases;
-      this.category = commandInfo.category;
-      this.priority = commandInfo.priority;
-      this.permLvl = commandInfo.permLvl;
-    }
-  },
-  Category: class {
-    constructor(categoryInfo) {
-      this.name = categoryInfo.name;
-      this.priority = categoryInfo.priority;
-      this.commands = new Map();
-    }
-    addCommand(command) {
-      this.commands.set(command.name, command);
-    }
-  }
+//Put client in discord.js to share it with other files
+Discord.client = client;
+
+//Log to the discord user with the token
+var startTime = Date.now()
+try {
+  client.login(config.botToken);
+} catch (e) {
+  console.log(lang.error.invalidArg.token);
+  process.exitCode = 1;
+  process.exit();
 }
 
-//Log to the discord user  with the token
-var startTime;
-client.login(config.botToken)
-  .then(startTime = Date.now()).catch(() => {
-    console.log(lang.error.invalidArg.token);
-    process.exitCode = 1;
-    process.exit();
-  });
-
-const commands = require('./commands.js')
+const commands = require('./commands.js');
+const customCmd = require('./modules/fun/custom-cmd.js');
+const db = require('./modules/database/database.js');
 
 //Start the bot
-client.on('ready', () => {
+client.on('ready', async () => {
   console.log(mustache.render(lang.general.logged, client));
   console.log(lang.general.language);
+
+  console.log(lang.general.dbChecking);
+  //Check database
+  await db.checker.check();
 
   //Register stuff
   commands.registerCategories(config.categories);
@@ -65,7 +45,6 @@ client.on('ready', () => {
   }));
 });
 
-const player = require('./modules/music/audio-player.js');
 const levels = require('./levels.js');
 
 /*
@@ -73,62 +52,45 @@ const levels = require('./levels.js');
  *to check if the message is calling a command
  */
 client.on('message', msg => {
+  onMessage(msg);
+});
+
+async function onMessage(msg) {
+  //Just to make it async
   //Ignore bot
   if (msg.author.bot) return;
-  //Check if the author is not the bot
-  if (msg.author != client.user) {
+  //Check author is not in interactive mode
+  var interactiveMember = commands.inInteractiveMode.find(x => {
+    return x.guild == msg.guild.id && x.user == msg.author.id;
+  });
+  if (interactiveMember == undefined) {
     let cmd = msg.content.slice(config.prefix.length);
-    if(cmd != undefined) {
+    if (cmd != undefined) {
       cmd = cmd.split(' ');
     }
 
     //Check if message is a command that can be executed
-    commands.checkIfValidCmd(msg, cmd).then(msgValidCmd => {
-      if (msgValidCmd) {
-        commands.executeCmd(msg, cmd);
-      } else {
-        //Check if message is a custom command
-        const customCmd = require('./modules/fun/custom-cmd.js');
-
-        customCmd.getCmds(msg).then(custCmds => {
-          var cmd = custCmds.find(x => x.name == msg.content);
-          if (cmd != undefined) {
-            switch (cmd.action) {
-              case 'say':
-                msg.channel.send(cmd.arg);
-                break;
-              case 'play':
-                player.playYoutube(msg, cmd.arg);
-                break;
-              default:
-                console.log(lang.error.invalidArg.cmd);
-            }
-          }
-        });
+    var msgValidCmd = await commands.checkIfValidCmd(msg, cmd);
+    if (msgValidCmd) {
+      await commands.executeCmd(msg, cmd);
+    } else {
+      //Check if message is a custom command
+      var custCmds = await db.customCmd.getCmds(msg.guild.id);
+      //The custom command if it exists
+      var custCmd = custCmds.find(x => x.name == msg.content);
+      if (custCmd != undefined) {
+        customCmd.executeCmd(msg, custCmd);
       }
-      if (config.levels.activated == true) {
-        //Add xp
-        levels.newMessage(msg);
-      }
-    });
-  }
-});
-
-//Convert roles into mention objects
-function mention(roles, role) {
-  if (role === 'everyone') {
-    return '@everyone';
-  } else if (role === "roleMember") {
-    return roles.find("name", config.roleMember);
-  } else if (role === "roleModo") {
-    return roles.find("name", config.roleModo);
-  } else {
-    return null;
+    }
+    if (config.levels.activated == true) {
+      //Add xp
+      await levels.newMessage(msg);
+    }
   }
 }
 
 async function sendDefaultChannel(member, text) {
-  let channel = await defaultChannel.getChannel(client, member);
+  let channel = await db.config.getDefaultChannel(member.guild.id);
   channel.send(text);
 }
 

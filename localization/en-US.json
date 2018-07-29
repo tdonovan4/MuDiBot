@@ -3,6 +3,7 @@
     "logged": "Logged in as {{user.username}}!",
     "language": "Selected language: English",
     "startupTime": "Startup took {{time}}ms",
+    "dbChecking": "Checking the database...",
     "stopping": "Shutting down...",
     "restarting": "Restarting...",
     "member": {
@@ -13,6 +14,10 @@
       "reward": "and receives the role {{role}} as a reward",
       "addReward": "Reward for rank up",
       "removeOldReward": "Removal of old reward"
+    },
+    "interactiveMode": {
+      "optional": "(this argument is optional, use `$skip` to skip it)",
+      "skipped": "Argument skipped"
     }
   },
   "error": {
@@ -20,10 +25,16 @@
     "missingArg": {
       "channel": "Missing argument: channel",
       "message": "Missing argument: message",
+      "user": "Missing argument: user",
       "rank": "Missing argument: rank",
       "reward": "Missing argument: reward",
       "role": "Missing argument: role",
-      "group": "Missing argument: group"
+      "group": "Missing argument: group",
+      "field": "Missing argument: field",
+      "value": "Missing argument: field value",
+      "action": "Missing argument: action",
+      "name": "Missing argument: name",
+      "cmd": "Missing argument: command"
     },
     "invalidArg": {
       "token": "The provided token is invalid!",
@@ -31,7 +42,9 @@
       "category": "Warning: {{cmds}} doesn't have a valid category",
       "user": "Invalid user",
       "role": "Invalid role",
-      "reward": "Invalid reward"
+      "reward": "Invalid reward",
+      "field": "Invalid field",
+      "action": "Invalid argument: action (it must be `say` or `play`)"
     },
     "notLocalized": {
       "cmd": "Error: this command is not localized!",
@@ -43,17 +56,27 @@
       "group": "Group not found",
       "rankReward": "No reward found for this rank",
       "video": "I couldn't find a video matching what you entered. :thinking: Try again with something different!",
-      "voiceChannel": "You are not in a voice channel!"
+      "voiceChannel": "You are not in a voice channel!",
+      "user": "User not found"
     },
     "tooMuch": {
-      "cmds": "There is too much custom commands!",
-      "cmdsUser": "You have too many custom commands!"
+      "cmdsUser": "You have too many custom commands!",
+      "chars": "You have more than {{max}} characters! Please enter less."
     },
     "cmdAlreadyExists": "This command already exists!",
     "groupDuplicate": "This user already is in this group!",
     "notEnoughPermissions": "Not enough permissions",
     "ytdlError": "This video could not be downloaded (maybe unavailable?).",
-    "notPlaying": "I'm not playing anything!"
+    "notPlaying": "I'm not playing anything!",
+    "formatError": "Please format the date using ISO 8601 (yyyy-mm-dd or --mm-dd)",
+    "notInteractiveMode": "Error: it looks like this command doesn't support interactive mode yet!"
+  },
+  "database": {
+    "noVersion": "Could not find database version. Starting from baseline.",
+    "tableAdded": "{{num}} missing table(s) added!",
+    "newVersion": "Database version outdated. Updating from version {{current}} to version {{new}}",
+    "updated": "Updated to version {{version}} successfully",
+    "clear": "Database is up to date"
   },
   "ranks": {
     "vagabond": "Vagabond",
@@ -91,7 +114,7 @@
       "msg": "Change bot status"
     },
     "say": {
-      "usages": ["<channel> <message>"],
+      "usages": ["<message>", "<channel> <message>"],
       "msg": "Send a message into the channel"
     },
     "avatar": {
@@ -99,8 +122,12 @@
       "msg": "Get an user avatar"
     },
     "profile": {
-      "usages": ["<user>"],
+      "usages": ["", "<user>"],
       "msg": "Get an user profile"
+    },
+    "modifyprofile": {
+      "usages": ["<field> <value>"],
+      "msg": "Modify a user profile field"
     },
     "setgroup": {
       "usages": ["<user> <group>"],
@@ -113,6 +140,10 @@
     "purgegroups": {
       "usages": ["<user>"],
       "msg": "Purge groups of a user"
+    },
+    "top": {
+      "usages": [""],
+      "msg": "Display local and global leaderboard in terms of XP"
     },
     "gif": {
       "usages": ["", "<what to search>"],
@@ -135,7 +166,7 @@
       "msg": "Add a custom cmd. <action> can be `say` or `play`, <arg> is the argument of the action."
     },
     "custcmdlist": {
-      "usages": ["", "<user>", "<cmd>"],
+      "usages": ["", "<user>", "<command>"],
       "msg": "List all custom commands by default. You can add an user to list all of his commands or you can add a command for more information about it."
     },
     "custcmdremove": {
@@ -143,7 +174,7 @@
       "msg": "Remove a custom command"
     },
     "play": {
-      "usages": ["<song url", "tags>"],
+      "usages": ["<video url>", "<tags>"],
       "msg": "Put a song in queue and play it"
     },
     "stop": {
@@ -167,7 +198,7 @@
       "msg": "Remove a warning from user"
     },
     "warnlist": {
-      "usages": ["<user>", "all"],
+      "usages": ["<user>", ""],
       "msg": "List warnings of an user or all users"
     },
     "warnpurge": {
@@ -223,16 +254,55 @@
       "clientId": "Client ID"
     }
   },
+  "say": {
+    "interactiveMode": {
+      "channel": "Please enter a channel to send the message",
+      "message": "Please enter the message"
+    }
+  },
+  "avatar": {
+    "interactiveMode": {
+      "user": "Please enter a user to get his avatar"
+    }
+  },
   "profile": {
     "title": "{{username}}'s profile",
-    "rank": "Rank:",
-    "groups": "Permission groups",
-    "level": "Level:",
-    "warnings": "Warnings:",
-    "xp": "Total XP:",
-    "footer": "Client id: {{id}}"
+    "defaults": {
+      "bio": "This user doesn't have a bio!",
+      "birthday": "Unknown",
+      "location": "Unknown"
+    },
+    "basicInfo": {
+      "name": "__**General Info**__",
+      "bio": "**Bio:**",
+      "birthday": "**Birthday:**",
+      "location": "**Location:**",
+      "accountCreation": "**Account created since:**"
+    },
+    "xp": {
+      "local": "__**Local Experience**__",
+      "global": "__**Global Experience**__",
+      "rank": "Rank:",
+      "position": "Position:",
+      "level": "Level:",
+      "totalXP": "Total XP:"
+    },
+    "groups": "Permission group(s):",
+    "warnings": "Warning(s):",
+    "footer": "Client id: {{id}} | request took {{time}} ms"
+  },
+  "modifyprofile": {
+    "interactiveMode": {
+      "field": "Please enter a field (`bio`, `birthday` or `location`)",
+      "value": "Please enter a value for the field"
+    },
+    "modified": "Profile field modified!"
   },
   "setgroup": {
+    "interactiveMode": {
+      "user": "Please enter a user",
+      "group": "Please enter a permission group"
+    },
     "newGroup": "Group added!"
   },
   "unsetgroup": {
@@ -242,6 +312,14 @@
   "purgegroups": {
     "purged": "Groups purged"
   },
+  "top": {
+    "title": "__**Leaderboards:**__",
+    "local": "**Local board**",
+    "global": "**Global board**",
+    "experience": "⤷ Level: {{level}} | XP: {{xp}}\n",
+    "count": "***Total of {{count}} users***",
+    "footer": "Request took: {{time}}ms"
+  },
   "flipcoin": {
     "heads": "heads",
     "tails": "tails"
@@ -250,7 +328,13 @@
     "invalid": "Wrong usage! Make sure to follow `<# of dice>d<# of faces><modifier>` and keep inputs bellow 50.\n"
   },
   "custcmd": {
-    "cmdAdded": "Command added"
+    "interactiveMode": {
+      "name": "Please enter the new custom command's name",
+      "action": "Please enter the command's action (`say` or `play`)",
+      "arg": "Please enter the command's message"
+    },
+    "cmdAdded": "Command added",
+    "tooLong": "Please keep the name under 25 characters"
   },
   "custcmdlist": {
     "empty": "No custom commands found",
@@ -260,9 +344,15 @@
     "arg": "Argument"
   },
   "custcmdremove": {
+    "interactiveMode": {
+      "command": "Please enter the custom command's name"
+    },
     "cmdRemoved": "Command removed"
   },
   "play": {
+    "interactiveMode": {
+      "video": "Please enter a video url or some tags"
+    },
     "added": "This video has been added to the queue! :notepad_spiral:  ```css\n{{{title}}} ~ [{{duration}}]\n```",
     "skipped": "Video skipped!",
     "playing": "**Playing:** :notes: ```css\n{{{title}}} ~ [{{duration}}]\n```",
@@ -276,7 +366,11 @@
     "deleted": "{{length}} message(s) deleted!"
   },
   "warn": {
-    "list": "<@{{userId}}>: {{warnings}} warnings",
+    "interactiveMode": {
+      "user": "Please enter a user",
+      "all": "Please enter `all` if you want to delete all warnings in the server"
+    },
+    "list": "<@{{userId}}>: {{warning}} warnings",
     "noWarns": "There is no warnings",
     "usersCleared": "All users cleared",
     "userCleared": "User cleared"
@@ -285,6 +379,10 @@
     "newDefaultChannel": "New default channel set!"
   },
   "setreward": {
+    "interactiveMode": {
+      "rank": "Please enter a rank",
+      "reward": "Please enter a reward (permission group or role)"
+    },
     "newReward": "New reward set!"
   },
   "unsetreward": {

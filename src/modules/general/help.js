@@ -1,15 +1,22 @@
-const config = require('../../args.js').getConfig()[1];
-const bot = require('../../bot.js')
-const mustache = require('mustache');
+const config = require('../../util.js').getConfig()[1];
 const commands = require('../../commands.js');
-var categories = commands.categories;
+const mustache = require('mustache');
 var lang = require('../../localization.js').getLocalization();
 
-module.exports = class helpCommand extends bot.Command {
+module.exports = class helpCommand extends commands.Command {
   constructor() {
     super({
       name: 'help',
       aliases: [],
+      args: [
+        new commands.Argument({
+          position: 0,
+          optional: true,
+          failOnInvalid: true,
+          possibleValues: commands.namesAndAliases,
+          invalidError: lang.error.invalidArg.cmd
+        })
+      ],
       category: 'general',
       priority: 10,
       permLvl: 0
@@ -17,13 +24,8 @@ module.exports = class helpCommand extends bot.Command {
   }
   execute(msg, args) {
     if (args[0] != undefined) {
-      //Check if args is a valid command
-      if (commands.commands.has(args[0])) {
-        //Valid command
-        printCmd(msg, args, commands.commands.get(args[0]));
-      } else {
-        bot.printMsg(msg, lang.error.invalidArg.cmd);
-      }
+      //Print one command
+      printCmd(msg, args, commands.commands.get(args[0]));
     } else {
       //Print all commands
       printCmds(msg);
@@ -39,7 +41,7 @@ function printCmds(msg) {
   var columnsFinished = 0;
 
   //Order categories
-  categories = new Map(Array.from(categories).sort((a, b) => {
+  var categories = new Map(Array.from(commands.categories).sort((a, b) => {
     return b[1].priority - a[1].priority
   }));
 
@@ -48,7 +50,7 @@ function printCmds(msg) {
     var row = '';
     if (rowNum == 0) {
       //Insert categories
-      categories.forEach(function(category) {
+      categories.forEach(category => {
         var chars = `[${category.name}]`;
         row += chars + Array(numSpace - chars.length).join(" ")
 
@@ -56,22 +58,25 @@ function printCmds(msg) {
         category.commands = new Map(Array.from(category.commands).sort((a, b) => {
           return b[1].priority - a[1].priority
         }));
+        //Add iterator
+        category.iterator = category.commands.values();
+        //Add done
+        category.done = false;
       });
     } else {
       //Insert commands
       //Add a space before (prettier)
       row = ' '
-      categories.forEach(function(category) {
+      categories.forEach(category => {
         var chars = '';
-        var command = category.commands.values().next();
-
+        var command = category.iterator.next();
         if (!command.done) {
           chars = config.prefix + command.value.name;
-          //Delete command
-          categories.get(category.name).commands.delete(command.value.name);
-          if (category.commands.values().next().done) {
-            //Done
+        } else {
+          if (!category.done) {
+            //Category/column finished
             columnsFinished++;
+            category.done = true;
           }
         }
         row += chars + Array(numSpace - chars.length).join(' ');
@@ -97,7 +102,7 @@ function printCmd(msg, args, cmd) {
     var usages = '';
     for (var i = 0; i < help.usages.length; i++) {
       //Insert usages
-      usages += `${config.prefix + args[0]} ${help.usages[i]}\n`
+      usages += `${config.prefix + args[0]} ${help.usages[i]}\n`;
     }
 
     var embed = new Discord.RichEmbed();
@@ -107,11 +112,11 @@ function printCmd(msg, args, cmd) {
     var aliases = cmd.aliases;
     //Check for aliases
     if (aliases.length > 0) {
-      embed.setDescription(`${lang.help.alias} ${aliases.map(x => `\`$${x[0]}\``).join(' ')}`)
+      embed.setDescription(`${lang.help.alias} ${aliases.map(x => `\`${config.prefix + x}\``).join(' ')}`);
     }
-    embed.addField(name = lang.help.desc, value = help.msg, inline = false)
-    embed.addField(name = lang.help.permLvl, value = cmd.permLvl, inline = true)
-    embed.addField(name = lang.help.usage, value = usages, inline = true);
+    embed.addField(lang.help.desc, help.msg, false);
+    embed.addField(lang.help.permLvl, cmd.permLvl, true);
+    embed.addField(lang.help.usage, usages, true);
     msg.channel.send({
       embed
     });
