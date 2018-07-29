@@ -1,230 +1,150 @@
-const bot = require('../../bot.js');
-const storage = require('../../storage.js');
-const sql = require('sqlite');
-const config = require('../../args.js').getConfig()[1];
+const util = require('../../util.js');
+const commands = require('../../commands.js');
+const db = require('../database/database.js');
+const config = require('../../util.js').getConfig()[1];
 var lang = require('../../localization.js').getLocalization();
 
 module.exports = {
-  SetGroupCommand: class extends bot.Command {
+  SetGroupCommand: class extends commands.Command {
     constructor() {
       super({
         name: 'setgroup',
         aliases: [],
+        args: [
+          new commands.Argument({
+            optional: false,
+            interactiveMsg: lang.setgroup.interactiveMode.user,
+            type: 'mention',
+            missingError: lang.error.missingArg.user,
+            invalidError: lang.error.invalidArg.user
+          }),
+          new commands.Argument({
+            optional: false,
+            interactiveMsg: lang.setgroup.interactiveMode.group,
+            type: 'group',
+            missingError: lang.error.missingArg.group,
+            invalidError: lang.error.notFound.group
+          })
+        ],
         category: 'user',
-        priority: 2,
+        priority: 8,
         permLvl: 3
       });
     }
     async execute(msg, args) {
-      await module.exports.setGroup(msg, msg.mentions.users.first(), args[1]);
+      var user = util.getUserFromArg(msg, args[0]);
+      await module.exports.setGroup(msg, user, args[1]);
     }
   },
-  UnsetGroupCommand: class extends bot.Command {
+  UnsetGroupCommand: class extends commands.Command {
     constructor() {
       super({
         name: 'unsetgroup',
         aliases: ['ungroup'],
+        args: [
+          new commands.Argument({
+            optional: false,
+            interactiveMsg: lang.setgroup.interactiveMode.user,
+            type: 'mention',
+            missingError: lang.error.missingArg.user,
+            invalidError: lang.error.invalidArg.user
+          }),
+          new commands.Argument({
+            optional: false,
+            interactiveMsg: lang.setgroup.interactiveMode.group,
+            type: 'group',
+            missingError: lang.error.missingArg.group,
+            invalidError: lang.error.notFound.group
+          })
+        ],
         category: 'user',
-        priority: 1,
+        priority: 7,
         permLvl: 3
       });
     }
     async execute(msg, args) {
-      await module.exports.unsetGroup(msg, msg.mentions.users.first(), args[1]);
+      var user = util.getUserFromArg(msg, args[0]);
+      await module.exports.unsetGroup(msg, user, args[1]);
     }
   },
-  PurgeGroupsCommand: class extends bot.Command {
+  PurgeGroupsCommand: class extends commands.Command {
     constructor() {
       super({
         name: 'purgegroups',
         aliases: ['gpurge'],
+        args: [
+          new commands.Argument({
+            optional: false,
+            interactiveMsg: lang.setgroup.interactiveMode.user,
+            type: 'mention',
+            missingError: lang.error.missingArg.user,
+            invalidError: lang.error.invalidArg.user
+          })
+        ],
         category: 'user',
-        priority: 0,
+        priority: 6,
         permLvl: 3
       });
     }
-    async execute(msg, args) {
+    async execute(msg) {
       await purgeGroups(msg);
     }
   },
-  setGroup: function(msg, user, group) {
-    var groups = config.groups;
-
-    //Check if there is a user in msg
-    if (user == undefined) {
-      //Invalid argument: user
-      bot.printMsg(msg, lang.error.invalidArg.user);
-      return;
-    }
-    //Check if there is a group in msg
-    if (group == undefined) {
-      //Missing argument: group
-      bot.printMsg(msg, lang.error.missingArg.group);
-      return;
-    }
-
+  setGroup: async function(msg, user, group) {
     //Put first character of group in uppercase
     group = group.charAt(0).toUpperCase() + group.slice(1);
-
-    return new Promise((resolve, reject) => {
-      //Check if group exists
-      if (groups.find(x => x.name == group) != undefined) {
-        //Get existing groups
-        storage.getUser(msg, user.id).then(row => {
-          existingGroups = (row.groups != null) ? row.groups.split(',') : [];
-
-          //Check for duplicate
-          if (existingGroups.find(x => x == group)) {
-            bot.printMsg(msg, lang.error.groupDuplicate);
-            resolve()
-            return;
-          }
-          sql.open(config.pathDatabase).then(() => {
-            sql.get('SELECT * FROM users WHERE serverId = ? AND userId = ?', [msg.guild.id, user.id]).then(row => {
-              if (!row) {
-                //Table exist but not row
-                sql.run('INSERT INTO users (serverId, userId, xp, warnings, groups) VALUES (?, ?, ?, ?, ?)', [msg.guild.id, user.id, 0, 0, group]).then(() => {
-                  resolve();
-                });
-              } else {
-                existingGroups.push(group);
-                sql.run("UPDATE users SET groups = ? WHERE serverId = ? AND userId = ?", [existingGroups.toString(), msg.guild.id, user.id]).then(() => {
-                  resolve();
-                });
-              }
-              bot.printMsg(msg, lang.setgroup.newGroup);
-            }).catch(() => {
-              sql.run("CREATE TABLE IF NOT EXISTS users (serverId TEXT, rank TEXT, roleId TEXT)").then(() => {
-                //Table don't exist
-                sql.run('INSERT INTO users (serverId, userId, xp, warnings, groups) VALUES (?, ?, ?, ?, ?)', [msg.guild.id, user.id, 0, 0, group]).then(() => {
-                  bot.printMsg(msg, lang.setgroup.newGroup);
-                  resolve();
-                });
-              }).catch(error => {
-                console.log(error);
-                reject()
-              });
-            });
-            sql.close();
-          }).catch(error => {
-            console.log(error);
-            reject()
-          });
-        });
-      } else {
-        //Group don't exists
-        bot.printMsg(msg, lang.error.notFound.group);
-        resolve()
-      }
-    });
+    //Get existing groups
+    var userGroups = await db.user.getPermGroups(msg.guild.id, user.id);
+    //Split groups
+    userGroups = userGroups.split(',');
+    //Remove whitespace
+    userGroups = userGroups.filter(e => String(e).trim());
+    //Check for duplicate
+    if (userGroups.find(x => x == group)) {
+      util.printMsg(msg, lang.error.groupDuplicate);
+      return;
+    }
+    //Update row
+    userGroups.push(group);
+    await db.user.updatePermGroups(msg.guild.id, user.id, userGroups.toString());
+    util.printMsg(msg, lang.setgroup.newGroup);
   },
-  unsetGroup: function(msg, user, group) {
-    var groups = config.groups;
-
-    //Check if there is a user in msg
-    if (user == undefined) {
-      //Invalid argument: user
-      bot.printMsg(msg, lang.error.invalidArg.user);
-      return;
-    }
-    //Check if there is a group in msg
-    if (group == undefined) {
-      //Missing argument: group
-      bot.printMsg(msg, lang.error.missingArg.group);
-      return;
-    }
-
+  unsetGroup: async function(msg, user, group) {
     //Put first character of group in uppercase
     group = group.charAt(0).toUpperCase() + group.slice(1);
 
-    return new Promise((resolve, reject) => {
-      //Check if group exists
-      if (groups.find(x => x.name == group) != undefined) {
-        //Get existing groups
-        storage.getUser(msg, user.id).then(row => {
-          existingGroups = (row.groups != null) ? row.groups.split(',') : [];
-
-          sql.open(config.pathDatabase).then(() => {
-            sql.get('SELECT * FROM users WHERE serverId = ? AND userId = ?', [msg.guild.id, user.id]).then(row => {
-              if (!row) {
-                //Table exist but not row
-                sql.run('INSERT INTO users (serverId, userId, xp, warnings, groups) VALUES (?, ?, ?, ?, ?)', [msg.guild.id, user.id, 0, 0, groups[0].name]).then(() => {
-                  msg.channel.send(lang.unsetgroup.notInGroup);
-                  resolve();
-                });
-              } else {
-                let index = existingGroups.indexOf(group);
-                if (index > -1) {
-                  existingGroups.splice(index, 1)
-                  if (existingGroups.length < 2 && existingGroups[0] == '') {
-                    //No group
-                    existingGroups = null;
-                  } else {
-                    existingGroups = existingGroups.toString()
-                  }
-
-                  sql.run("UPDATE users SET groups = ? WHERE serverId = ? AND userId = ?", [existingGroups, msg.guild.id, user.id]).then(() => {
-                    bot.printMsg(msg, lang.unsetgroup.removed);
-                    resolve();
-                  });
-                } else {
-                  bot.printMsg(msg, lang.unsetgroup.notInGroup);
-                  resolve();
-                }
-              }
-            }).catch(() => {
-              sql.run("CREATE TABLE IF NOT EXISTS users (serverId TEXT, rank TEXT, roleId TEXT)").then(() => {
-                //Table don't exist
-                sql.run('INSERT INTO users (serverId, userId, xp, warnings, groups) VALUES (?, ?, ?, ?, ?)', [msg.guild.id, user.id, 0, 0, groups[0].name]).then(() => {
-                  msg.channel.send(lang.unsetgroup.notInGroup);
-                  resolve();
-                });
-              }).catch(error => {
-                console.log(error);
-                reject();
-              });
-            });
-            sql.close();
-          }).catch(error => {
-            console.log(error);
-            reject();
-          });
-        });
+    //Get existing groups
+    var userGroups = await db.user.getPermGroups(msg.guild.id, user.id);
+    //Split groups
+    userGroups = userGroups.split(',');
+    //Remove group
+    let index = userGroups.indexOf(group);
+    if (index > -1) {
+      userGroups.splice(index, 1);
+      if (userGroups.length < 2 && userGroups[0] == '') {
+        //No group
+        userGroups = config.groups[0].name;
       } else {
-        //Group don't exists
-        bot.printMsg(msg, lang.error.notFound.group);
-        resolve();
+        userGroups = userGroups.toString()
       }
-    });
+      await db.user.updatePermGroups(msg.guild.id, user.id, userGroups);
+      util.printMsg(msg, lang.unsetgroup.removed);
+    } else {
+      util.printMsg(msg, lang.unsetgroup.notInGroup);
+    }
   },
 }
 
-function purgeGroups(msg) {
+async function purgeGroups(msg) {
   var user = msg.mentions.users.first();
 
   //Check if there is a user in msg
   if (user == undefined) {
     //Invalid argument: user
-    bot.printMsg(msg, lang.error.invalidArg.user);
+    util.printMsg(msg, lang.error.invalidArg.user);
     return;
   }
-
-  return new Promise((resolve, reject) => {
-    sql.open(config.pathDatabase).then(() => {
-      sql.run('CREATE TABLE IF NOT EXISTS users (serverId TEXT, userId TEXT, xp INTEGER, warnings INTEGER, groups TEXT)')
-        .then(() => {
-          sql.run('UPDATE users SET groups = null WHERE serverId = ? AND userId = ?', [msg.guild.id, user.id]).then(() => {
-            bot.printMsg(msg, lang.purgegroups.purged);
-            resolve();
-          }).catch(error => {
-            console.log(error);
-            reject();
-          });
-        });
-      sql.close();
-    }).catch(error => {
-      console.log(error);
-      reject();
-    });
-  });
+  //Back to default group
+  await db.user.updatePermGroups(msg.guild.id, user.id, config.groups[0].name);
+  util.printMsg(msg, lang.purgegroups.purged);
 }

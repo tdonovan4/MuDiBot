@@ -3,6 +3,7 @@
     "logged": "Connecté en tant que {{user.username}}!",
     "language": "Langue sélectionnée: français",
     "startupTime": "Le démarrage a pris {{time}}ms",
+    "dbChecking": "Vérification de la base de donnée...",
     "stopping": "Fermeture...",
     "restarting": "Redémarrage...",
     "member": {
@@ -13,6 +14,10 @@
       "reward": "et reçoit le role {{role}} comme récompense",
       "addReward": "Récompense pour promotion",
       "removeOldReward": "Ancienne récompense enlevée"
+    },
+    "interactiveMode": {
+      "optional": "(cet argument est facultative, utilisez `$skip` pour la sauter)",
+      "skipped": "Argument sauté"
     }
   },
   "error": {
@@ -20,18 +25,26 @@
     "missingArg": {
       "channel": "Argument manquant: salon",
       "message": "Argument manquant: message",
+      "user": "Argument manquant: utilisateur",
       "rank": "Argument manquant: rang",
       "reward": "Argument manquant: récompense",
       "role": "Argument manquant: role",
-      "group": "Argument manquant: groupe"
+      "group": "Argument manquant: groupe",
+      "field": "Argument manquant: champ",
+      "value": "Argument manquant: valeur du champ",
+      "action": "Argument manquant: action",
+      "name": "Argument manquant: nom",
+      "cmd": "Argument manquant: commande"
     },
     "invalidArg": {
       "token": "Le token n'est pas valide!",
       "cmd": "Cette commande n'est pas valide",
       "category": "Attention: {{cmds}} n'a pas de catégorie valide",
-      "user": "Utilisateur non valide",
-      "role": "Role non valide",
-      "reward": "Récompense non valide"
+      "user": "Utilisateur invalide",
+      "role": "Role invalide",
+      "reward": "Récompense invalide",
+      "field": "Champ invalide",
+      "action": "Argument invalide: action (cela doit être `say` ou `play`)"
     },
     "notLocalized": {
       "cmd": "Erreur: cette commande n'est pas traduite!",
@@ -43,17 +56,27 @@
       "group": "Groupe non trouvé",
       "rankReward": "Aucune récompense trouvée pour ce rang",
       "video": "Je n'ai pas trouvé de vidéo pour ce que vous avez entré. :thinking: Essayez quelque chose de différent!",
-      "voiceChannel": "Vous n'êtes pas dans un salon vocal"
+      "voiceChannel": "Vous n'êtes pas dans un salon vocal",
+      "user": "Utilisateur non trouvé"
     },
     "tooMuch": {
-      "cmds": "Il y a trop de commandes personnalisée!",
-      "cmdsUser:": "Vous avez trop de commandes personnalisée!"
+      "cmdsUser:": "Vous avez trop de commandes personnalisée!",
+      "chars": "Vous avez plus de {{max}} charactères! Veuillez en entrer moins."
     },
     "cmdAlreadyExists": "Cette commande existe déjà!",
     "groupDuplicate": "Cette utilisateur est déjà dans ce groupe!",
     "notEnoughPermissions": "Permissions insuffisantes",
     "ytdlError": "Cette vidéo n'a pas pu être télécharger (peut-être indisponible?).",
-    "notPlaying": "Aucune vidéo ne joue!"
+    "notPlaying": "Aucune vidéo ne joue!",
+    "formatError": "Veuillez formater la date avec ISO 8601 (aaaa-mm-qq or --mm-qq)",
+        "notInteractiveMode": "Erreur: cette commande ne supporte par encore le mode interactif"
+  },
+  "database": {
+    "noVersion": "La version de la base de donnée n'a pas pu être trouvée. Utilisation de la première version.",
+    "tableAdded": "{{num}} table(s) manquante(s) ajoutée(s)!",
+    "newVersion": "La version de la base de donnée n'est pas à jour. Mise à jour de la version {{current}} à la version {{new}}",
+    "updated": "Mise à jour à la version {{version}} réussie",
+    "clear": "La base de donnée est à jour"
   },
   "ranks": {
     "vagabond": "Vagabond",
@@ -91,7 +114,7 @@
       "msg": "Change le status"
     },
     "say": {
-      "usages": ["<salon> <message>"],
+      "usages": ["<message>", "<salon> <message>"],
       "msg": "Envoie un message dans le salon"
     },
     "avatar": {
@@ -99,8 +122,12 @@
       "msg": "Donne l'avatar d'un utilisateur"
     },
     "profile": {
-      "usages": ["<utilisateur>"],
-      "msg": "Donne le profile d'un joueur"
+      "usages": ["", "<utilisateur>"],
+      "msg": "Donne le profil d'un joueur"
+    },
+    "modifyprofile": {
+      "usages": ["<champ> <valeur>"],
+      "msg": "Modifie un champ du profil de l'utilisateur"
     },
     "setgroup": {
       "usages": ["<utilisateur> <groupe>"],
@@ -113,6 +140,10 @@
     "purgegroups": {
       "usages": ["<utilisateur>"],
       "msg": "Purge les groupes d'un utilisateur"
+    },
+    "top": {
+      "usages": [""],
+      "msg": "Affiche le tableau des scores en terme de XP"
     },
     "gif": {
       "usages": ["", "<quoi chercher>"],
@@ -135,7 +166,7 @@
       "msg": "Ajoute une commande personnalisée. <action> peut être `say` ou `play`, <arg> est l'argument de l'action."
     },
     "custcmdlist": {
-      "usages": ["", "<utilisateur>", "<cmd>"],
+      "usages": ["", "<utilisateur>", "<commande>"],
       "msg": "Par défaut, liste toutes les commandes personnalisée. Vous pouvez ajouter un utilisateur pour trouver ses commandes ou une commande pour plus d'information sur celle-ci."
     },
     "custcmdremove": {
@@ -167,7 +198,7 @@
       "msg": "Enlève un avertissement de l'utilisateur"
     },
     "warnlist": {
-      "usages": ["<utilisateur>", "all"],
+      "usages": ["<utilisateur>", ""],
       "msg": "Liste les avertissements d'un utilisateur ou de tous les utilisateurs"
     },
     "warnpurge": {
@@ -223,16 +254,55 @@
       "clientId": "ID du client:"
     }
   },
+  "say": {
+    "interactiveMode": {
+      "channel": "Veuillez entrer un salon où envoyer le message",
+      "message": "Veuillez entrer le message"
+    }
+  },
+  "avatar": {
+    "interactiveMode": {
+      "user": "Veuillez entrer un utilisateur pour avoir sa photo de profile"
+    }
+  },
   "profile": {
     "title": "Profit de {{username}}",
-    "rank": "Rang:",
-    "groups": "Groupes de permission",
-    "level": "Niveau:",
-    "warnings": "Avertissements:",
-    "xp": "XP total:",
-    "footer": "ID du client: {{id}}"
+    "defaults": {
+      "bio": "Cet utilisateur n'a pas de bio!",
+      "birthday": "Inconnu",
+      "location": "Inconnu"
+    },
+    "basicInfo": {
+      "name": "__**Information général**__",
+      "bio": "**Bio:**",
+      "birtday": "**Anniversaire:**",
+      "location": "**Emplacement:**",
+      "accountCreation": "**Compte créé depuis:**"
+    },
+    "xp": {
+      "local": "__**Expérience locale**__",
+      "global": "__**Expérience globale**__",
+      "rank": "Rang:",
+      "position": "Position:",
+      "level": "Niveau:",
+      "totalXP": "XP total:"
+    },
+    "groups": "Groupe(s) de permission:",
+    "warnings": "Avertissement(s):",
+    "footer": "ID du client: {{id}} | ce message a pris {{time}} ms"
+  },
+  "modifyprofile": {
+    "interactiveMode": {
+      "field": "Veuillez entrer un champ (`bio`, `birthday` ou `location`)",
+      "value": "Veuillez entrer une valeur pour le champ"
+    },
+    "modified": "Champ du profil modifié"
   },
   "setgroup": {
+    "interactiveMode": {
+      "user": "Veuillez entrer un utilisateur",
+      "group": "Veuillez entrer un groupe de permission"
+    },
     "newGroup": "Groupe ajouté!"
   },
   "unsetgroup": {
@@ -242,6 +312,14 @@
   "purgegroups": {
     "purged": "Groupes purgés"
   },
+  "top": {
+    "title": "Tableau des scores:",
+    "local": "Tableau local",
+    "global": "Tableau global",
+    "experience": "⤷ Niveau: {{level}} | XP: {{xp}}\n",
+    "count": "Sur un total de {{count}} utilisateurs",
+    "footer": "Cette requête a pris: {{time}}ms"
+  },
   "flipcoin": {
     "heads": "face",
     "tails": "pile"
@@ -250,6 +328,11 @@
     "invalid": "Utilisation incorrecte! Veuillez suivre `<# de dés>d<# de faces><modifieur>` et de garder les nombres en bas de 50.\n"
   },
   "customcmd": {
+    "interactiveMode": {
+      "name": "Veuillez entrer le nom de la nouvelle commande personnalisée",
+      "action": "Veuillez entrer l'action de la commande (`say` ou `play`)",
+      "arg": "Veuillez entrer le message de la commande"
+    },
     "cmdAdded": "Commande ajoutée"
   },
   "custcmdlist": {
@@ -260,9 +343,15 @@
     "arg": "Argument"
   },
   "custcmdremove": {
+    "interactiveMode": {
+      "command": "Veuillez entrer le nom de la commande personnalisée"
+    },
     "cmdRemoved": "Commande supprimée"
   },
   "play": {
+    "interactiveMode": {
+      "video": "Veuillez entrer l'url d'une vidéo ou des tags"
+    },
     "added": "```css\n{{{title}}} ~ [{{duration}}]\n``` a été ajouté à la file d'attente",
     "skipped": "Vidéo passé!",
     "playing": "Joue présentement: ```css\n{{{title}}} ~ [{{duration}}]\n```",
@@ -276,7 +365,11 @@
     "deleted": "{{length}} message(s) supprimés!"
   },
   "warn": {
-    "list": "<@{{userId}}>: {{warnings}} avertissement",
+    "interactiveMode": {
+      "user": "Veuillez entrer un utilisateur",
+      "all": "Veuillez entrer `all` si vous voulez supprimer tout les avertissements du serveur"
+    },
+    "list": "<@{{userId}}>: {{warning}} avertissement",
     "noWarns": "Il n'y pas avertissement",
     "usersCleared": "Tous les utilisateurs ont été purgés",
     "userCleared": "Utilisateur purgé"
@@ -285,6 +378,10 @@
     "newDefaultChannel": "Nouveu salon par défaut sélectionné!"
   },
   "setreward": {
+    "interactiveMode": {
+      "rank": "Veuillez entrer un rang",
+      "reward": "Veuillez entrer une récompense (groupe de permission ou rôle)"
+    },
     "newReward": "Nouvelle récompense ajoutée"
   },
   "unsetreward": {

@@ -16,13 +16,11 @@ module.exports = {
   user: {
     id: 'testID',
     setActivity: function(game) {
-      return(game)
+      return (game)
     }
+  },
+  users: new Discord.Collection(),
+  fetchUser: function(id) {
+    return id;
   }
 }
-
-module.exports.channels.set('42', {
-  send: function(text) {
-    return text;
-  }
-});

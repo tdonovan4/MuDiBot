@@ -1,7 +1,7 @@
-const bot = require('../../bot.js');
+const { Command } = require('../../commands.js');
 var lang = require('../../localization.js').getLocalization();
 
-module.exports = class PingCommand extends bot.Command {
+module.exports = class PingCommand extends Command {
   constructor() {
     super({
       name: 'ping',
@@ -11,7 +11,7 @@ module.exports = class PingCommand extends bot.Command {
       permLvl: 0
     });
   }
-  execute(msg, args) {
+  execute(msg) {
     msg.reply(lang.ping.pong);
     console.log(lang.ping.pong);
   }

@@ -1,8 +1,8 @@
-const bot = require('../../bot.js');
-const defaultChannel = require('../../default-channel.js');
+const { Command } = require('../../commands.js');
+const db = require('../database/database.js');
 var lang = require('../../localization.js').getLocalization();
 
-module.exports = class SetChannelCommand extends bot.Command {
+module.exports = class SetChannelCommand extends Command {
   constructor() {
     super({
       name: 'setchannel',
@@ -12,10 +12,10 @@ module.exports = class SetChannelCommand extends bot.Command {
       permLvl: 3
     });
   }
-  execute(msg, args) {
+  execute(msg) {
     var botChannel = msg.channel;
     //Modify default channel in database
-    defaultChannel.setChannel(msg, botChannel);
+    db.config.updateDefaultChannel(msg.guild.id, botChannel);
     botChannel.send(lang.setchannel.newDefaultChannel);
   }
 }

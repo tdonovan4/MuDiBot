@@ -1,12 +1,12 @@
 //Play requested audio when called
+const mustache = require('mustache');
 const ytdl = require('ytdl-core');
 const https = require('https');
-const bot = require('../../bot.js');
-const config = require('../../args.js').getConfig()[1];
-const mustache = require('mustache');
+const { printMsg } = require('../../util.js');
+const commands = require('../../commands.js');
+const config = require('../../util.js').getConfig()[1];
 var lang = require('../../localization.js').getLocalization();
 var guildQueues = new Map();
-
 
 class GuildQueue {
   constructor(id) {
@@ -132,11 +132,18 @@ function printVideos(msg, queue, num) {
 }
 
 module.exports = {
-  PlayCommand: class extends bot.Command {
+  PlayCommand: class extends commands.Command {
     constructor() {
       super({
         name: 'play',
         aliases: [],
+        args: [
+          new commands.Argument({
+            optional: false,
+            interactiveMsg: lang.play.interactiveMode.video,
+            missingError: lang.error.usage
+          }),
+        ],
         category: 'music',
         priority: 10,
         permLvl: 0
@@ -147,7 +154,7 @@ module.exports = {
     }
   },
   //Stop playing the audio and leave channel
-  StopCommand: class extends bot.Command {
+  StopCommand: class extends commands.Command {
     constructor() {
       super({
         name: 'stop',
@@ -157,7 +164,7 @@ module.exports = {
         permLvl: 0
       });
     }
-    execute(msg, args) {
+    execute(msg) {
       var guildQueue = getQueue(msg.guild.id);
       if (guildQueue.connection != undefined) {
         //Disconnect from channel
@@ -165,15 +172,15 @@ module.exports = {
         //Reset
         guildQueue.connection = undefined;
         guildQueue.queue = [];
-        bot.printMsg(msg, lang.play.disconnected);
+        printMsg(msg, lang.play.disconnected);
       } else {
         //Not in a channel
-        bot.printMsg(msg, lang.error.notPlaying);
+        printMsg(msg, lang.error.notPlaying);
       }
     }
   },
   //Skip song
-  SkipCommand: class extends bot.Command {
+  SkipCommand: class extends commands.Command {
     constructor() {
       super({
         name: 'skip',
@@ -183,20 +190,20 @@ module.exports = {
         permLvl: 0
       });
     }
-    execute(msg, args) {
+    execute(msg) {
       var guildQueue = getQueue(msg.guild.id);
       if (guildQueue.connection != undefined) {
         //Must print before so that it is in order
-        bot.printMsg(msg, lang.play.skipped);
+        printMsg(msg, lang.play.skipped);
         //End stream
         guildQueue.connection.dispatcher.end();
       } else {
         //Not in a channel
-        bot.printMsg(msg, lang.error.notPlaying);
+        printMsg(msg, lang.error.notPlaying);
       }
     }
   },
-  QueueCommand: class extends bot.Command {
+  QueueCommand: class extends commands.Command {
     constructor() {
       super({
         name: 'queue',
@@ -206,7 +213,7 @@ module.exports = {
         permLvl: 0
       });
     }
-    execute(msg, args) {
+    execute(msg) {
       var queue = getQueue(msg.guild.id).queue;
       var num = Math.min(queue.length, 21);
       printVideos(msg, queue, num);
@@ -218,24 +225,19 @@ module.exports = {
     if (args.length == 0) {
       //Missing argument;
       msg.channel.send(lang.error.usage);
-
       return;
     }
     //Check if user is an a channel
     if (msg.member.voiceChannel == null) {
       //Not in a channel
-      bot.printMsg(msg, lang.error.notFound.voiceChannel);
+      printMsg(msg, lang.error.notFound.voiceChannel);
       return;
     }
     var videoId;
     //Check if url to video
     if (ytdl.validateURL(args[0])) {
       //Direct link to video
-      var videoId = ytdl.getURLVideoID(args[0]);
-      //If case not valid
-      if (videoId != null) {
-        videoId = videoId;
-      }
+      videoId = ytdl.getURLVideoID(args[0]);
     } else {
       //Search the video with the YouTube API
       var response = await get('https://www.googleapis.com/youtube/v3/search?part=snippet' +

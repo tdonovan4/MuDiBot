@@ -1,12 +1,24 @@
-const bot = require('../../bot.js');
+const commands = require('../../commands.js');
 var lang = require('../../localization.js').getLocalization();
-var client = bot.client();
 
-module.exports = class SayCommand extends bot.Command {
+module.exports = class SayCommand extends commands.Command {
   constructor() {
     super({
       name: 'say',
       aliases: [],
+      args: [
+        new commands.Argument({
+          optional: true,
+          interactiveMsg: lang.say.interactiveMode.channel,
+          type: 'channel',
+        }),
+        new commands.Argument({
+          position: 1,
+          interactiveMsg: lang.say.interactiveMode.message,
+          optional: false,
+          missingError: lang.error.missingArg.message
+        })
+      ],
       category: 'general',
       priority: 0,
       permLvl: 3
@@ -14,30 +26,18 @@ module.exports = class SayCommand extends bot.Command {
   }
   execute(msg, args) {
     let channel;
-
+    let id = args[0].match(/<#(.*?)>/);
     //Try to find which channel to send message
-    if (args[0] == 'here') {
-      channel = msg.channel;
+    if (id != null && msg.guild.channels.has(id[1])) {
+      //Use provided channel
+      channel = msg.guild.channels.get(id[1]);
+      //Remove channel from list of args
+      args = args.slice(1);
     } else {
-      let id = args[0].match(/<#(.*?)>/);
-      if (id != null) {
-        channel = client.channels.get(id[1]);
-      }
-    }
-
-    args = args.slice(1).join(' ');
-
-    //Check arguments
-    if (channel == undefined) {
+      //Use current channel
       channel = msg.channel;
-      args = lang.error.missingArg.channel;
     }
-
-    if (args == undefined || args == '') {
-      args = lang.error.missingArg.message;
-    }
-
     //Send message
-    channel.send(args);
+    channel.send(args.join(' '));
   }
 }
