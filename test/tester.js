@@ -1568,8 +1568,7 @@ describe('Test commands', function() {
       //Check the API has been called with right argument
       expect(setActivity.lastCall.returnValue).to.equal('New status!');
       //Check if config was "modified" (stub) with righ argument
-      //TODO: Better expect here
-      expect(response).to.equal("currentStatus: 'New status!");
+      expect(response).to.equal('currentStatus: \'New status!');
     });
   });
   describe('say', function() {

@@ -1,5 +1,8 @@
-var queries = require('./queries.js');
+const queries = require('./queries.js');
+const mustache = require('mustache');
+const lang = require('../../localization.js').getLocalization();
 const { client } = require('discord.js');
+var config = require('../../util.js').getConfig()[1];
 
 const insertQuery = 'INSERT OR IGNORE INTO config (server_id) VALUES (?)';
 
@@ -31,8 +34,8 @@ module.exports = {
       channel = client.channels.get(response.default_channel);
       if (channel == undefined) {
         //This channel don't exists
-        //TODO: error message
         channel = getBackupChannel(serverId);
+        channel.send(mustache.render(lang.error.notFound.defaultChannel, config));
       }
     }
     return channel;
