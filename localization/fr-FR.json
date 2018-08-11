@@ -57,7 +57,8 @@
       "rankReward": "Aucune récompense trouvée pour ce rang",
       "video": "Je n'ai pas trouvé de vidéo pour ce que vous avez entré. :thinking: Essayez quelque chose de différent!",
       "voiceChannel": "Vous n'êtes pas dans un salon vocal",
-      "user": "Utilisateur non trouvé"
+      "user": "Utilisateur non trouvé",
+      "defaultChannel": "Le salon par défaut n'existe pas, utilisation du salon de secours (utilisez {{prefix}}setchannel pour changer le salon par défaut)"
     },
     "tooMuch": {
       "cmdsUser:": "Vous avez trop de commandes personnalisée!",
