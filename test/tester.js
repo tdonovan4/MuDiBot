@@ -504,6 +504,10 @@ describe('Test Command.checkArgs', function() {
       var response = commands.getCmd('avatar').checkArgs(msg, ['<@1>']);
       expect(response).to.equal(true);
     });
+    it('$avatar should return true with nickname mention', function() {
+      var response = commands.getCmd('avatar').checkArgs(msg, ['<@!1>']);
+      expect(response).to.equal(true);
+    });
   })
   describe('Test command with an array of possible values', function() {
     it('$help should return true without args (optional)', function() {

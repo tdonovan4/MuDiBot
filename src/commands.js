@@ -176,7 +176,7 @@ class Argument {
         break;
       case 'mention':
         //Checking mention manually, because I care about it's position
-        var mentionID = msgArg.match(/<@(.*?)>/);
+        var mentionID = msgArg.match(/<@!?(.*?[0-9])>/);
         if (mentionID == null || !msg.guild.members.has(mentionID[1])) {
           //Argument is not a mention
           valid = false;
