@@ -13,19 +13,19 @@
     "node": "8.9.*"
   },
   "dependencies": {
-    "discord.js": "^11.3.2",
+    "discord.js": "^11.4.2",
     "erlpack": "github:hammerandchisel/erlpack",
-    "mustache": "^2.3.0",
+    "mustache": "^2.3.2",
     "node-opus": "^0.2.9",
     "sodium": "github:general-programming/node-sodium",
-    "sqlite": "^2.9.2",
+    "sqlite": "^2.9.3",
     "sqlite3": "^3.1.13",
     "uws": "^0.14.5",
     "ytdl-core": "^0.20.4"
   },
   "devDependencies": {
     "chai": "^4.1.2",
-    "eslint": "^5.0.1",
+    "eslint": "^5.5.0",
     "mocha": "^5.2.0",
     "rewire": "^3.0.2",
     "sinon": "^4.5.0"
