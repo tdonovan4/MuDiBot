@@ -19,7 +19,7 @@
     "node-opus": "^0.2.9",
     "sodium": "github:general-programming/node-sodium",
     "sqlite": "^2.9.3",
-    "sqlite3": "^3.1.13",
+    "sqlite3": "^4.0.2",
     "uws": "^0.14.5",
     "ytdl-core": "^0.20.4"
   },
