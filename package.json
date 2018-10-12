@@ -4,6 +4,7 @@
   "description": "A multipurpose Discord bot (MuDiBot) made using discord.js",
   "main": "bot.js",
   "scripts": {
+    "install": "./scripts/install.sh",
     "test": "./node_modules/.bin/mocha --reporter spec --exit",
     "lint": "node_modules/.bin/eslint ./"
   },
