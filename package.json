@@ -4,29 +4,28 @@
   "description": "A multipurpose Discord bot (MuDiBot) made using discord.js",
   "main": "bot.js",
   "scripts": {
-    "install": "./scripts/install.sh",
+    "autoinstall": "./scripts/install.sh",
     "test": "./node_modules/.bin/mocha --reporter spec --exit",
     "lint": "node_modules/.bin/eslint ./"
   },
   "author": "tdonovan4",
   "license": "MIT",
   "engines": {
-    "node": "8.9.*"
+    "node": "10.13.*"
   },
   "dependencies": {
-    "discord.js": "^11.3.2",
-    "erlpack": "github:hammerandchisel/erlpack",
-    "mustache": "^2.3.0",
+    "discord.js": "^11.4.2",
+    "mustache": "^2.3.2",
     "node-opus": "^0.2.9",
-    "sodium": "github:general-programming/node-sodium",
-    "sqlite": "^2.9.2",
-    "sqlite3": "^3.1.13",
+    "sodium": "^3.0.1",
+    "sqlite": "^3.0.0",
+    "sqlite3": "^4.0.4",
     "uws": "^0.14.5",
     "ytdl-core": "^0.20.4"
   },
   "devDependencies": {
-    "chai": "^4.1.2",
-    "eslint": "^5.0.1",
+    "chai": "^4.2.0",
+    "eslint": "^5.9.0",
     "mocha": "^5.2.0",
     "rewire": "^3.0.2",
     "sinon": "^4.5.0"
