@@ -95,8 +95,12 @@ describe('Test leaderboard.js', function() {
   describe('Test tops', function() {
     before(async function() {
       //Spice things up
+      await db.user.updateXP('2', '1', 15000);
       await db.user.updateXP('1', '2', 150);
       await db.user.updateXP('2', '2', 250);
+      await db.user.updateXP('1', '3', 15000);
+      await db.user.updateXP('3', '3', 10000);
+      await db.user.updateXP('1', '4', 0);
     })
     it('getLocalTop should return the correct leaderboard', async function() {
       var response = await db.leaderboard.getLocalTop('1', 10);
