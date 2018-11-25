@@ -7,6 +7,7 @@ var msg = testMessages.msg1;
 
 const sql = require('sqlite');
 const db = require('../../src/modules/database/database.js');
+const queries = require('../../src/modules/database/queries.js');
 const dbFolder = './test/database/';
 const { deleteDatabase, replaceDatabase } = require('../test-resources/test-util.js');
 
@@ -91,6 +92,90 @@ module.exports = function() {
     it('Should update v003 to last version', async function() {
       await checkDatabaseUpdating('003');
     })
+  });
+
+  describe('Test queries', function() {
+    beforeEach(async function() {
+      await replaceDatabase(config.pathDatabase, 'data1.db');
+    });
+    describe('Test the get query', function() {
+      it('Should get user based on server and user id', async function() {
+        var query = 'SELECT server_id, user_id FROM user WHERE server_id = ? AND user_id = ?';
+        var response = await queries.runGetQuery(query, ['1', '4']);
+        expect(response.server_id).to.equal('1');
+        expect(response.user_id).to.equal('4');
+      });
+      it('Should get the first user in the server with id 1', async function() {
+        var query = 'SELECT server_id, user_id FROM user WHERE server_id = ?';
+        var response = await queries.runGetQuery(query, ['1']);
+        //Get only return a single response
+        expect(response.server_id).to.equal('1');
+        expect(response.user_id).to.equal('2');
+      });
+    });
+    describe('Test the run query', function() {
+      it('Should insert a table', async function() {
+        //Execute
+        var query = 'CREATE TABLE test(test1 TEXT, test2 INTEGER)';
+        await queries.runQuery(query);
+        //Verify
+        var getQuery = 'SELECT name FROM sqlite_master WHERE type = "table" AND name = ?';
+        var response = await queries.runGetQuery(getQuery, ['test']);
+        expect(response.name).to.equal('test');
+      });
+    });
+    describe('Test the all query', function() {
+      it('Should get user based on server and user id', async function() {
+        var query = 'SELECT server_id, user_id FROM user WHERE server_id = ? AND user_id = ?';
+        var response = await queries.runAllQuery(query, ['1', '4']);
+        expect(response[0].server_id).to.equal('1');
+        expect(response[0].user_id).to.equal('4');
+      });
+      it('Should get users in the server with id 1', async function() {
+        var query = 'SELECT * FROM user WHERE server_id = ?';
+        var response = await queries.runAllQuery(query, ['1']);
+        //All return an array
+        expect(response.length).to.equal(3);
+      });
+    });
+    describe('Test the insert and update query', function() {
+      it('Should insert a new user', async function() {
+        //Execute
+        var insertQuery = 'INSERT OR IGNORE INTO user (server_id, user_id) VALUES (?, ?)'
+        var updateQuery = 'UPDATE user SET warning = ? WHERE server_id = ? AND user_id = ?';
+        await queries.runInsertUpdateQuery(insertQuery, updateQuery, ['1', '5']);
+        //Verify
+        var getQuery = 'SELECT warning FROM user WHERE server_id = ? AND user_id = ?';
+        var response = await queries.runGetQuery(getQuery, ['1', '5']);
+        expect(response.warning).to.equal(0);
+      });
+      it('Should update the user', async function() {
+        //Execute
+        var insertQuery = 'INSERT OR IGNORE INTO user (server_id, user_id) VALUES (?, ?)'
+        var updateQuery = 'UPDATE user SET warning = ? WHERE server_id = ? AND user_id = ?';
+        await queries.runInsertUpdateQuery(insertQuery, updateQuery, ['1', '5'], [5]);
+        //Verify
+        var getQuery = 'SELECT warning FROM user WHERE server_id = ? AND user_id = ?';
+        var response = await queries.runGetQuery(getQuery, ['1', '5']);
+        expect(response.warning).to.equal(5);
+      });
+    });
+    describe('Test the update query', function() {
+      it('Should update all occurences of user', async function() {
+        //Execute
+        var query = 'UPDATE user SET permission_group = ? WHERE user_id = ?';
+        await queries.runUpdateQuery(query, '3', 'Mod');
+        //Verify
+        var getQuery = 'SELECT permission_group FROM user WHERE user_id = ?';
+        var response = await queries.runAllQuery(getQuery, ['3']);
+        /*eslint-disable camelcase*/
+        expect(response).to.deep.equal([
+          { permission_group: 'Mod' },
+          { permission_group: 'Mod' },
+        ]);
+        /*eslint-enable camelcase*/
+      });
+    });
   });
 
   describe('Test users-db', function() {
