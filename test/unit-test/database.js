@@ -63,6 +63,7 @@ var spyLog = sinon.spy(console, 'log');
 var lastVersionSchema;
 
 module.exports = function() {
+  //Test database checker submodule
   afterEach(async function() {
     //Delete old database
     await deleteDatabase(dbFolder);
@@ -94,6 +95,7 @@ module.exports = function() {
     })
   });
 
+  //Test queries submodule
   describe('Test queries', function() {
     beforeEach(async function() {
       await replaceDatabase(config.pathDatabase, 'data1.db');
@@ -178,6 +180,7 @@ module.exports = function() {
     });
   });
 
+  //Test user database submodule
   describe('Test users-db', function() {
     beforeEach(async function() {
       //Load empty database
@@ -329,6 +332,7 @@ module.exports = function() {
     });
   });
 
+  //Test config databas submodule
   describe('Test config-db', function() {
     describe('Test getDefaultChannel with empty responses', function() {
       beforeEach(async function() {
@@ -363,6 +367,7 @@ module.exports = function() {
     });
   });
 
+  //Test reward database submodule
   describe('Test rewards-db.js', function() {
     describe('Test getRankReward with empty response', function() {
       beforeEach(async function() {
@@ -407,6 +412,7 @@ module.exports = function() {
     });
   });
 
+  //Test custom command database submodule
   describe('Test custom-cmd-db.js', function() {
     describe('Test get queries with empty responses', function() {
       beforeEach(async function() {
@@ -469,9 +475,59 @@ module.exports = function() {
         expect(cmds.length).to.equal(1);
       });
     })
-    after(async function() {
-      //Load empty database for the rest of the test
-      await replaceDatabase(config.pathDatabase, 'empty.db');
-    })
+  });
+
+  //Test leaderboard submodule
+  describe('Test leaderboard.js', function() {
+    beforeEach(async function() {
+      await replaceDatabase(config.pathDatabase, 'data2.db');
+    });
+    describe('Test tops', function() {
+      it('getLocalTop should return the correct leaderboard', async function() {
+        var response = await db.leaderboard.getLocalTop('1', 10);
+        /*eslint-disable camelcase*/
+        expect(response).to.deep.equal([{
+          user_id: '3',
+          xp: 15000
+        }, {
+          user_id: '2',
+          xp: 150
+        }, {
+          user_id: '4',
+          xp: 0
+        }]);
+      });
+      it('getGlobalTop should return the correct leaderboard', async function() {
+        var response = await db.leaderboard.getGlobalTop(10);
+        expect(response).to.deep.equal([{
+          user_id: '3',
+          xp: 25000
+        }, {
+          user_id: '1',
+          xp: 15000
+        }, {
+          user_id: '2',
+          xp: 400
+        }, {
+          user_id: '4',
+          xp: 0
+        }]);
+        /*eslint-enable camelcase*/
+      });
+    });
+    describe('Test positions', function() {
+      it('getUserLocalPos should return 2', async function() {
+        var response = await db.leaderboard.getUserLocalPos('1', '2');
+        expect(response).to.equal(2);
+      });
+      it('getUserGlobalPos should return 3', async function() {
+        var response = await db.leaderboard.getUserGlobalPos('2');
+        expect(response).to.equal(3);
+      });
+    });
+  });
+  after(async function() {
+    //Load empty database for the rest of the test
+    await replaceDatabase(config.pathDatabase, 'empty.db');
   });
 }
