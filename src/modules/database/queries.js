@@ -39,8 +39,10 @@ module.exports = {
       await sql.open(config.pathDatabase);
       //If user don't exist, insert
       await sql.run(insertQuery, args);
-      //Add the new values at the beginning of the args
-      args = newValues.concat(args);
+      if (newValues != undefined) {
+        //Add the new values at the beginning of the args
+        args = newValues.concat(args);
+      }
       //Update user
       await sql.run(updateQuery, args);
       await sql.close();

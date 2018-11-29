@@ -13,10 +13,10 @@ function getBackupChannel(serverId) {
     return channel.type == 'text' && channel.guild.id == serverId;
   });
   //If there is a channel named general, use it
-  channel = channels.find('name', 'general');
+  channel = channels.find(x => x.name === 'general');
   if (channel == null) {
     //General don't exist, using first channel
-    channel = channels.find('position', 0);
+    channel = channels.find(x => x.position === 0);
   }
   return channel;
 }
