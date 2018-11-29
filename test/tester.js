@@ -91,60 +91,6 @@ describe('Test the database module', function() {
   dbTest();
 })
 
-describe('Test leaderboard.js', function() {
-  describe('Test tops', function() {
-    before(async function() {
-      //Spice things up
-      await db.user.updateXP('2', '1', 15000);
-      await db.user.updateXP('1', '2', 150);
-      await db.user.updateXP('2', '2', 250);
-      await db.user.updateXP('1', '3', 15000);
-      await db.user.updateXP('3', '3', 10000);
-      await db.user.updateXP('1', '4', 0);
-    })
-    it('getLocalTop should return the correct leaderboard', async function() {
-      var response = await db.leaderboard.getLocalTop('1', 10);
-      /*eslint-disable camelcase*/
-      expect(response).to.deep.equal([{
-        user_id: '3',
-        xp: 15000
-      }, {
-        user_id: '2',
-        xp: 150
-      }, {
-        user_id: '4',
-        xp: 0
-      }]);
-    });
-    it('getGlobalTop should return the correct leaderboard', async function() {
-      var response = await db.leaderboard.getGlobalTop(10);
-      expect(response).to.deep.equal([{
-        user_id: '3',
-        xp: 25000
-      }, {
-        user_id: '1',
-        xp: 15000
-      }, {
-        user_id: '2',
-        xp: 400
-      }, {
-        user_id: '4',
-        xp: 0
-      }]);
-      /*eslint-enable camelcase*/
-    });
-  });
-  describe('Test positions', function() {
-    it('getUserLocalPos should return 2', async function() {
-      var response = await db.leaderboard.getUserLocalPos('1', '2');
-      expect(response).to.equal(2);
-    });
-    it('getUserGlobalPos should return 3', async function() {
-      var response = await db.leaderboard.getUserGlobalPos('2');
-      expect(response).to.equal(3);
-    });
-  });
-});
 describe('Test Command.checkArgs', function() {
   describe('Test commands without args', function() {
     it('$ping without arguments should return true', function() {
