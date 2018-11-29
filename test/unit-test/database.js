@@ -348,22 +348,26 @@ module.exports = function() {
       })
     });
     describe('Test updateDefaultChannel', function() {
-      before(async function() {
-        await replaceDatabase(config.pathDatabase, 'empty.db');
+      describe('Empty', function() {
+        before(async function() {
+          await replaceDatabase(config.pathDatabase, 'empty.db');
+        });
+        it('Should insert channel into empty table', async function() {
+          await db.config.updateDefaultChannel('1234567890', { id: '3' });
+          var response = await db.config.getDefaultChannel('1234567890');
+          expect(response.name).to.equal('test');
+        });
       });
-      it('Should insert channel into empty table', async function() {
-        await db.config.updateDefaultChannel('1234567890', { id: '3' });
-        var response = await db.config.getDefaultChannel('1234567890');
-        expect(response.name).to.equal('test');
-      })
-      before(async function() {
-        await replaceDatabase(config.pathDatabase, 'data1.db');
+      describe('With existing values', function() {
+        before(async function() {
+          await replaceDatabase(config.pathDatabase, 'data1.db');
+        });
+        it('Should modify existing row', async function() {
+          await db.config.updateDefaultChannel('1234567890', { id: '2' });
+          var response = await db.config.getDefaultChannel('1234567890');
+          expect(response.name).to.equal('general');
+        });
       });
-      it('Should modify existing row', async function() {
-        await db.config.updateDefaultChannel('1234567890', { id: '2' });
-        var response = await db.config.getDefaultChannel('1234567890');
-        expect(response.name).to.equal('general');
-      })
     });
   });
 
