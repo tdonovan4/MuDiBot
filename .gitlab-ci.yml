@@ -22,3 +22,9 @@ unit_tests:
   stage: test
   script:
    - npm run test
+
+dependencies_audit:
+  stage: test
+  script:
+   - npm audit
+  allow_failure: true
