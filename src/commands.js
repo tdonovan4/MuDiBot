@@ -24,10 +24,11 @@ class Command {
   }
   checkArgs(msg, msgArgs) {
     var valid = true;
+    //Check if the commands has args
     if (this.args != undefined) {
       /*
-       *Check if there is no arguments in the message and there is
-       *not just one optional argument
+       * Check if the message has no arguments and if there is non-optional
+       * arguments for the command
        */
       if (msgArgs.length == 0 && this.args.find(x => !x.optional) != undefined) {
         //Enable interactive mode

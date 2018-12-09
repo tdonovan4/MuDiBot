@@ -1,8 +1,8 @@
 const Discord = require("discord.js");
 var events = require('events');
-var deletedMessages = [];
 
 exports.msg1 = {
+  deletedMessages: [],
   content: '$help',
   author: {
     username: 'TestUser',
@@ -170,7 +170,7 @@ exports.msg1 = {
       for (var i = 0; i < args.limit; i++) {
         if (i > predefinedMsg.length - 1) break;
         predefinedMsg[i].delete = function() {
-          deletedMessages.push(this.content);
+          exports.msg1.deletedMessages.push(this.content);
         }
         returnedMsg[i] = predefinedMsg[i]
       }
