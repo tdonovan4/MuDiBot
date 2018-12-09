@@ -9,7 +9,8 @@ const fs = require('fs');
 const rewire = require('rewire');
 const youtube = require('./test-resources/test-youtube.js');
 const util = require('../src/util.js');
-var testMessages = rewire('./test-resources/test-messages.js');
+const testUtil = require('./test-resources/test-util.js');
+var testMessages = require('./test-resources/test-messages.js');
 var msg = testMessages.msg1;
 
 //Add test values to config
@@ -19,7 +20,7 @@ var config = require('../src/util.js').getConfig()[1];
 //Set some stubs and spies
 Discord.client = require('./test-resources/test-client.js');
 var printMsg = sinon.stub(util, 'printMsg');
-var msgSend = sinon.spy(msg.channel, 'send')
+var { msgSend } = testUtil;
 var reply = sinon.spy(msg, 'reply')
 const giphy = rewire('../src/modules/fun/giphy-api.js');
 giphy.__set__({
@@ -53,8 +54,6 @@ const dbFolder = './test/database/';
 if (!fs.existsSync(dbFolder)) {
   fs.mkdirSync(dbFolder);
 }
-
-const testUtil = require('./test-resources/test-util.js');
 
 //Setting channels
 Discord.client.channels.set('1', {
@@ -91,181 +90,12 @@ describe('Test the database module', function() {
   dbTest();
 })
 
-describe('Test Command.checkArgs', function() {
-  describe('Test commands without args', function() {
-    it('$ping without arguments should return true', function() {
-      var response = commands.getCmd('ping').checkArgs(msg, []);
-      expect(response).to.equal(true);
-    });
-    it('$ping with an argument should return true', function() {
-      var response = commands.getCmd('ping').checkArgs(msg, 'test');
-      expect(response).to.equal(true);
-    });
-  });
-  describe('Test command with an optional arg', function() {
-    it('$status should return true without args', function() {
-      var response = commands.getCmd('status').checkArgs(msg, []);
-      expect(response).to.equal(true);
-    });
-    it('$status should return true with arg', function() {
-      var response = commands.getCmd('status').checkArgs(msg, ['test']);
-      expect(response).to.equal(true);
-    });
-  });
-  describe('Test command with a mention', function() {
-    it('$avatar should return false with wrong mention', function() {
-      var response = commands.getCmd('avatar').checkArgs(msg, ['test']);
-      expect(response).to.equal(false);
-    });
-    it('$avatar should return true with good mention', function() {
-      var response = commands.getCmd('avatar').checkArgs(msg, ['<@1>']);
-      expect(response).to.equal(true);
-    });
-    it('$avatar should return true with nickname mention', function() {
-      var response = commands.getCmd('avatar').checkArgs(msg, ['<@!1>']);
-      expect(response).to.equal(true);
-    });
-  })
-  describe('Test command with an array of possible values', function() {
-    it('$help should return true without args (optional)', function() {
-      var response = commands.getCmd('help').checkArgs(msg, []);
-      expect(response).to.equal(true);
-    });
-    it('$help should return true without a right command', function() {
-      var response = commands.getCmd('help').checkArgs(msg, ['ping']);
-      expect(response).to.equal(true);
-    });
-    it('$help should return false with a wrong command', function() {
-      var response = commands.getCmd('help').checkArgs(msg, ['test']);
-      expect(response).to.equal(false);
-    });
-  });
-  before(function() {
-    msg.guild.channels.set('1', {});
-  });
-  describe('Test command with two args, one requiring a channel type', function() {
-    it('$say should return true with only the message', function() {
-      var response = commands.getCmd('say').checkArgs(msg, ['message']);
-      expect(response).to.equal(true);
-    });
-    it('$say should return true with wrong channel', function() {
-      //The wrong channel is taken as a message
-      var response = commands.getCmd('say').checkArgs(msg, ['<#10902382902>', 'message']);
-      expect(response).to.equal(true);
-    });
-    it('$say should return true with right channel', function() {
-      var response = commands.getCmd('say').checkArgs(msg, ['<#1>', 'message']);
-      expect(response).to.equal(true);
-    });
-  });
-  describe('Test command with two args, one requiring a group type', function() {
-    it('$setgroup should return false with only a mention', function() {
-      var response = commands.getCmd('setgroup').checkArgs(msg, ['<@1>']);
-      expect(response).to.equal(false);
-    });
-    it('$setgroup should return false with wrong group', function() {
-      var response = commands.getCmd('setgroup').checkArgs(msg, ['<@1>', 'test']);
-      expect(response).to.equal(false);
-    });
-    it('$setgroup should return true with right group', function() {
-      var response = commands.getCmd('setgroup').checkArgs(msg, ['<@1>', 'user']);
-      expect(response).to.equal(true);
-    });
-  });
-  describe('Test command with rank and rewards', function() {
-    it('$setreward should return false with wrong rank', function() {
-      var response = commands.getCmd('setreward').checkArgs(msg, ['test', 'Member']);
-      expect(response).to.equal(false);
-    });
-    it('$setreward should return true with right rank', function() {
-      var response = commands.getCmd('setreward').checkArgs(msg, ['XP_Master', 'Member']);
-      expect(response).to.equal(true);
-    });
-    it('$setreward should return false with wrong reward', function() {
-      var response = commands.getCmd('setreward').checkArgs(msg, ['XP_Master', 'test']);
-      expect(response).to.equal(false);
-    });
-    it('$setreward should return true with group reward', function() {
-      var response = commands.getCmd('setreward').checkArgs(msg, ['XP_Master', 'Member']);
-      expect(response).to.equal(true);
-    });
-    it('$setreward should return true with role reward', function() {
-      msg.guild.roles.set('1', {});
-      var response = commands.getCmd('setreward').checkArgs(msg, ['XP_Master', '<@&1>']);
-      expect(response).to.equal(true);
-    });
-  });
-  describe('Test commands with breakOnValid', function() {
-    it('$warnpurge should return false with test', function() {
-      var response = commands.getCmd('warnpurge').checkArgs(msg, ['test']);
-      expect(response).to.equal(false);
-    });
-    it('$warnpurge should return true with all', function() {
-      var response = commands.getCmd('warnpurge').checkArgs(msg, ['all']);
-      expect(response).to.equal(true);
-    });
-    it('$warnpurge should return true with player', function() {
-      var response = commands.getCmd('warnpurge').checkArgs(msg, ['<@1>']);
-      expect(response).to.equal(true);
-    });
-  })
-});
-describe('Test interactive mode', function() {
-  describe('Test interactive mode for 1 argument', function() {
-    it('Should return invalid user', async function() {
-      msg.channel.messages = [
-        { ...msg, ...{ content: 'test' } }
-      ];
-      await commands.getCmd('avatar').interactiveMode(msg);
-      expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
-        lang.avatar.interactiveMode.user);
-      expect(msgSend.lastCall.returnValue.content).to.equal(
-        lang.error.invalidArg.user);
-    });
-  });
-  describe('Test interactive mode for 2 arguments', function() {
-    it('Should return invalid user', async function() {
-      msg.channel.messages = [
-        { ...msg, ...{ content: 'test' } }
-      ];
-      await commands.getCmd('setgroup').interactiveMode(msg);
-      expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
-        lang.setgroup.interactiveMode.user);
-      expect(msgSend.lastCall.returnValue.content).to.equal(
-        lang.error.invalidArg.user);
-    });
-    it('Should return group not found', async function() {
-      msg.channel.messages = [
-        { ...msg, ...{ content: `<@${msg.author.id}>` } },
-        { ...msg, ...{ content: 'test' } }
-      ];
-      await commands.getCmd('setgroup').interactiveMode(msg);
-      expect(msgSend.getCall(msgSend.callCount - 3).returnValue.content).to.equal(
-        lang.setgroup.interactiveMode.user);
-      expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
-        lang.setgroup.interactiveMode.group);
-      expect(msgSend.lastCall.returnValue.content).to.equal(
-        lang.error.notFound.group);
-    });
-  });
-  describe('Test interactive mode with optional argument', function() {
-    it('Should skip alternative argument', async function() {
-      msg.channel.messages = [
-        { ...msg, ...{ content: '$skip' } },
-        { ...msg, ...{ content: 'test' } }
-      ];
-      await commands.getCmd('say').interactiveMode(msg);
-      expect(msgSend.getCall(msgSend.callCount - 4).returnValue.content).to.equal(
-        lang.say.interactiveMode.channel + ` ${lang.general.interactiveMode.optional}`);
-      expect(msgSend.getCall(msgSend.callCount - 3).returnValue.content).to.equal(
-        lang.general.interactiveMode.skipped);
-      expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
-        lang.say.interactiveMode.message);
-      expect(msgSend.lastCall.returnValue.content).to.equal(
-        'test');
-    });
-  });
-});
+//Test database
+const commandsTest = require('./unit-test/commands.js');
+describe('Test the commands module', function() {
+  commandsTest();
+})
+
 describe('Test permission groups', function() {
   describe('Test setGroup', function() {
     //Test Args
@@ -1506,21 +1336,21 @@ describe('Test commands', function() {
     it('Should delete nothing', async function() {
       msg.content = '$clearlog 1';
       await commands.executeCmd(msg, ['clearlog', '1']);
-      var deletedMessages = testMessages.__get__('deletedMessages');
+      var deletedMessages = msg.deletedMessages;
       expect(deletedMessages).to.deep.equal([]);
     });
     it('Should delete commands and messages by client', async function() {
       msg.content = '$clearlog';
       await commands.executeCmd(msg, ['clearlog']);
-      var deletedMessages = testMessages.__get__('deletedMessages');
+      var deletedMessages = msg.deletedMessages;
       expect(deletedMessages).to.deep.equal(['$ping', 'this', '$info', '$help help', 'a', '$profile']);
     })
     it('Should delete message containing "This is a test"', async function() {
       msg.mentions.users.clear();
       //Reset deletedMessages
-      testMessages.__set__('deletedMessages', []);
+      msg.deletedMessages = [];
       await commands.executeCmd(msg, ['clearlog', 'This', 'is', 'a', 'test', '10']);
-      var deletedMessages = testMessages.__get__('deletedMessages');
+      var deletedMessages = msg.deletedMessages;
       expect(deletedMessages).to.deep.equal(['This is a test 123']);
     })
     it('Should delete messages by user with id 384633488400140664', async function() {
@@ -1528,9 +1358,9 @@ describe('Test commands', function() {
         id: '384633488400140664'
       });
       //Reset deletedMessages
-      testMessages.__set__('deletedMessages', []);
+      msg.deletedMessages = [];
       await commands.executeCmd(msg, ['clearlog', '<@384633488400140664>', '15']);
-      var deletedMessages = testMessages.__get__('deletedMessages');
+      var deletedMessages = msg.deletedMessages;
       expect(deletedMessages).to.deep.equal(['flower', 'pot']);
     });
     it('Should delete messages by user with id 384633488400140664 if changed nickname', async function() {
@@ -1538,27 +1368,27 @@ describe('Test commands', function() {
         id: '384633488400140664'
       });
       //Reset deletedMessages
-      testMessages.__set__('deletedMessages', []);
+      msg.deletedMessages = [];
       await commands.executeCmd(msg, ['clearlog', '<@384633488400140664>', '15']);
-      var deletedMessages = testMessages.__get__('deletedMessages');
+      var deletedMessages = msg.deletedMessages;
       expect(deletedMessages).to.deep.equal(['flower', 'pot']);
     });
     it('Should delete message with flower by user with id 384633488400140664', async function() {
       //Reset deletedMessages
-      testMessages.__set__('deletedMessages', []);
+      msg.deletedMessages = [];
       await commands.executeCmd(msg, ['clearlog', '<@384633488400140664>',
         'flower', '15'
       ]);
-      var deletedMessages = testMessages.__get__('deletedMessages');
+      var deletedMessages = msg.deletedMessages;
       expect(deletedMessages).to.deep.equal(['flower']);
     });
     it('Should delete message with filters inversed', async function() {
       //Reset deletedMessages
-      testMessages.__set__('deletedMessages', []);
+      msg.deletedMessages = [];
       await commands.executeCmd(msg, ['clearlog', 'flower',
         '<@384633488400140664>', '15'
       ]);
-      var deletedMessages = testMessages.__get__('deletedMessages');
+      var deletedMessages = msg.deletedMessages;
       expect(deletedMessages).to.deep.equal(['flower']);
     });
   });
