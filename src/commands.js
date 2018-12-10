@@ -163,7 +163,7 @@ class Argument {
     //Check input
     switch (this.type) {
       case 'int':
-        if (Number(msgArg)) {
+        if (!Number(msgArg)) {
           //Argument is not a number
           valid = false;
         }

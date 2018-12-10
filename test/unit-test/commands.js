@@ -9,6 +9,156 @@ var msg = testMessages.msg1;
 const commands = require('../../src/commands.js');
 
 module.exports = function() {
+  describe('Test Argument', function() {
+    describe('Test checkArg', function() {
+      describe('Test the int type', function() {
+        it('Should return true with an integer', function() {
+          var testArg = new commands.Argument({
+            type: 'int'
+          });
+          expect(testArg.checkArg(msg, 1)).to.be.true;
+        });
+        it('Should return false with a string', function() {
+          var testArg = new commands.Argument({
+            type: 'int'
+          });
+          expect(testArg.checkArg(msg, 'test')).to.be.false;
+        });
+        it('Should return true with a string that is a number', function() {
+          var testArg = new commands.Argument({
+            type: 'int'
+          });
+          expect(testArg.checkArg(msg, '1')).to.be.true;
+        });
+      });
+      describe('Test the channel type', function() {
+        before(function() {
+          msg.guild.channels.set('1', {});
+        });
+        after(function() {
+          msg.guild.channels.clear();
+        });
+        it('Should return true with a valid channel', function() {
+          var testArg = new commands.Argument({
+            type: 'channel'
+          });
+          expect(testArg.checkArg(msg, '<#1>')).to.be.true;
+        });
+        it('Should return false with a random string', function() {
+          var testArg = new commands.Argument({
+            type: 'channel'
+          });
+          expect(testArg.checkArg(msg, 'test')).to.be.false;
+        });
+        it('Should return false with an invalid channel', function() {
+          var testArg = new commands.Argument({
+            type: 'channel'
+          });
+          expect(testArg.checkArg(msg, '<#2>')).to.be.false;
+        });
+      });
+      describe('Test the mention type', function() {
+        it('Should return true with a valid mention', function() {
+          var testArg = new commands.Argument({
+            type: 'mention'
+          });
+          expect(testArg.checkArg(msg, '<@!1>')).to.be.true;
+        });
+        it('Should return false with a random string', function() {
+          var testArg = new commands.Argument({
+            type: 'mention'
+          });
+          expect(testArg.checkArg(msg, 'test')).to.be.false;
+        });
+        it('Should return false with an invalid mention', function() {
+          var testArg = new commands.Argument({
+            type: 'mention'
+          });
+          expect(testArg.checkArg(msg, '<@!2>')).to.be.false;
+        });
+      });
+      describe('Test the group type', function() {
+        it('Should return true with a valid group', function() {
+          var testArg = new commands.Argument({
+            type: 'group'
+          });
+          expect(testArg.checkArg(msg, 'mod')).to.be.true;
+        });
+        it('Should return false with an invalid group', function() {
+          var testArg = new commands.Argument({
+            type: 'group'
+          });
+          expect(testArg.checkArg(msg, 'test')).to.be.false;
+        });
+      });
+      describe('Test the rank type', function() {
+        it('Should return true with a valid rank', function() {
+          var testArg = new commands.Argument({
+            type: 'rank'
+          });
+          expect(testArg.checkArg(msg, 'king')).to.be.true;
+        });
+        it('Should return false with an invalid rank', function() {
+          var testArg = new commands.Argument({
+            type: 'rank'
+          });
+          expect(testArg.checkArg(msg, 'test')).to.be.false;
+        });
+      });
+      describe('Test the reward type', function() {
+        before(function() {
+          msg.guild.roles.set('1', {});
+        });
+        after(function() {
+          msg.guild.roles.clear();
+        });
+        it('Should return true with a valid group', function() {
+          var testArg = new commands.Argument({
+            type: 'reward'
+          });
+          expect(testArg.checkArg(msg, 'mod')).to.be.true;
+        });
+        it('Should return false with an invalid group', function() {
+          var testArg = new commands.Argument({
+            type: 'reward'
+          });
+          expect(testArg.checkArg(msg, 'god')).to.be.false;
+        });
+        it('Should return true with a valid role', function() {
+          var testArg = new commands.Argument({
+            type: 'reward'
+          });
+          expect(testArg.checkArg(msg, '<@&1>')).to.be.true;
+        });
+        it('Should return false with an invalid role', function() {
+          var testArg = new commands.Argument({
+            type: 'reward'
+          });
+          expect(testArg.checkArg(msg, '<@&21>')).to.be.false;
+        });
+        it('Should return false with a random string', function() {
+          var testArg = new commands.Argument({
+            type: 'reward'
+          });
+          expect(testArg.checkArg(msg, 'test')).to.be.false;
+        });
+      });
+      describe('Test the possible values', function() {
+        it('Should return true if in the values', function() {
+          var testArg = new commands.Argument({
+            possibleValues: ['test1', 'test2', 'test3']
+          });
+          expect(testArg.checkArg(msg, 'test2')).to.be.true;
+        });
+        it('Should return false if not in the values', function() {
+          var testArg = new commands.Argument({
+            possibleValues: ['test1', 'test2', 'test3']
+          });
+          expect(testArg.checkArg(msg, 'test4')).to.be.false;
+        });
+      });
+    });
+  });
   describe('Test Command', function() {
     describe('Test checkArgs', function() {
       var interactiveStub;
