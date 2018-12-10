@@ -39,7 +39,6 @@ const warnings = require('../src/modules/warnings/warnings.js');
 const db = require('../src/modules/database/database.js');
 const audioPlayer = rewire('../src/modules/music/audio-player.js');
 var setActivity = sinon.spy(Discord.client.user, 'setActivity');
-var channelSend = sinon.spy(msg.guild.channels.get('42'), 'send');
 printMsg.returnsArg(1);
 
 //Init commands
@@ -1022,7 +1021,16 @@ describe('Test commands', function() {
       expect(response).to.equal('currentStatus: \'New status!');
     });
   });
+  var channelSend;
   describe('say', function() {
+    before(function() {
+      msg.guild.channels.set('42', {
+        send: function(msg) {
+          return msg;
+        }
+      });
+      channelSend = sinon.spy(msg.guild.channels.get('42'), 'send');
+    });
     //Test args
     it('Should return missing argument: message', function() {
       commands.executeCmd(msg, ['say', '<#42>']);

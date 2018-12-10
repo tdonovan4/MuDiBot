@@ -45,7 +45,7 @@ exports.msg1 = {
     channels: new Discord.Collection(),
     members: {
       has: function(id) {
-        if (id == '1' || '041025599435591424') {
+        if (id == '1' || id == '041025599435591424') {
           return true;
         } else {
           return false;
