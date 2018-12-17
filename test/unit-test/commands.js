@@ -425,4 +425,20 @@ module.exports = function() {
       });
     });
   });
+  describe('Test Category', function() {
+    describe('Test addCommand', function() {
+      it('Should add a command to the category', function() {
+        var testCmd = new commands.Command({
+          name: 'testCmd',
+          priority: 3
+        });
+        var testCategory = new commands.Category({
+          name: 'testCategory',
+          priority: 1
+        });
+        testCategory.addCommand(testCmd);
+        expect(testCategory.commands.get('testCmd').priority).to.equal(3);
+      });
+    });
+  });
 }
