@@ -89,7 +89,7 @@ describe('Test the database module', function() {
   dbTest();
 })
 
-//Test database
+//Test commands
 const commandsTest = require('./unit-test/commands.js');
 describe('Test the commands module', function() {
   commandsTest();
