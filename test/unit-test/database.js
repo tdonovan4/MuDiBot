@@ -57,7 +57,7 @@ async function checkDatabaseUpdating(version) {
 }
 
 //Make console.log a spy
-var spyLog = sinon.spy(console, 'log');
+var { spyLog } = require('../test-resources/test-util.js');
 
 //Comparaison database
 var lastVersionSchema;

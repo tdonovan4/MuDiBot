@@ -1,6 +1,7 @@
 const fs = require('fs');
 const db = require('./modules/database/database.js');
 const util = require('./util.js');
+const mustache = require('mustache');
 var config = util.getConfig()[1];
 var lang = require('./localization.js').getLocalization();
 
@@ -248,6 +249,11 @@ module.exports = {
   namesAndAliases: [],
   categories: new Map(),
   registerCategories: function(categories) {
+    //Make sure categories is an array
+    if (!Array.isArray(categories)) {
+      console.log(mustache.render(lang.error.notArray, { var: 'categories' }));
+      return;
+    }
     for (category of categories) {
       //Add the category
       var category = new Category(category);
