@@ -21,5 +21,6 @@ module.exports = {
     var dbFile = await readFile(`./test/test-resources/test-database/${newDB}`);
     await writeFile(dbFolder, dbFile);
   },
-  msgSend: sinon.spy(msg.channel, 'send')
+  msgSend: sinon.spy(msg.channel, 'send'),
+  spyLog: sinon.spy(console, 'log')
 }

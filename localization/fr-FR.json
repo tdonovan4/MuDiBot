@@ -70,7 +70,8 @@
     "ytdlError": "Cette vidéo n'a pas pu être télécharger (peut-être indisponible?).",
     "notPlaying": "Aucune vidéo ne joue!",
     "formatError": "Veuillez formater la date avec ISO 8601 (aaaa-mm-qq or --mm-qq)",
-        "notInteractiveMode": "Erreur: cette commande ne supporte par encore le mode interactif"
+    "notInteractiveMode": "Erreur: cette commande ne supporte par encore le mode interactif",
+    "notArray": "Erreur: la variable {{var}} devrait être un tableau"
   },
   "database": {
     "noVersion": "La version de la base de donnée n'a pas pu être trouvée. Utilisation de la première version.",

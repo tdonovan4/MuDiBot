@@ -1,8 +1,10 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
+const mustache = require('mustache');
 const testUtil = require('../test-resources/test-util.js');
 const { msgSend } = testUtil;
 const lang = require('../../localization/en-US.json');
+const config = require('../../src/util.js').getConfig()[1];
 var testMessages = require('../test-resources/test-messages.js');
 var msg = testMessages.msg1;
 
@@ -439,6 +441,53 @@ module.exports = function() {
         testCategory.addCommand(testCmd);
         expect(testCategory.commands.get('testCmd').priority).to.equal(3);
       });
+    });
+  });
+  describe('Test registerCategories()', function() {
+    beforeEach(function() {
+      //Reset the map
+      commands.categories.clear();
+    });
+    after(function() {
+      //Restore
+      commands.registerCategories(config.categories);
+    });
+    it('Should add the categories to the map', function() {
+      var categories = [
+        new commands.Category({
+          name: 'testCategory',
+          priority: 1
+        }),
+        new commands.Category({
+          name: 'testCategory2',
+          priority: 2
+        }),
+      ];
+      commands.registerCategories(categories);
+      expect(commands.categories.has('testCategory')).to.be.true;
+      expect(commands.categories.has('testCategory2')).to.be.true;
+    });
+    it('Should append new categories to existing ones', function() {
+      //Add a category before testing
+      var category = new commands.Category({
+        name: 'testCategory3',
+        priority: 1
+      });
+      commands.categories.set(category.name, category);
+      //Test
+      commands.registerCategories([
+        new commands.Category({
+          name: 'testCategory4',
+          priority: 2
+        })
+      ]);
+      expect(commands.categories.has('testCategory3')).to.be.true;
+      expect(commands.categories.has('testCategory4')).to.be.true;
+    });
+    it('Should return "Error, not an array" without categories', function() {
+      commands.registerCategories();
+      expect(testUtil.spyLog.lastCall.args[0]).to.equal(
+        mustache.render(lang.error.notArray, { var: 'categories' }));
     });
   });
 }

@@ -70,7 +70,8 @@
     "ytdlError": "This video could not be downloaded (maybe unavailable?).",
     "notPlaying": "I'm not playing anything!",
     "formatError": "Please format the date using ISO 8601 (yyyy-mm-dd or --mm-dd)",
-    "notInteractiveMode": "Error: it looks like this command doesn't support interactive mode yet!"
+    "notInteractiveMode": "Error: it looks like this command doesn't support interactive mode yet!",
+    "notArray": "Error: the variable {{var}} should be an array"
   },
   "database": {
     "noVersion": "Could not find database version. Starting from baseline.",
