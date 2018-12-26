@@ -1,5 +1,4 @@
 const expect = require('chai').expect;
-const sinon = require('sinon');
 const lang = require('../../localization/en-US.json');
 var config = require('../../src/util.js').getConfig()[1];
 var testMessages = require('../test-resources/test-messages.js');
