@@ -260,6 +260,10 @@ module.exports = {
       this.categories.set(category.name, category);
     }
   },
+  //Wrapper for stubbing when testing
+  loadFile: function(path) {
+    return require(path);
+  },
   registerCommands: function() {
     //Search the modules for commands
     var modules = fs.readdirSync('./src/modules');
@@ -268,7 +272,7 @@ module.exports = {
       for (var file of files) {
         //Check if really a file
         if (fs.statSync(`./src/modules/${module}/${file}`).isFile()) {
-          var keys = require(`./modules/${module}/${file}`);
+          var keys = this.loadFile(`./modules/${module}/${file}`);
           //Check if object
           if (typeof keys != 'object') {
             keys = {
