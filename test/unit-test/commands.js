@@ -5,10 +5,15 @@ const testUtil = require('../test-resources/test-util.js');
 const { msgSend } = testUtil;
 const lang = require('../../localization/en-US.json');
 const config = require('../../src/util.js').getConfig()[1];
+const fs = require('fs');
 var testMessages = require('../test-resources/test-messages.js');
 var msg = testMessages.msg1;
 
 const commands = require('../../src/commands.js');
+
+//Register stuff
+commands.registerCategories(config.categories);
+commands.registerCommands();
 
 module.exports = function() {
   describe('Test Argument', function() {
@@ -488,6 +493,214 @@ module.exports = function() {
       commands.registerCategories();
       expect(testUtil.spyLog.lastCall.args[0]).to.equal(
         mustache.render(lang.error.notArray, { var: 'categories' }));
+    });
+  });
+  describe('Test registerCommands()', function() {
+    //Set stubs
+    var readdirSync;
+    var statSync;
+    var loadFile;
+    before(function() {
+      readdirSync = sinon.stub(fs, 'readdirSync');
+      statSync = sinon.stub(fs, 'statSync');
+      loadFile = sinon.stub(commands, 'loadFile');
+    });
+    //Clean up after
+    after(function() {
+      readdirSync.restore();
+      statSync.restore();
+      loadFile.restore();
+      commands.registerCommands();
+    });
+    //Isolate tests
+    beforeEach(function() {
+      commands.commands.clear();
+    });
+
+    //Helper function to return the fake modules
+    function stubRead(modules) {
+      readdirSync.resetHistory();
+      readdirSync.callsFake(function(path) {
+        var module = path.split('./src/modules/')[1];
+        return modules.get(module);
+      });
+      readdirSync.onFirstCall().returns(Array.from(modules.keys()));
+    }
+
+    it('Should add a command', function() {
+      //Setup stubs
+      stubRead(new Map([
+        ['general', ['submodule1']]
+      ]));
+      statSync.returns({
+        isFile: function() {
+          return true;
+        }
+      });
+      loadFile.returns({
+        TestCommand: class extends commands.Command {
+          constructor() {
+            super({
+              name: 'test',
+              aliases: [],
+              category: 'general',
+              priority: 9,
+              permLvl: 0
+            });
+          }
+        }
+      });
+      //Actual testing
+      commands.registerCommands();
+      expect(commands.commands.has('test')).to.be.true;
+    });
+    it('Should add multiple commands', function() {
+      //Setup stubs
+      stubRead(new Map([
+        ['general', ['submodule1']],
+        ['fun', ['submodule2', 'submodule3']]
+      ]));
+      statSync.returns({
+        isFile: function() {
+          return true;
+        }
+      });
+      loadFile.onFirstCall().returns({
+        TestCommand: class extends commands.Command {
+          constructor() {
+            super({
+              name: 'test',
+              aliases: [],
+              category: 'general',
+              priority: 9,
+              permLvl: 0
+            });
+          }
+        }
+      });
+      loadFile.onSecondCall().returns({
+        TestCommand2: class extends commands.Command {
+          constructor() {
+            super({
+              name: 'test2',
+              aliases: [],
+              category: 'general',
+              priority: 9,
+              permLvl: 0
+            });
+          }
+        },
+        TestCommand3: class extends commands.Command {
+          constructor() {
+            super({
+              name: 'test3',
+              aliases: [],
+              category: 'general',
+              priority: 9,
+              permLvl: 0
+            });
+          }
+        }
+      });
+      loadFile.onThirdCall().returns({
+        value: 1
+      });
+      //Actual testing
+      commands.registerCommands();
+      expect(commands.commands.size).to.equal(3);
+      expect(commands.commands.has('test')).to.be.true;
+      expect(commands.commands.has('test2')).to.be.true;
+      expect(commands.commands.has('test3')).to.be.true;
+    });
+    it('Should add a command mixed with non-commands', function() {
+      //Setup stubs
+      stubRead(new Map([
+        ['general', ['submodule1']]
+      ]));
+      statSync.returns({
+        isFile: function() {
+          return true;
+        }
+      });
+      loadFile.returns({
+        testValue: 'true',
+        Test2Command: class extends commands.Command {
+          constructor() {
+            super({
+              name: 'test2',
+              aliases: [],
+              category: 'general',
+              priority: 9,
+              permLvl: 0
+            });
+          }
+        },
+        testFunction: function() {
+          return false
+        }
+      });
+      //Actual testing
+      commands.registerCommands();
+      expect(commands.commands.size).to.equal(1);
+      expect(commands.commands.has('test2')).to.be.true;
+    });
+    it('Should not break with no submodule', function() {
+      //Setup stubs
+      stubRead(new Map([
+        ['general', []]
+      ]));
+      statSync.returns({
+        isFile: function() {
+          return false;
+        }
+      });
+      loadFile.returns({});
+      //Actual testing
+      commands.registerCommands();
+      expect(commands.commands.size).to.equal(0);
+    });
+    it('Should not break with no module', function() {
+      //Setup stubs
+      stubRead(new Map());
+      statSync.returns({
+        isFile: function() {
+          return false;
+        }
+      });
+      loadFile.returns({});
+      //Actual testing
+      commands.registerCommands();
+      expect(commands.commands.size).to.equal(0);
+    });
+    it('Should not break with a folder', function() {
+      //Setup stubs
+      stubRead(new Map([
+        ['general', ['myFolder']]
+      ]));
+      statSync.returns({
+        isFile: function() {
+          return false;
+        }
+      });
+      loadFile.returns({});
+      //Actual testing
+      commands.registerCommands();
+      expect(commands.commands.size).to.equal(0);
+    });
+    it('Should not break if the file doesn\'t have exports', function() {
+      //Setup stubs
+      stubRead(new Map([
+        ['general', ['submodule1']]
+      ]));
+      statSync.returns({
+        isFile: function() {
+          return false;
+        }
+      });
+      loadFile.returns({});
+      //Actual testing
+      commands.registerCommands();
+      expect(commands.commands.size).to.equal(0);
     });
   });
 }
