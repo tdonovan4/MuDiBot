@@ -874,45 +874,6 @@ describe('Test purge', function() {
     expect(response).to.equal(0);
   });
 });
-describe('Test checkPerm', function() {
-  it('Should return true when user has the permLvl', async function() {
-    //Setup
-    await commands.executeCmd(msg, ['purgegroups', `<@${msg.author.id}>`]);
-    msg.member.permissions.clear();
-    var response = await commands.checkPerm(msg, 0);
-    expect(response).to.equal(true);
-  });
-  it('Should return false when user don\'t have the permLvl', async function() {
-    var response = await commands.checkPerm(msg, 1);
-    expect(response).to.equal(false);
-  });
-  it('Should return true if user now have permLvl', async function() {
-    await permGroups.setGroup(msg, msg.author, 'Member');
-    var response = await commands.checkPerm(msg, 1);
-    expect(response).to.equal(true);
-  });
-  it('Should return true if user has multiple permGroups', async function() {
-    await permGroups.setGroup(msg, msg.author, 'User');
-    var response = await commands.checkPerm(msg, 1);
-    expect(response).to.equal(true);
-  });
-  it('Should return true if user has ADMINISTRATOR permissions', async function() {
-    msg.member.permissions.set('ADMINISTRATOR');
-    var response = await commands.checkPerm(msg, 3);
-    expect(response).to.equal(true);
-  })
-  it('Should return true if user is a superuser', async function() {
-    msg.member.permissions.clear();
-    config.superusers = [msg.author.id];
-    var response = await commands.checkPerm(msg, 3);
-    expect(response).to.equal(true);
-  });
-  after(async function() {
-    //Clean up
-    config.superusers = [''];
-    await commands.executeCmd(msg, ['purgegroups', `<@${msg.author.id}>`]);
-  })
-});
 //Future stub
 var checkPerm;
 describe('Validate if message is a command', function() {
