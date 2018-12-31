@@ -744,4 +744,27 @@ module.exports = function() {
       expect(response).to.equal(true);
     });
   });
+  describe('Test getCmd()', function() {
+    it('Should return the command', function() {
+      var cmd = commands.getCmd('ping');
+      expect(cmd.name).to.equal('ping');
+    });
+    it('Should return the command when using alias', function() {
+      var cmd = commands.getCmd('clear');
+      expect(cmd.name).to.equal('clearlog');
+    });
+    it('Should return undefined if wrong command', function() {
+      var cmd = commands.getCmd('deadeaf');
+      expect(cmd).to.equal(undefined);
+    });
+    it('Should return undefined if the command is deactivated', function() {
+      config.ping.activated = false;
+      var cmd = commands.getCmd('ping');
+      expect(cmd).to.equal(undefined);
+    });
+    after(function() {
+      //Reset
+      config.ping.activated = true;
+    });
+  });
 }
