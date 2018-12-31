@@ -367,7 +367,7 @@ module.exports = {
         return true;
       }
     }
-    //The command was not found or didn't execute
+    //The command was not found
     return false;
   },
   executeCmd: async function(msg, args) {

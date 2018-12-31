@@ -767,4 +767,48 @@ module.exports = function() {
       config.ping.activated = true;
     });
   });
+  //Future stub
+  var checkPerm;
+  describe('Test checkIfValidCmd()', function() {
+    before(function() {
+      checkPerm = sinon.stub(commands, 'checkPerm');
+      checkPerm.resolves(true);
+    });
+    it('Should return false when using a false command', async function() {
+      //Change content of message
+      msg.content = 'randomString';
+      var response = await commands.checkIfValidCmd(msg, ['randomString']);
+      expect(response).to.equal(false);
+    });
+    it('Should return false when using wrong prefix', async function() {
+      msg.content = '!help';
+      var response = await commands.checkIfValidCmd(msg, ['help']);
+      expect(response).to.equal(false);
+    });
+    it('Should return true when using a real command', async function() {
+      msg.content = '$help';
+      var response = await commands.checkIfValidCmd(msg, ['help']);
+      expect(response).to.equal(true);
+    })
+    it('Should return true with aliases', async function() {
+      msg.content = '$help';
+      var response = await commands.checkIfValidCmd(msg, ['cc']);
+      expect(response).to.equal(true);
+    });
+    it('Should return false if command is deactivated', async function() {
+      config.help.activated = false
+      var response = await commands.checkIfValidCmd(msg, ['help']);
+      expect(response).to.equal(false);
+    });
+    it('Should return false when user doesn\'t have permission to execute', async function() {
+      checkPerm.resolves(false);
+      var response = await commands.checkIfValidCmd(msg, ['help']);
+      expect(response).to.equal(false);
+    });
+    after(function() {
+      //Reset
+      config.help.activated = true
+      checkPerm.restore();
+    })
+  });
 }
