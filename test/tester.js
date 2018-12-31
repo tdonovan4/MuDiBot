@@ -95,6 +95,12 @@ describe('Test the commands module', function() {
   commandsTest();
 })
 
+//Test the administration module
+const administrationTest = require('./unit-test/administration.js');
+describe('Test the administration module', function() {
+  administrationTest();
+})
+
 describe('Test permission groups', function() {
   describe('Test setGroup', function() {
     //Test Args
