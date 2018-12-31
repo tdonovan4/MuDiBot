@@ -809,6 +809,40 @@ module.exports = function() {
       //Reset
       config.help.activated = true
       checkPerm.restore();
-    })
+    });
+  });
+  describe('Test executeCmd', function() {
+    var testCommand;
+    before(function() {
+      class TestCommand extends commands.Command {
+        constructor() {
+          super({
+            name: 'test',
+            aliases: [],
+            category: 'general',
+            priority: 9,
+            permLvl: 0
+          });
+        }
+        execute(msg, args) {
+          return [msg, args];
+        }
+      }
+      commands.commands.set('test', new TestCommand());
+      testCommand = sinon.spy(commands.commands.get('test'), 'execute');
+    });
+    after(function() {
+      //Reset
+      commands.commands.clear();
+      commands.registerCommands();
+    });
+    it('Should execute a command without arguments', function() {
+      commands.executeCmd(msg, ['test']);
+      expect(testCommand.called).to.be.true;
+    });
+    it('Should execute a command with arguments', function() {
+      commands.executeCmd(msg, ['test', 'arg1', 'arg2']);
+      expect(testCommand.lastCall.args[1]).to.deep.equal(['arg1', 'arg2']);
+    });
   });
 }
