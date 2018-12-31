@@ -874,49 +874,6 @@ describe('Test purge', function() {
     expect(response).to.equal(0);
   });
 });
-//Future stub
-var checkPerm;
-describe('Validate if message is a command', function() {
-  it('Should return false when using a false command', async function() {
-    //Change content of message
-    msg.content = 'randomString';
-    var response = await commands.checkIfValidCmd(msg, ['randomString']);
-    expect(response).to.equal(false);
-  });
-  it('Should return false when using wrong prefix', async function() {
-    msg.content = '!help';
-    var response = await commands.checkIfValidCmd(msg, ['help']);
-    expect(response).to.equal(false);
-  });
-  before(function() {
-    checkPerm = sinon.stub(commands, 'checkPerm');
-    checkPerm.resolves(true);
-  });
-  it('Should return true when using a real command', async function() {
-    msg.content = '$help';
-    var response = await commands.checkIfValidCmd(msg, ['help']);
-    expect(response).to.equal(true);
-  })
-  it('Should return true with aliases', async function() {
-    msg.content = '$help';
-    var response = await commands.checkIfValidCmd(msg, ['cc']);
-    expect(response).to.equal(true);
-  });
-  it('Should return false if command is deactivated', async function() {
-    config.help.activated = false
-    var response = await commands.checkIfValidCmd(msg, ['help']);
-    expect(response).to.equal(false);
-  });
-  it('Should return false when user doesn\'t have permission to execute', async function() {
-    config.help.activated = true
-    checkPerm.resolves(false);
-    var response = await commands.checkIfValidCmd(msg, ['help']);
-    expect(response).to.equal(false);
-  });
-  after(function() {
-    checkPerm.resolves(true);
-  })
-});
 describe('Test commands', function() {
   describe('help', function() {
     it('Should return all commands', function() {
