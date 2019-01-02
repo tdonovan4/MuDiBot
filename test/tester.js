@@ -1264,66 +1264,6 @@ describe('Test commands', function() {
       expect(parseInt(result[1])).to.be.below(7);
     });
   });
-  describe('clearlog', function() {
-    it('Should delete nothing', async function() {
-      msg.content = '$clearlog 1';
-      await commands.executeCmd(msg, ['clearlog', '1']);
-      var deletedMessages = msg.deletedMessages;
-      expect(deletedMessages).to.deep.equal([]);
-    });
-    it('Should delete commands and messages by client', async function() {
-      msg.content = '$clearlog';
-      await commands.executeCmd(msg, ['clearlog']);
-      var deletedMessages = msg.deletedMessages;
-      expect(deletedMessages).to.deep.equal(['$ping', 'this', '$info', '$help help', 'a', '$profile']);
-    })
-    it('Should delete message containing "This is a test"', async function() {
-      msg.mentions.users.clear();
-      //Reset deletedMessages
-      msg.deletedMessages = [];
-      await commands.executeCmd(msg, ['clearlog', 'This', 'is', 'a', 'test', '10']);
-      var deletedMessages = msg.deletedMessages;
-      expect(deletedMessages).to.deep.equal(['This is a test 123']);
-    })
-    it('Should delete messages by user with id 384633488400140664', async function() {
-      msg.mentions.users.set('384633488400140664', {
-        id: '384633488400140664'
-      });
-      //Reset deletedMessages
-      msg.deletedMessages = [];
-      await commands.executeCmd(msg, ['clearlog', '<@384633488400140664>', '15']);
-      var deletedMessages = msg.deletedMessages;
-      expect(deletedMessages).to.deep.equal(['flower', 'pot']);
-    });
-    it('Should delete messages by user with id 384633488400140664 if changed nickname', async function() {
-      msg.mentions.users.set('384633488400140664', {
-        id: '384633488400140664'
-      });
-      //Reset deletedMessages
-      msg.deletedMessages = [];
-      await commands.executeCmd(msg, ['clearlog', '<@384633488400140664>', '15']);
-      var deletedMessages = msg.deletedMessages;
-      expect(deletedMessages).to.deep.equal(['flower', 'pot']);
-    });
-    it('Should delete message with flower by user with id 384633488400140664', async function() {
-      //Reset deletedMessages
-      msg.deletedMessages = [];
-      await commands.executeCmd(msg, ['clearlog', '<@384633488400140664>',
-        'flower', '15'
-      ]);
-      var deletedMessages = msg.deletedMessages;
-      expect(deletedMessages).to.deep.equal(['flower']);
-    });
-    it('Should delete message with filters inversed', async function() {
-      //Reset deletedMessages
-      msg.deletedMessages = [];
-      await commands.executeCmd(msg, ['clearlog', 'flower',
-        '<@384633488400140664>', '15'
-      ]);
-      var deletedMessages = msg.deletedMessages;
-      expect(deletedMessages).to.deep.equal(['flower']);
-    });
-  });
   describe('Test setreward', function() {
     //Test args
     it('Should return missing argument: reward', async function() {
