@@ -8,7 +8,6 @@ const sql = require('sqlite');
 const fs = require('fs');
 const rewire = require('rewire');
 const youtube = require('./test-resources/test-youtube.js');
-const util = require('../src/util.js');
 const testUtil = require('./test-resources/test-util.js');
 var testMessages = require('./test-resources/test-messages.js');
 var msg = testMessages.msg1;
@@ -19,8 +18,7 @@ var config = require('../src/util.js').getConfig()[1];
 
 //Set some stubs and spies
 Discord.client = require('./test-resources/test-client.js');
-var printMsg = sinon.stub(util, 'printMsg');
-var { msgSend } = testUtil;
+var { printMsg, msgSend } = testUtil;
 var reply = sinon.spy(msg, 'reply')
 const giphy = rewire('../src/modules/fun/giphy-api.js');
 giphy.__set__({
@@ -1263,105 +1261,6 @@ describe('Test commands', function() {
       expect(parseInt(result[1])).to.be.above(0);
       expect(parseInt(result[1])).to.be.below(7);
     });
-  });
-  describe('Test setreward', function() {
-    //Test args
-    it('Should return missing argument: reward', async function() {
-      await commands.executeCmd(msg, ['setreward', 'farmer']);
-      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.missingArg.reward);
-    });
-    it('Should return rank not found', async function() {
-      await commands.executeCmd(msg, ['setreward', 'test', 'member']);
-      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.notFound.rank);
-    });
-    it('Should return invalid reward', async function() {
-      await commands.executeCmd(msg, ['setreward', 'King', 'string']);
-      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.invalidArg.reward);
-    });
-    //Real tests
-    it('Should set the reward for king (permission group) and create table', async function() {
-      await commands.executeCmd(msg, ['setreward', 'King', 'member']);
-      var response = await db.reward.getRankReward(msg.guild.id, 'King');
-      expect(response).to.equal('Member');
-    });
-    it('Should set the reward for emperor (role)', async function() {
-      //Add roles
-      msg.guild.roles.set('1', {
-        id: '1'
-      });
-      await commands.executeCmd(msg, ['setreward', 'emperor', '<@&1>']);
-      var response = await db.reward.getRankReward(msg.guild.id, 'Emperor');
-      expect(response).to.equal('1');
-    });
-    it('Should update the reward for emperor', async function() {
-      msg.guild.roles.set('2', {
-        id: '2'
-      });
-      await commands.executeCmd(msg, ['setreward', 'emperor', '<@&2>']);
-      var response = await db.reward.getRankReward(msg.guild.id, 'Emperor');
-      expect(response).to.equal('2');
-    });
-    //Test interactive mode
-    it('Should use interactive mode to modify the reward for emperor (rank)', async function() {
-      msg.channel.messages = [
-        { ...msg, ...{ content: 'emperor' } },
-        { ...msg, ...{ content: 'Member' } }
-      ];
-      await commands.getCmd('setreward').interactiveMode(msg);
-      expect(msgSend.getCall(msgSend.callCount - 3).returnValue.content).to.equal(
-        lang.setreward.interactiveMode.rank);
-      expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
-        lang.setreward.interactiveMode.reward);
-      expect(msgSend.lastCall.returnValue.content).to.equal(
-        lang.setreward.newReward);
-      var response = await db.reward.getRankReward(msg.guild.id, 'Emperor');
-      expect(response).to.equal('Member');
-    });
-    it('Should use interactive mode to modify the reward for emperor (role)', async function() {
-      msg.channel.messages = [
-        { ...msg, ...{ content: 'emperor' } },
-        { ...msg, ...{ content: '<@&2>' } }
-      ];
-      await commands.getCmd('setreward').interactiveMode(msg);
-      expect(msgSend.getCall(msgSend.callCount - 3).returnValue.content).to.equal(
-        lang.setreward.interactiveMode.rank);
-      expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
-        lang.setreward.interactiveMode.reward);
-      expect(msgSend.lastCall.returnValue.content).to.equal(
-        lang.setreward.newReward);
-      var response = await db.reward.getRankReward(msg.guild.id, 'Emperor');
-      expect(response).to.equal('2');
-    });
-  });
-  after(function() {
-    msg.guild.roles.clear();
-    msg.mentions.roles.clear();
-  });
-});
-describe('Test unsetreward', function() {
-  it('Should return rank not found', async function() {
-    await commands.executeCmd(msg, ['unsetreward', 'random']);
-    expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.notFound.rank);
-  });
-  it('Should return rank reward not found', async function() {
-    await commands.executeCmd(msg, ['unsetreward', 'farmer']);
-    expect(printMsg.lastCall.returnValue).to.equal(lang.error.notFound.rankReward);
-  });
-  it('Should remove the reward for emperor', async function() {
-    await commands.executeCmd(msg, ['unsetreward', 'emperor']);
-    var response = await db.reward.getRankReward(msg.guild.id, 'Emperor');
-    expect(response).to.equal(undefined);
-  });
-  it('Should use interactive mode to remove the reward for emperor', async function() {
-    await commands.executeCmd(msg, ['setreward', 'emperor', 'member']);
-    msg.channel.messages = [
-      { ...msg, ...{ content: 'emperor' } }
-    ];
-    await commands.getCmd('unsetreward').interactiveMode(msg);
-    expect(msgSend.lastCall.returnValue.content).to.equal(
-      lang.setreward.interactiveMode.rank);
-    var response = await db.reward.getRankReward(msg.guild.id, 'Emperor');
-    expect(response).to.equal(undefined);
   });
 });
 

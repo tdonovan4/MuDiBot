@@ -87,7 +87,7 @@ module.exports = {
       rank = rank.charAt(0).toUpperCase() + rank.slice(1);
       //Change underscore to space
       rank = rank.replace('_', ' ');
-      //Check if this rank as a reward
+      //Check if this rank has a reward
       var reward = await db.reward.getRankReward(msg.guild.id, rank);
       if (reward == null) {
         //Reward not found
