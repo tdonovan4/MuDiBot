@@ -1,11 +1,18 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const childProcess = require('child_process');
+const lang = require('../../localization/en-US.json');
+const db = require('../../src/modules/database/database.js');
+const testUtil = require('../test-resources/test-util.js');
+const { printMsg, msgSend } = testUtil;
+
+var config = require('../../src/util.js').getConfig()[1];
 var testMessages = require('../test-resources/test-messages.js');
 var msg = testMessages.msg1;
 
 const botManager = require('../../src/modules/administration/bot-manager.js');
 const Clearlog = require('../../src/modules/administration/clearlog.js');
+const rewards = require('../../src/modules/administration/rewards.js')
 
 module.exports = function() {
   //Test the bot manager submodule
@@ -103,6 +110,121 @@ module.exports = function() {
       await clearlogCmd.execute(msg, ['flower', '<@384633488400140664>', '15']);
       var deletedMessages = msg.deletedMessages;
       expect(deletedMessages).to.deep.equal(['flower']);
+    });
+  });
+  describe('Test rewards', function() {
+    beforeEach(async function() {
+      //Load test database
+      await testUtil.replaceDatabase(config.pathDatabase, 'data1.db');
+    });
+    afterEach(function() {
+      msgSend.resetHistory;
+      printMsg.resetHistory;
+    });
+    describe('Test the setreward command', function() {
+      const setReward = new rewards.SetRewardCommand();
+      describe('Test arguments', function() {
+        it('Should return missing argument: reward', async function() {
+          await setReward.checkArgs(msg, ['farmer']);
+          expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.missingArg.reward);
+        });
+        it('Should return rank not found', async function() {
+          await setReward.checkArgs(msg, ['test', 'member']);
+          expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.notFound.rank);
+        });
+        it('Should return invalid reward', async function() {
+          await setReward.checkArgs(msg, ['King', 'string']);
+          expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.invalidArg.reward);
+        });
+      });
+      describe('Test execute()', function() {
+        it('Should set the reward for king (permission group)', async function() {
+          await setReward.execute(msg, ['King', 'member']);
+          var response = await db.reward.getRankReward(msg.guild.id, 'King');
+          expect(response).to.equal('Member');
+        });
+        it('Should set the reward for emperor (role)', async function() {
+          //Add roles
+          msg.guild.roles.set('1', {
+            id: '1'
+          });
+          await setReward.execute(msg, ['emperor', '<@&1>']);
+          var response = await db.reward.getRankReward(msg.guild.id, 'Emperor');
+          expect(response).to.equal('1');
+        });
+        it('Should update the reward for farmer', async function() {
+          msg.guild.roles.set('2', {
+            id: '2'
+          });
+          await setReward.execute(msg, ['farmer', '<@&2>']);
+          var response = await db.reward.getRankReward(msg.guild.id, 'Farmer');
+          expect(response).to.equal('2');
+        });
+      });
+      describe('Test interactive mode', function() {
+        it('Should use interactive mode to modify the reward for farmer (rank)', async function() {
+          msg.channel.messages = [
+            { ...msg, ...{ content: 'farmer' } },
+            { ...msg, ...{ content: 'Member' } }
+          ];
+          await setReward.interactiveMode(msg);
+          expect(msgSend.getCall(msgSend.callCount - 3).returnValue.content).to.equal(
+            lang.setreward.interactiveMode.rank);
+          expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
+            lang.setreward.interactiveMode.reward);
+          expect(msgSend.lastCall.returnValue.content).to.equal(
+            lang.setreward.newReward);
+          var response = await db.reward.getRankReward(msg.guild.id, 'Farmer');
+          expect(response).to.equal('Member');
+        });
+        it('Should use interactive mode to modify the reward for farmer (role)', async function() {
+          msg.channel.messages = [
+            { ...msg, ...{ content: 'farmer' } },
+            { ...msg, ...{ content: '<@&2>' } }
+          ];
+          await setReward.interactiveMode(msg);
+          expect(msgSend.getCall(msgSend.callCount - 3).returnValue.content).to.equal(
+            lang.setreward.interactiveMode.rank);
+          expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
+            lang.setreward.interactiveMode.reward);
+          expect(msgSend.lastCall.returnValue.content).to.equal(
+            lang.setreward.newReward);
+          var response = await db.reward.getRankReward(msg.guild.id, 'Farmer');
+          expect(response).to.equal('2');
+        });
+      });
+    });
+    describe('Test the unsetreward command', function() {
+      const unsetReward = new rewards.UnsetRewardCommand();
+      describe('Test arguments', function() {
+        it('Should return rank not found', async function() {
+          await unsetReward.checkArgs(msg, ['random']);
+          expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.notFound.rank);
+        });
+      });
+      describe('Test execute()', function() {
+        it('Should return rank reward not found', async function() {
+          await unsetReward.execute(msg, ['emperor']);
+          expect(printMsg.lastCall.returnValue).to.equal(lang.error.notFound.rankReward);
+        });
+        it('Should remove the reward for farmer', async function() {
+          await unsetReward.execute(msg, ['farmer']);
+          var response = await db.reward.getRankReward(msg.guild.id, 'Farmer');
+          expect(response).to.equal(undefined);
+        });
+      });
+      describe('Test interactive mode', function() {
+        it('Should use interactive mode to remove the reward for farmer', async function() {
+          msg.channel.messages = [
+            { ...msg, ...{ content: 'farmer' } }
+          ];
+          await unsetReward.interactiveMode(msg);
+          expect(msgSend.lastCall.returnValue.content).to.equal(
+            lang.setreward.interactiveMode.rank);
+          var response = await db.reward.getRankReward(msg.guild.id, 'Farmer');
+          expect(response).to.equal(undefined);
+        });
+      });
     });
   });
 }
