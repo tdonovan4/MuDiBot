@@ -4,6 +4,7 @@ const childProcess = require('child_process');
 const lang = require('../../localization/en-US.json');
 const db = require('../../src/modules/database/database.js');
 const testUtil = require('../test-resources/test-util.js');
+const client = require('../test-resources/test-client.js');
 const { printMsg, msgSend } = testUtil;
 
 var config = require('../../src/util.js').getConfig()[1];
@@ -12,7 +13,8 @@ var msg = testMessages.msg1;
 
 const botManager = require('../../src/modules/administration/bot-manager.js');
 const Clearlog = require('../../src/modules/administration/clearlog.js');
-const rewards = require('../../src/modules/administration/rewards.js')
+const rewards = require('../../src/modules/administration/rewards.js');
+const SetChannel = require('../../src/modules/administration/setchannel.js');
 
 module.exports = function() {
   //Test the bot manager submodule
@@ -53,6 +55,7 @@ module.exports = function() {
       });
     });
   });
+
   //Test the clearlog submodule
   describe('Test clearlog', function() {
     afterEach(function() {
@@ -112,6 +115,7 @@ module.exports = function() {
       expect(deletedMessages).to.deep.equal(['flower']);
     });
   });
+
   describe('Test rewards', function() {
     beforeEach(async function() {
       //Load test database
@@ -225,6 +229,26 @@ module.exports = function() {
           expect(response).to.equal(undefined);
         });
       });
+    });
+  });
+
+  //Test the setchannel submodule
+  describe('Test setchannel', function() {
+    const setchannelCmd = new SetChannel();
+    beforeEach(async function() {
+      //Load test database
+      await testUtil.replaceDatabase(config.pathDatabase, 'data1.db');
+    });
+    it('Should set the current channel as the default channel', async function() {
+      //Setup
+      msg.channel.id = '123456';
+      client.channels.set(msg.channel.id, {
+        id: msg.channel.id
+      });
+      //Real test
+      await setchannelCmd.execute(msg);
+      var response = await db.config.getDefaultChannel(msg.guild.id);
+      expect(response.id).to.equal('123456');
     });
   });
 }
