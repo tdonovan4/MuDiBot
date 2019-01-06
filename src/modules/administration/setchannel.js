@@ -12,10 +12,10 @@ module.exports = class SetChannelCommand extends Command {
       permLvl: 3
     });
   }
-  execute(msg) {
+  async execute(msg) {
     var botChannel = msg.channel;
     //Modify default channel in database
-    db.config.updateDefaultChannel(msg.guild.id, botChannel);
+    await db.config.updateDefaultChannel(msg.guild.id, botChannel);
     botChannel.send(lang.setchannel.newDefaultChannel);
   }
 }
