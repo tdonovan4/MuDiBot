@@ -181,7 +181,7 @@ module.exports = {
         player.playYoutube(msg, custCmd.arg);
         break;
       default:
-        console.log(lang.error.invalidArg.cmd);
+        printMsg(msg, lang.error.invalidArg.cmd);
     }
   }
 }
