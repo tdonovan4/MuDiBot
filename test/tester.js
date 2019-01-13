@@ -20,15 +20,6 @@ var config = require('../src/util.js').getConfig()[1];
 Discord.client = require('./test-resources/test-client.js');
 var { printMsg, msgSend } = testUtil;
 var reply = sinon.spy(msg, 'reply')
-const giphy = rewire('../src/modules/fun/giphy-api.js');
-giphy.__set__({
-  search: function() {
-    return 'A gif';
-  },
-  random: function() {
-    return 'A random gif';
-  }
-})
 
 const levels = rewire('../src/levels.js');
 const permGroups = rewire('../src/modules/user/permission-group.js');
@@ -1073,18 +1064,6 @@ describe('Test commands', function() {
       var response = await db.user.getPermGroups(msg.guild.id, '041025599435591424');
       expect(response).to.equal('User');
     });
-  });
-  describe('gif', function() {
-    it('Should return a gif', async function() {
-      await new giphy.GifCommand().execute(msg, ['dog']);
-      expect(msgSend.lastCall.returnValue.content).to.equal('A gif');
-    });
-  });
-  describe('gifrandom', function() {
-    it('Should return a random gif', async function() {
-      await new giphy.GifRandomCommand().execute(msg, ['dog']);
-      expect(msgSend.lastCall.returnValue.content).to.equal('A random gif');
-    })
   });
   describe('flipcoin', function() {
     it('Should return head or tail', function() {

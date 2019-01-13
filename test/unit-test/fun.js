@@ -1,8 +1,11 @@
+/*eslint no-underscore-dangle: "off"*/
 const expect = require('chai').expect;
 const sinon = require('sinon');
+const rewire = require('rewire');
 const lang = require('../../localization/en-US.json');
 const db = require('../../src/modules/database/database.js');
 const testUtil = require('../test-resources/test-util.js');
+const giphy = rewire('../../src/modules/fun/giphy-api.js');
 const { printMsg, msgSend } = testUtil;
 
 var config = require('../../src/util.js').getConfig()[1];
@@ -95,7 +98,6 @@ module.exports = function() {
         });
       });
     });
-
     describe('Test removeCmd', function() {
       beforeEach(async function() {
         //Load test database
@@ -127,7 +129,6 @@ module.exports = function() {
         });
       });
     });
-
     describe('Test custcmdlist', function() {
       before(async function() {
         //Load test database
@@ -196,6 +197,49 @@ module.exports = function() {
           action: 'test',
         });
         expect(printMsg.lastCall.returnValue).to.equal(lang.error.invalidArg.cmd);
+      });
+    });
+  });
+  //Test giphy module
+  describe('Test giphy module', function() {
+    before(function() {
+      giphy.__set__({
+        search: function(args) {
+          if (args.length === 0) {
+            return 'A gif';
+          } else {
+            return `A gif about ${args}`
+          }
+        },
+        random: function(args) {
+          if (args.length === 0) {
+            return 'A random gif';
+          } else {
+            return `A random gif about ${args}`
+          }
+        }
+      })
+    });
+    describe('Test gif command', function() {
+      var gifCommand = new giphy.GifCommand();
+      it('Should return a gif', async function() {
+        await gifCommand.execute(msg, []);
+        expect(msgSend.lastCall.returnValue.content).to.equal('A gif');
+      });
+      it('Should return a gif about dogs', async function() {
+        await gifCommand.execute(msg, ['dogs']);
+        expect(msgSend.lastCall.returnValue.content).to.equal('A gif about dogs');
+      });
+    });
+    var randomGifCommand = new giphy.GifRandomCommand();
+    describe('Test gifrandom module', function() {
+      it('Should return a random gif', async function() {
+        await randomGifCommand.execute(msg, []);
+        expect(msgSend.lastCall.returnValue.content).to.equal('A random gif');
+      });
+      it('Should return a random gif about dogs', async function() {
+        await randomGifCommand.execute(msg, ['dogs']);
+        expect(msgSend.lastCall.returnValue.content).to.equal('A random gif about dogs');
       });
     });
   });
