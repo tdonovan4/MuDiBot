@@ -18,8 +18,7 @@ var config = require('../src/util.js').getConfig()[1];
 
 //Set some stubs and spies
 Discord.client = require('./test-resources/test-client.js');
-var { printMsg, msgSend } = testUtil;
-var reply = sinon.spy(msg, 'reply')
+var { printMsg, msgSend, reply } = testUtil;
 
 const levels = rewire('../src/levels.js');
 const permGroups = rewire('../src/modules/user/permission-group.js');
@@ -1063,58 +1062,6 @@ describe('Test commands', function() {
       await commands.executeCmd(msg, ['purgegroups', '<@041025599435591424>']);
       var response = await db.user.getPermGroups(msg.guild.id, '041025599435591424');
       expect(response).to.equal('User');
-    });
-  });
-  describe('flipcoin', function() {
-    it('Should return head or tail', function() {
-      commands.executeCmd(msg, ['flipcoin']);
-      expect(reply.lastCall.returnValue).to.be.oneOf(['heads', 'tails']);
-    });
-  });
-  describe('roll', function() {
-    function separateValues(string) {
-      var values = string.split(' = ');
-      var dice = values[0].split(' + ');
-      var sum = values[1];
-      return [dice, sum];
-    }
-    it('Should return the result of one six faced die', function() {
-      msg.content = '$roll 1d6';
-      commands.executeCmd(msg, ['roll']);
-
-      var result = separateValues(msgSend.lastCall.returnValue.content);
-      expect(parseInt(result[1])).to.be.above(0);
-      expect(parseInt(result[1])).to.be.below(7);
-    });
-    it('Should return the result of two 20 faced dice', function() {
-      msg.content = '$roll 2d20';
-      commands.executeCmd(msg, ['roll']);
-      var result = separateValues(msgSend.lastCall.returnValue.content);
-      expect(parseInt(result[1])).to.be.above(0);
-      expect(parseInt(result[1])).to.be.below(41);
-    });
-    it('Should return the result of three 12 faced dice + 5', function() {
-      msg.content = '$roll 3d12+5';
-      commands.executeCmd(msg, ['roll']);
-      var result = separateValues(msgSend.lastCall.returnValue.content);
-      expect(parseInt(result[1])).to.be.above(7);
-      expect(parseInt(result[1])).to.be.below(42);
-    })
-    it('Should return 1d6 when using wrong input', function() {
-      msg.content = '$roll randomString';
-      commands.executeCmd(msg, ['roll']);
-
-      var result = separateValues(msgSend.lastCall.returnValue.content);
-      expect(parseInt(result[1])).to.be.above(0);
-      expect(parseInt(result[1])).to.be.below(7);
-    });
-    it('Should return 1d6 when using no argument', function() {
-      msg.content = '$roll';
-      commands.executeCmd(msg, ['roll']);
-
-      var result = separateValues(msgSend.lastCall.returnValue.content);
-      expect(parseInt(result[1])).to.be.above(0);
-      expect(parseInt(result[1])).to.be.below(7);
     });
   });
 });
