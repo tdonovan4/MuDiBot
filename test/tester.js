@@ -75,24 +75,30 @@ Discord.client.channels.set('3', {
 const dbTest = require('./unit-test/database.js');
 describe('Test the database module', function() {
   dbTest();
-})
+});
 
 //Test commands
 const commandsTest = require('./unit-test/commands.js');
 describe('Test the commands module', function() {
   commandsTest();
-})
+});
 
 //Test the administration module
 const administrationTest = require('./unit-test/administration.js');
 describe('Test the administration module', function() {
   administrationTest();
-})
+});
 
 //Test the fun module
 const funTest = require('./unit-test/fun.js');
 describe('Test the fun module', function() {
   funTest();
+});
+
+//Test the general module
+const generalTest = require('./unit-test/general.js');
+describe('Test the general module', function() {
+  generalTest();
 })
 
 describe('Test permission groups', function() {
@@ -745,34 +751,6 @@ describe('Test purge', function() {
   });
 });
 describe('Test commands', function() {
-  describe('help', function() {
-    it('Should return all commands', function() {
-      //Test args
-      it('Should return error message when using a wrong command as an argument', function() {
-        commands.getCmd('setgroup').checkArgs(msg, ['help', 'aWrongCmd']);
-        expect(printMsg.lastCall.returnValue).to.equal(lang.error.invalidArg.cmd);
-      })
-      //Real tests
-      commands.executeCmd(msg, ['help']);
-      //Not the best solution because we only check the end of the message
-      var expectedString = mustache.render(lang.help.msg, {
-        config
-      });
-      expect(msgSend.lastCall.returnValue.content).to.equal(expectedString);
-    });
-    it('Should return help for ping', function() {
-      msg.content = '$help ping'
-      commands.executeCmd(msg, ['help', 'ping']);
-      var embed = msgSend.lastCall.returnValue.content.embed;
-      expect(embed.title).to.equal('$ping');
-      //Description
-      expect(embed.fields[0].value).to.equal(lang.help.ping.msg);
-      //Permission level
-      expect(embed.fields[1].value).to.equal('0');
-      //Usage
-      expect(embed.fields[2].value).to.equal('$ping \n');
-    });
-  });
   describe('ping', function() {
     it('Should return "Pong!"', function() {
       commands.executeCmd(msg, ['ping']);
