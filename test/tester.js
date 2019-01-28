@@ -18,7 +18,7 @@ var config = require('../src/util.js').getConfig()[1];
 
 //Set some stubs and spies
 Discord.client = require('./test-resources/test-client.js');
-var { printMsg, msgSend, reply } = testUtil;
+var { printMsg, msgSend } = testUtil;
 
 const levels = rewire('../src/levels.js');
 const permGroups = rewire('../src/modules/user/permission-group.js');
@@ -26,7 +26,6 @@ const warnings = require('../src/modules/warnings/warnings.js');
 
 const db = require('../src/modules/database/database.js');
 const audioPlayer = rewire('../src/modules/music/audio-player.js');
-var setActivity = sinon.spy(Discord.client.user, 'setActivity');
 printMsg.returnsArg(1);
 
 //Init commands
@@ -751,95 +750,6 @@ describe('Test purge', function() {
   });
 });
 describe('Test commands', function() {
-  describe('ping', function() {
-    it('Should return "Pong!"', function() {
-      commands.executeCmd(msg, ['ping']);
-      expect(reply.lastCall.returnValue).to.equal(lang.ping.pong)
-    });
-  });
-  describe('info', function() {
-    it('Should return infos', function() {
-      commands.executeCmd(msg, ['info']);
-      var embed = msgSend.lastCall.returnValue.content.embed;
-      var pjson = require('../package.json');
-      //Test embed
-      expect(embed.fields[0].value).to.have.string(pjson.name);
-      expect(embed.fields[0].value).to.have.string(pjson.description);
-      expect(embed.fields[0].value).to.have.string(pjson.author);
-      expect(embed.fields[0].value).to.have.string(pjson.version);
-      expect(embed.fields[1].value).to.have.string(config.locale);
-      expect(embed.footer.text).to.have.string('testID');
-    });
-  });
-  describe('status', function() {
-    it('Should change the status in config', function() {
-      var Status = rewire('../src/modules/general/status.js');
-      var response;
-      Status.__set__('modifyText', function(path, oldStatus, newStatus) {
-        response = newStatus;
-      });
-
-      msg.content = '$status New status!';
-      new Status().execute(msg, ['New status!']);
-      //Check the API has been called with right argument
-      expect(setActivity.lastCall.returnValue).to.equal('New status!');
-      //Check if config was "modified" (stub) with righ argument
-      expect(response).to.equal('currentStatus: \'New status!');
-    });
-  });
-  var channelSend;
-  describe('say', function() {
-    before(function() {
-      msg.guild.channels.set('42', {
-        send: function(msg) {
-          return msg;
-        }
-      });
-      channelSend = sinon.spy(msg.guild.channels.get('42'), 'send');
-    });
-    //Test args
-    it('Should return missing argument: message', function() {
-      commands.executeCmd(msg, ['say', '<#42>']);
-      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.missingArg.message);
-    });
-    //Real tests
-    it('Should return the message', function() {
-      commands.executeCmd(msg, ['say', 'test']);
-      expect(msgSend.lastCall.returnValue.content).to.equal('test');
-    });
-    it('Should return the message in the channel with ID 42', function() {
-      commands.executeCmd(msg, ['say', '<#42>', 'test']);
-      expect(channelSend.lastCall.returnValue).to.equal('test');
-    });
-    //Test interactiveMode
-    it('Should use interactive mode to send message to current channel', async function() {
-      msg.channel.messages = [
-        { ...msg, ...{ content: '$skip' } },
-        { ...msg, ...{ content: 'This an interactive test!' } }
-      ];
-      await commands.getCmd('say').interactiveMode(msg);
-      expect(msgSend.getCall(msgSend.callCount - 4).returnValue.content).to.equal(
-        lang.say.interactiveMode.channel + ` ${lang.general.interactiveMode.optional}`);
-      expect(msgSend.getCall(msgSend.callCount - 3).returnValue.content).to.equal(
-        lang.general.interactiveMode.skipped);
-      expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
-        lang.say.interactiveMode.message);
-      expect(msgSend.lastCall.returnValue.content).to.equal(
-        'This an interactive test!');
-    });
-    it('Should use interactive mode to send message to other channel', async function() {
-      msg.channel.messages = [
-        { ...msg, ...{ content: '<#42>' } },
-        { ...msg, ...{ content: 'This an interactive test!' } }
-      ];
-      await commands.getCmd('say').interactiveMode(msg);
-      expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
-        lang.say.interactiveMode.channel + ` ${lang.general.interactiveMode.optional}`);
-      expect(msgSend.lastCall.returnValue.content).to.equal(
-        lang.say.interactiveMode.message);
-      expect(channelSend.lastCall.returnValue).to.equal('This an interactive test!');
-    });
-  });
   var url = 'https://cdn.discordapp.com/avatars/041025599435591424/';
   describe('avatar', function() {
     //Test args
