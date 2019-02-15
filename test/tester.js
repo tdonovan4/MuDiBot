@@ -15,10 +15,9 @@ var config = require('../src/util.js').getConfig()[1];
 
 //Set some stubs and spies
 Discord.client = require('./test-resources/test-client.js');
-var { printMsg, msgSend } = testUtil;
+var { printMsg } = testUtil;
 
 const levels = rewire('../src/levels.js');
-const warnings = require('../src/modules/warnings/warnings.js');
 
 const db = require('../src/modules/database/database.js');
 printMsg.returnsArg(1);
@@ -93,19 +92,25 @@ describe('Test the fun module', function() {
 const generalTest = require('./unit-test/general.js');
 describe('Test the general module', function() {
   generalTest();
-})
+});
 
 //Test the music module
 const musicTest = require('./unit-test/music.js');
 describe('Test the music module', function() {
   musicTest();
-})
+});
 
 //Test the user module
 const userTest = require('./unit-test/user.js');
 describe('Test the user module', function() {
   userTest();
-})
+});
+
+//Test the warnings module
+const warningsTest = require('./unit-test/warnings.js');
+describe('Test the warnings module', function() {
+  warningsTest();
+});
 
 describe('Test levels', function() {
   describe('Test getXpForLevel', function() {
@@ -225,115 +230,6 @@ describe('Test levels', function() {
       await levels.newMessage(msg);
       expect(msg.member.roles.has('2')).to.equal(true);
     });
-  });
-});
-describe('Test warnings', function() {
-  describe('Test warn', function() {
-    it('Should return invalid user', function() {
-      commands.getCmd('warn').checkArgs(msg, ['test']);
-      expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.invalidArg.user);
-    });
-    it('Should increase TestUser\'s warnings by one', async function() {
-      await warnings.warn(msg, msg.author, 1);
-      var response = await db.user.getWarnings(msg.guild.id, msg.author.id);
-      expect(response).to.equal(1);
-    });
-    it('Should decrease TestUser\'s warnings by one', async function() {
-      await warnings.warn(msg, msg.author, -1);
-      var response = await db.user.getWarnings(msg.guild.id, msg.author.id);
-      expect(response).to.equal(0);
-    });
-    it('Should use interactive mode to warn user', async function() {
-      msg.channel.messages = [
-        { ...msg, ...{ content: `<@${msg.author.id}>` } },
-      ];
-      await commands.getCmd('warn').interactiveMode(msg);
-      expect(msgSend.lastCall.returnValue.content).to.equal(
-        lang.warn.interactiveMode.user);
-      var response = await db.user.getWarnings(msg.guild.id, msg.author.id);
-      expect(response).to.equal(1);
-    });
-    it('Should use interactive mode to unwarn user', async function() {
-      msg.channel.messages = [
-        { ...msg, ...{ content: `<@${msg.author.id}>` } },
-      ];
-      await commands.getCmd('unwarn').interactiveMode(msg);
-      expect(msgSend.lastCall.returnValue.content).to.equal(
-        lang.warn.interactiveMode.user);
-      var response = await db.user.getWarnings(msg.guild.id, msg.author.id);
-      expect(response).to.equal(0);
-    });
-  });
-});
-describe('Test list', function() {
-  it('Should return no warnings', async function() {
-    await commands.executeCmd(msg, ['warnlist']);
-    expect(printMsg.lastCall.returnValue).to.equal(lang.warn.noWarns);
-  });
-  it('Should return all warnings', async function() {
-    //Add warnings to users
-    await warnings.warn(msg, { id: '357156661105365963' }, 3);
-    await warnings.warn(msg, msg.author, 2);
-    //Real test
-    await commands.executeCmd(msg, ['warnlist']);
-    expect(printMsg.lastCall.returnValue).to.equal(
-      '<@041025599435591424>: 2 warnings\n<@357156661105365963>: 3 warnings');
-  });
-  it('Should return TestUser\'s warnings', async function() {
-    msg.mentions.users.set('041025599435591424', {
-      id: '041025599435591424'
-    });
-    await commands.executeCmd(msg, ['warnlist', '<@041025599435591424>']);
-    expect(printMsg.lastCall.returnValue).to.equal('<@041025599435591424>: 2 warnings');
-  });
-});
-describe('Test purge', function() {
-  //Test args
-  it('Should return invalid user', function() {
-    commands.getCmd('warnpurge').checkArgs(msg, ['test']);
-    expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.invalidArg.user);
-  });
-  //Real tests
-  it('Should purge TestUser', async function() {
-    await commands.executeCmd(msg, ['warnpurge', `<@${msg.author.id}>`]);
-    var response = await db.user.getWarnings(msg.guild.id, msg.author.id);
-    expect(response).to.equal(0);
-  });
-  it('Should purge all', async function() {
-    await warnings.warn(msg, '357156661105365963', 1);
-    await commands.executeCmd(msg, ['warnpurge', 'all']);
-    var response = await db.user.getUsersWarnings(msg.guild.id);
-    expect(response[0].warning).to.equal(0);
-    expect(response[1].warning).to.equal(0);
-  });
-  //Test interactive mode
-  it('Should use interactive mode to purge user', async function() {
-    await warnings.warn(msg, msg.author.id, 1);
-    msg.channel.messages = [
-      { ...msg, ...{ content: `$skip` } },
-      { ...msg, ...{ content: `<@${msg.author.id}>` } }
-    ];
-    await commands.getCmd('warnpurge').interactiveMode(msg);
-    expect(msgSend.getCall(msgSend.callCount - 3).returnValue.content).to.equal(
-      lang.warn.interactiveMode.all + ` ${lang.general.interactiveMode.optional}`);
-    expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
-      lang.general.interactiveMode.skipped);
-    expect(msgSend.lastCall.returnValue.content).to.equal(
-      lang.warn.interactiveMode.user);
-    var response = await db.user.getWarnings(msg.guild.id, msg.author.id);
-    expect(response).to.equal(0);
-  });
-  it('Should use interactive mode to purge all', async function() {
-    await warnings.warn(msg, '357156661105365963', 1);
-    await warnings.warn(msg, msg.author.id, 1);
-    msg.channel.messages = [
-      { ...msg, ...{ content: `all` } },
-    ];
-    await commands.getCmd('warnpurge').interactiveMode(msg);
-    expect(msgSend.lastCall.returnValue.content).to.equal(
-      lang.warn.interactiveMode.all + ` ${lang.general.interactiveMode.optional}`);
-    var response = await db.user.getWarnings(msg.guild.id, '357156661105365963');
-    expect(response).to.equal(0);
   });
 });
 describe('Test commands', function() {
