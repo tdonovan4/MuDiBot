@@ -152,6 +152,10 @@ module.exports = {
     }
     //User warnings found!
     warnings += num;
+    //Make sure the values doesn't get under 0
+    if (warnings < 0) {
+      warnings = 0;
+    }
     await db.user.updateWarnings(msg.guild.id, user.id, warnings);
     util.printMsg(msg, mustache.render(lang.warn.list, {
       userId: user.id,
