@@ -82,7 +82,7 @@ module.exports = function() {
           var testArg = new commands.Argument({
             type: 'mention'
           });
-          expect(testArg.checkArg(msg, '<@!2>')).to.be.false;
+          expect(testArg.checkArg(msg, '<@!3>')).to.be.false;
         });
       });
       describe('Test the group type', function() {
