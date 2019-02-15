@@ -60,16 +60,23 @@ module.exports = function() {
     });
     //Real tests
     describe('Test execute()', function() {
-      it('Should decrease users\'s warnings by one', async function() {
+      it('Should decrease user\'s warnings by one', async function() {
         msg.guild.id = 1;
         await unwarnCmd.execute(msg, ['<@!2>']);
         var response = await db.user.getWarnings(msg.guild.id, '2');
+        expect(response).to.equal(0);
+      });
+      it('Should let user\'s warnings at 0 when already 0', async function() {
+        msg.guild.id = 2;
+        await unwarnCmd.execute(msg, ['<@!1>']);
+        var response = await db.user.getWarnings(msg.guild.id, '1');
         expect(response).to.equal(0);
       });
     });
     //Test interactive mode
     describe('Test interactive mode', function() {
       it('Should use interactive mode to unwarn user', async function() {
+        msg.guild.id = 1;
         msg.channel.messages = [
           { ...msg, ...{ content: '<@!2>' } },
         ];
