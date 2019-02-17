@@ -14,8 +14,14 @@ exports.msg1 = {
       return new Promise(resolve => {
         this.roles.set(role, {
           id: 2
-        })
-        resolve()
+        });
+        resolve();
+      });
+    },
+    removeRole: function(role) {
+      return new Promise(resolve => {
+        this.roles.delete(role);
+        resolve();
       });
     },
     voiceChannel: {
