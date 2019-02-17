@@ -1,8 +1,6 @@
 const Discord = require('discord.js');
 const fs = require('fs');
 const testUtil = require('./test-resources/test-util.js');
-var testMessages = require('./test-resources/test-messages.js');
-var msg = testMessages.msg1;
 
 //Add test values to config
 require('./set-config.js').setTestConfig();
@@ -11,7 +9,6 @@ var config = require('../src/util.js').getConfig()[1];
 //Set some stubs and spies
 Discord.client = require('./test-resources/test-client.js');
 var { printMsg } = testUtil;
-
 printMsg.returnsArg(1);
 
 //Init commands
@@ -26,35 +23,6 @@ const dbFolder = './test/database/';
 if (!fs.existsSync(dbFolder)) {
   fs.mkdirSync(dbFolder);
 }
-
-//Setting channels
-Discord.client.channels.set('1', {
-  position: 0,
-  name: '1',
-  guild: {
-    id: msg.guild.id
-  },
-  id: '1',
-  type: 'text'
-});
-Discord.client.channels.set('2', {
-  position: 1,
-  name: 'general',
-  guild: {
-    id: '1234567890'
-  },
-  id: '2',
-  type: 'text'
-});
-Discord.client.channels.set('3', {
-  position: 1,
-  name: 'test',
-  guild: {
-    id: '1234567890'
-  },
-  id: '3',
-  type: 'text'
-});
 
 //Test the database module
 const dbTest = require('./unit-test/database.js');

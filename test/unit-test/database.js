@@ -1,4 +1,5 @@
 const expect = require('chai').expect;
+const Discord = require('discord.js');
 const lang = require('../../localization/en-US.json');
 var config = require('../../src/util.js').getConfig()[1];
 var testMessages = require('../test-resources/test-messages.js');
@@ -15,6 +16,35 @@ const { promisify } = require('util');
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 const stat = promisify(fs.stat);
+
+//Setting channels
+Discord.client.channels.set('1', {
+  position: 0,
+  name: '1',
+  guild: {
+    id: msg.guild.id
+  },
+  id: '1',
+  type: 'text'
+});
+Discord.client.channels.set('2', {
+  position: 1,
+  name: 'general',
+  guild: {
+    id: '1234567890'
+  },
+  id: '2',
+  type: 'text'
+});
+Discord.client.channels.set('3', {
+  position: 1,
+  name: 'test',
+  guild: {
+    id: '1234567890'
+  },
+  id: '3',
+  type: 'text'
+});
 
 async function createDatabaseSchema(path) {
   await sql.open(path);
