@@ -13,8 +13,10 @@
       "rankUp": "Cet utilisateur est maintenant un {{rank}}!",
       "reward": "et reçoit le role {{role}} comme récompense",
       "addReward": "Récompense pour promotion",
-      "removeOldReward": "Ancienne récompense enlevée"
+      "removeOldReward": "Ancienne récompense enlevée",
+      "birthday": "Bonne fête, {{{mention}}}!"
     },
+    "birthdays": "Bonne fête à: {{{users}}}!",
     "interactiveMode": {
       "optional": "(cet argument est facultative, utilisez `$skip` pour la sauter)",
       "skipped": "Argument sauté"

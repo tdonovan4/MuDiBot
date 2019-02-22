@@ -22,6 +22,7 @@ try {
 const commands = require('./commands.js');
 const customCmd = require('./modules/fun/custom-cmd.js');
 const db = require('./modules/database/database.js');
+const { sendDefaultChannel } = require('./modules/general/notification.js');
 
 //Start the bot
 client.on('ready', async () => {
@@ -89,15 +90,10 @@ async function onMessage(msg) {
   }
 }
 
-async function sendDefaultChannel(member, text) {
-  let channel = await db.config.getDefaultChannel(member.guild.id);
-  channel.send(text);
-}
-
 //When users join the server
 client.on('guildMemberAdd', member => {
   if (config.greeting.activated == true) {
-    sendDefaultChannel(member, mustache.render(lang.general.member.joined, {
+    sendDefaultChannel(member.guild.id, mustache.render(lang.general.member.joined, {
       member
     }));
   }
@@ -106,7 +102,7 @@ client.on('guildMemberAdd', member => {
 //When users leave the server
 client.on('guildMemberRemove', member => {
   if (config.farewell.activated == true) {
-    sendDefaultChannel(member, mustache.render(lang.general.member.left, {
+    sendDefaultChannel(member.guild.id, mustache.render(lang.general.member.left, {
       member
     }));
   }

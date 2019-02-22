@@ -65,6 +65,15 @@ module.exports = {
     }
     return response.warning;
   },
+  getUsersWarnings: async function(serverId) {
+    var query = 'SELECT user_id, warning FROM user WHERE server_id = ?';
+    return await queries.runAllQuery(query, serverId);
+  },
+  getUsersByBirthday: async function(date) {
+    var query = 'SELECT * FROM user WHERE SUBSTR(birthday, -5) = ?';
+    var response = await queries.runAllQuery(query, [date]);
+    return response;
+  },
   updatePermGroups: async function(serverId, userId, groups) {
     //Update user's permission groups
     var updateQuery = 'UPDATE user SET permission_group = (?) WHERE server_id = ? AND user_id = ?';
@@ -100,10 +109,6 @@ module.exports = {
     var updateQuery = 'UPDATE user SET location = ? WHERE server_id = ? AND user_id = ?';
     var args = [serverId, userId];
     await queries.runInsertUpdateQuery(insertQuery, updateQuery, args, [newLocation]);
-  },
-  getUsersWarnings: async function(serverId) {
-    var query = 'SELECT user_id, warning FROM user WHERE server_id = ?';
-    return await queries.runAllQuery(query, serverId);
   },
   updateUsersWarnings: async function(serverId, newWarnings) {
     var query = 'UPDATE user SET warning = ? WHERE server_id = ?';
