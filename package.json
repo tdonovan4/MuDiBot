@@ -5,8 +5,8 @@
   "main": "bot.js",
   "scripts": {
     "autoinstall": "./scripts/install.sh",
-    "test": "./node_modules/.bin/mocha --reporter spec --exit",
-    "coverage": "nyc ./node_modules/.bin/mocha --reporter spec --exit",
+    "test": "./node_modules/.bin/mocha --reporter spec --timeout 5000 --exit",
+    "coverage": "nyc ./node_modules/.bin/mocha --reporter spec --timeout 5000 --exit",
     "lint": "node_modules/.bin/eslint ./"
   },
   "author": "tdonovan4",
