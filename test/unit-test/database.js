@@ -240,6 +240,10 @@ module.exports = function() {
         var response = await db.user.getWarnings('1', '2');
         expect(response).to.equal(0);
       });
+      it('getUsersByBirthday() should return empty array', async function() {
+        var response = await db.user.getUsersByBirthday('02-19');
+        expect(response).to.be.empty;
+      });
       it('getUsersWarnings() should return empty array', async function() {
         var response = await db.user.getUsersWarnings('1');
         expect(response).to.be.empty;
@@ -337,6 +341,13 @@ module.exports = function() {
         await db.user.updateLocation('1', '4', 'there');
         var response = await db.user.getAll('1', '4');
         expect(response.location).to.equal('there');
+      });
+      it('getUsersByBirthday() should return users with a birthday the 25 March', async function() {
+        var response = await db.user.getUsersByBirthday('03-25');
+        expect(response[0].server_id).to.equal('3');
+        expect(response[0].user_id).to.equal('3');
+        expect(response[1].server_id).to.equal('2');
+        expect(response[1].user_id).to.equal('1');
       });
       it('getSumXP should merge same user XP', async function() {
         //Add user in another server

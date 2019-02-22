@@ -6,7 +6,7 @@ const mustache = require('mustache');
 const rewire = require('rewire');
 const lang = require('../../localization/en-US.json');
 const testUtil = require('../test-resources/test-util.js');
-const { printMsg, msgSend, reply } = testUtil;
+const { replaceDatabase, printMsg, msgSend, reply } = testUtil;
 
 var config = require('../../src/util.js').getConfig()[1];
 var testMessages = require('../test-resources/test-messages.js');
@@ -14,6 +14,7 @@ var msg = testMessages.msg1;
 
 const Help = require('../../src/modules/general/help.js');
 const Info = require('../../src/modules/general/info.js');
+const notification = require('../../src/modules/general/notification.js');
 const Ping = require('../../src/modules/general/ping.js');
 const Say = require('../../src/modules/general/say.js');
 const Status = rewire('../../src/modules/general/status.js');
@@ -78,6 +79,63 @@ module.exports = function() {
       expect(embed.fields[0].value).to.have.string(pjson.version);
       expect(embed.fields[1].value).to.have.string(config.locale);
       expect(embed.footer.text).to.have.string('testID');
+    });
+  });
+  describe('Test notification', function() {
+    describe('Test birthdays', function() {
+      var clock;
+      var channel1;
+      var channel2;
+      var channel3;
+      before(function() {
+        //Set the channels
+        class TestChannel {
+          constructor(id) {
+            this.id = id;
+          }
+          send(msg) {
+            return msg;
+          }
+        }
+        var channels = Discord.client.channels
+        channels.set('1', new TestChannel('1'));
+        channels.set('2', new TestChannel('2'));
+        channels.set('3', new TestChannel('3'));
+        //Stub the channels
+        channel1 = sinon.stub(channels.get('1'), 'send');
+        channel2 = sinon.stub(channels.get('2'), 'send');
+        channel3 = sinon.stub(channels.get('3'), 'send');
+      });
+      after(function() {
+        //Cleanup
+        Discord.client.channels.clear();
+      });
+      beforeEach(async function() {
+        await replaceDatabase(config.pathDatabase, 'data2.db');
+        channel1.resetHistory();
+        channel2.resetHistory();
+        channel3.resetHistory();
+      });
+      afterEach(function() {
+        clock.restore();
+      });
+      //Start testing
+      it('Should print the users with a birthday the 5 April', async function() {
+        //Set date to 5 April
+        clock = sinon.useFakeTimers(1491393600000);
+        await notification.birthdays.job();
+        expect(channel1.lastCall.lastArg).to.equal('Happy birthday, <@2>!');
+        expect(channel2.lastCall.lastArg).to.equal('Happy birthday to: <@1>, <@2>!');
+        expect(channel3.called).to.be.false;
+      });
+      it('Should print the users with a birthday the 7 April', async function() {
+        //Set date to 7 April
+        clock = sinon.useFakeTimers(1491566400000);
+        await notification.birthdays.job();
+        expect(channel1.lastCall.lastArg).to.equal('Happy birthday, <@4>!');
+        expect(channel2.called).to.be.false;
+        expect(channel3.lastCall.lastArg).to.equal('Happy birthday, <@3>!');
+      });
     });
   });
   describe('Test ping', function() {
