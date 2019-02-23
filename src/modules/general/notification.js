@@ -24,7 +24,8 @@ var birthdays = schedule.scheduleJob('0 12 * * *', async function() {
     let message = mustache.render(lang.general.botBirthday, {
       age: date.getFullYear() - 2017
     })
-    for (var guild of client.guilds.keys()) {
+    //Send to all servers
+    for (let guild of client.guilds.keys()) {
       await await sendDefaultChannel(guild, message);
     }
   }
@@ -38,21 +39,31 @@ var birthdays = schedule.scheduleJob('0 12 * * *', async function() {
     groupedUsers.get(user.server_id).push(`<@${user.user_id}>`);
   }
   //Send a message in each server
-  for (let guild of groupedUsers.keys()) {
+  for (let guildId of groupedUsers.keys()) {
+    //Check if the guild exist
+    if (!client.guilds.has(guildId)) {
+      break;
+    }
+    let guild = client.guilds.get(guildId);
+    //Get the users for the server and remove the users who left the server
+    let birthdayUsers = groupedUsers.get(guildId).filter(birthdayUser => {
+      let userId = /<@(.*?)>/.exec(birthdayUser)[1];
+      return guild.members.has(userId);
+    });
+    //Create the message
     var message;
-    var guildMembers = groupedUsers.get(guild);
-    if (guildMembers.length === 1) {
+    if (birthdayUsers.length === 1) {
       //If only one birthday
       message = mustache.render(lang.general.member.birthday, {
-        mention: guildMembers[0]
+        mention: birthdayUsers[0]
       });
     } else {
       //If multiple birthdays
       message = mustache.render(lang.general.birthdays, {
-        users: guildMembers.join(', ')
+        users: birthdayUsers.join(', ')
       });
     }
-    await sendDefaultChannel(guild, message);
+    await sendDefaultChannel(guildId, message);
   }
 });
 

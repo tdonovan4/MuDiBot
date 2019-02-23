@@ -87,18 +87,28 @@ module.exports = function() {
       var channel1;
       var channel2;
       var channel3;
-      before(function() {
-        var guilds = Discord.client.guilds;
+      beforeEach(async function() {
+        await replaceDatabase(config.pathDatabase, 'data2.db');
         //Set the guilds
-        guilds.set('1', {
-          id: '1'
-        });
-        guilds.set('2', {
-          id: '2'
-        });
-        guilds.set('3', {
-          id: '3'
-        });
+        var guilds = Discord.client.guilds;
+        class TestGuild {
+          constructor(id, members) {
+            this.id = id;
+            this.members = members
+          }
+        }
+        guilds.set('1', new TestGuild('1', new Map([
+          ['2', { id: 2 }],
+          ['3', { id: 3 }],
+          ['4', { id: 4 }]
+        ])));
+        guilds.set('2', new TestGuild('2', new Map([
+          ['1', { id: 1 }],
+          ['2', { id: 2 }]
+        ])));
+        guilds.set('3', new TestGuild('3', new Map([
+          ['3', { id: 3 }]
+        ])));
         //Set the channels
         class TestChannel {
           constructor(id) {
@@ -117,19 +127,11 @@ module.exports = function() {
         channel2 = sinon.stub(channels.get('2'), 'send');
         channel3 = sinon.stub(channels.get('3'), 'send');
       });
-      after(function() {
+      afterEach(function() {
         //Cleanup
+        clock.restore();
         Discord.client.guilds.clear();
         Discord.client.channels.clear();
-      });
-      beforeEach(async function() {
-        await replaceDatabase(config.pathDatabase, 'data2.db');
-        channel1.resetHistory();
-        channel2.resetHistory();
-        channel3.resetHistory();
-      });
-      afterEach(function() {
-        clock.restore();
       });
       //Start testing
       it('Should print the users with a birthday the 5 April', async function() {
@@ -156,6 +158,24 @@ module.exports = function() {
         expect(channel1.lastCall.lastArg).to.equal(specialMsg);
         expect(channel2.lastCall.lastArg).to.equal(specialMsg);
         expect(channel3.lastCall.lastArg).to.equal(specialMsg);
+      });
+      it('Should not use broken guild id', async function() {
+        Discord.client.guilds.delete('1');
+        //Set date to 5 April
+        clock = sinon.useFakeTimers(1491393600000);
+        await notification.birthdays.job();
+        expect(channel1.called).to.be.false;
+        expect(channel2.lastCall.lastArg).to.equal('Happy birthday to: <@1>, <@2>!');
+        expect(channel3.called).to.be.false;
+      });
+      it('Should not mention users who left', async function() {
+        Discord.client.guilds.get('2').members.delete('2');
+        //Set date to 5 April
+        clock = sinon.useFakeTimers(1491393600000);
+        await notification.birthdays.job();
+        expect(channel1.lastCall.lastArg).to.equal('Happy birthday, <@2>!');
+        expect(channel2.lastCall.lastArg).to.equal('Happy birthday, <@1>!');
+        expect(channel3.called).to.be.false;
       });
     });
   });
