@@ -17,6 +17,7 @@
       "birthday": "Happy birthday, {{{mention}}}!"
     },
     "birthdays": "Happy birthday to: {{{users}}}!",
+    "botBirthday": "Happy birthday to me! I'm now {{age}} years old!",
     "interactiveMode": {
       "optional": "(this argument is optional, use `$skip` to skip it)",
       "skipped": "Argument skipped"
