@@ -88,6 +88,17 @@ module.exports = function() {
       var channel2;
       var channel3;
       before(function() {
+        var guilds = Discord.client.guilds;
+        //Set the guilds
+        guilds.set('1', {
+          id: '1'
+        });
+        guilds.set('2', {
+          id: '2'
+        });
+        guilds.set('3', {
+          id: '3'
+        });
         //Set the channels
         class TestChannel {
           constructor(id) {
@@ -97,7 +108,7 @@ module.exports = function() {
             return msg;
           }
         }
-        var channels = Discord.client.channels
+        var channels = Discord.client.channels;
         channels.set('1', new TestChannel('1'));
         channels.set('2', new TestChannel('2'));
         channels.set('3', new TestChannel('3'));
@@ -108,6 +119,7 @@ module.exports = function() {
       });
       after(function() {
         //Cleanup
+        Discord.client.guilds.clear();
         Discord.client.channels.clear();
       });
       beforeEach(async function() {
@@ -135,6 +147,15 @@ module.exports = function() {
         expect(channel1.lastCall.lastArg).to.equal('Happy birthday, <@4>!');
         expect(channel2.called).to.be.false;
         expect(channel3.lastCall.lastArg).to.equal('Happy birthday, <@3>!');
+      });
+      it('Should print special message for the bot anniversary', async function() {
+        //Set date to 6 April
+        clock = sinon.useFakeTimers(1554552000000);
+        await notification.birthdays.job();
+        var specialMsg = 'Happy birthday to me! I\'m now 2 years old!';
+        expect(channel1.lastCall.lastArg).to.equal(specialMsg);
+        expect(channel2.lastCall.lastArg).to.equal(specialMsg);
+        expect(channel3.lastCall.lastArg).to.equal(specialMsg);
       });
     });
   });

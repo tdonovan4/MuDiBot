@@ -17,6 +17,7 @@
       "birthday": "Bonne fête, {{{mention}}}!"
     },
     "birthdays": "Bonne fête à: {{{users}}}!",
+    "botBirthday": "Bonne fête à moi-même! J'ai maintenant {{age}} ans!",
     "interactiveMode": {
       "optional": "(cet argument est facultative, utilisez `$skip` pour la sauter)",
       "skipped": "Argument sauté"
