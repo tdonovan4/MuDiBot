@@ -12,6 +12,17 @@ const warnings = require('../../src/modules/warnings/warnings.js');
 
 module.exports = function() {
   describe('Test warn', function() {
+    before(function() {
+      msg.guild.members.set('1', {
+        id: 1,
+        user: {
+          id: 1
+        }
+      });
+    });
+    after(function() {
+      msg.guild.members.clear();
+    });
     beforeEach(async function() {
       await replaceDatabase(config.pathDatabase, 'data1.db');
     });
@@ -47,6 +58,23 @@ module.exports = function() {
     });
   });
   describe('Test unwarn', function() {
+    before(function() {
+      msg.guild.members.set('1', {
+        id: 1,
+        user: {
+          id: 1
+        }
+      });
+      msg.guild.members.set('2', {
+        id: 2,
+        user: {
+          id: 2
+        }
+      });
+    });
+    after(function() {
+      msg.guild.members.clear();
+    });
     beforeEach(async function() {
       await replaceDatabase(config.pathDatabase, 'data1.db');
     });
@@ -133,6 +161,23 @@ module.exports = function() {
     });
   });
   describe('Test purge', function() {
+    before(function() {
+      msg.guild.members.set('2', {
+        id: 2,
+        user: {
+          id: 2
+        }
+      });
+      msg.guild.members.set('4', {
+        id: 4,
+        user: {
+          id: 4
+        }
+      });
+    });
+    after(function() {
+      msg.guild.members.clear();
+    });
     beforeEach(async function() {
       await replaceDatabase(config.pathDatabase, 'data1.db');
     });

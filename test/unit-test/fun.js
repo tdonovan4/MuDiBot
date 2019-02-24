@@ -134,9 +134,16 @@ module.exports = function() {
       before(async function() {
         //Load test database
         await testUtil.replaceDatabase(config.pathDatabase, 'data1.db');
+        msg.guild.members.set(msg.author.id, {
+          id: msg.author.id,
+          user: {
+            username: 'TestUser'
+          }
+        });
       });
       after(function() {
         msg.mentions.users.clear();
+        msg.guild.members.clear();
       });
       var listCustomCmd = new customCmds.ListCustomCmdCommand();
       it('Should return info about test1', async function() {
