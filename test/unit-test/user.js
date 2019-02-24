@@ -45,8 +45,19 @@ async function insertUsers(serverId, num) {
 
 module.exports = function() {
   describe('Test avatar', function() {
-    var avatarCmd = new Avatar();
     var url = 'https://cdn.discordapp.com/avatars/041025599435591424/';
+    before(function() {
+      msg.guild.members.set(msg.author.id, {
+        id: msg.author.id,
+        user: {
+          avatarURL: url
+        }
+      });
+    });
+    after(function() {
+      msg.guild.members.clear();
+    });
+    var avatarCmd = new Avatar();
     //Test args
     describe('Test arguments', function() {
       it('Should return invalid arg: user', function() {
@@ -77,12 +88,39 @@ module.exports = function() {
   });
   describe('Test the permission group submodule', function() {
     var oldGuild = msg.guild;
-    beforeEach(async function() {
-      await replaceDatabase(config.pathDatabase, 'data1.db');
+    before(function() {
+      msg.guild.members.set('1', {
+        id: 1,
+        user: {
+          id: 1
+        }
+      });
+      msg.guild.members.set('2', {
+        id: 2,
+        user: {
+          id: 2
+        }
+      });
+      msg.guild.members.set('3', {
+        id: 3,
+        user: {
+          id: 3
+        }
+      });
+      msg.guild.members.set(msg.author.id, {
+        id: msg.author.id,
+        user: {
+          id: msg.author.id
+        }
+      });
     });
     after(function() {
       //Reset
       msg.guild = oldGuild;
+      msg.guild.members.clear();
+    });
+    beforeEach(async function() {
+      await replaceDatabase(config.pathDatabase, 'data1.db');
     });
     //It also tests setGroup
     describe('Test setgroup command', function() {

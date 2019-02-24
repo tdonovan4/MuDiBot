@@ -66,6 +66,14 @@ module.exports = function() {
         });
       });
       describe('Test the mention type', function() {
+        before(function() {
+          msg.guild.members.set('1', {
+            id: 1
+          });
+        });
+        after(function() {
+          msg.guild.members.clear();
+        });
         it('Should return true with a valid mention', function() {
           var testArg = new commands.Argument({
             type: 'mention'
@@ -168,6 +176,17 @@ module.exports = function() {
     });
   });
   describe('Test Command', function() {
+    before(function() {
+      msg.guild.members.set('1', {
+        id: 1
+      });
+      msg.guild.members.set(msg.author.id, {
+        id: msg.author.id
+      });
+    });
+    after(function() {
+      msg.guild.members.clear();
+    });
     describe('Test checkArgs', function() {
       var interactiveStub;
       before(function() {

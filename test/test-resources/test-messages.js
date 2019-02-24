@@ -49,28 +49,7 @@ exports.msg1 = {
     id: '357156661105365963',
     roles: new Discord.Collection(),
     channels: new Discord.Collection(),
-    members: {
-      has: function(id) {
-        if (id == '1' || id == '2' || id == '041025599435591424') {
-          return true;
-        } else {
-          return false;
-        }
-      },
-      get: function(id) {
-        var username = 'TestUser';
-        if (id == '357156661105365963') {
-          username = 'George'
-        }
-        return {
-          user: {
-            username: username,
-            avatarURL: 'https://cdn.discordapp.com/avatars/041025599435591424/',
-            id: id
-          }
-        }
-      }
-    }
+    members: new Discord.Collection()
   },
   reply: function(text) {
     return text;
