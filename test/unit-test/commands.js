@@ -792,7 +792,7 @@ module.exports = function() {
     })
     it('Should return true with aliases', async function() {
       msg.content = '$help';
-      var response = await commands.checkIfValidCmd(msg, ['cc']);
+      var response = await commands.checkIfValidCmd(msg, ['createcmd']);
       expect(response).to.equal(true);
     });
     it('Should return false if command is deactivated', async function() {

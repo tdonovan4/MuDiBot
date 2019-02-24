@@ -166,15 +166,15 @@
       "usages": ["<# of dice>d<# of faces><modifier>"],
       "msg": "Flip digital dice"
     },
-    "custcmd": {
+    "createcmd": {
       "usages": ["<name> <action> <arg>"],
       "msg": "Add a custom cmd. <action> can be `say` or `play`, <arg> is the argument of the action."
     },
-    "custcmdlist": {
+    "listcustomcmd": {
       "usages": ["", "<user>", "<command>"],
       "msg": "List all custom commands by default. You can add an user to list all of his commands or you can add a command for more information about it."
     },
-    "custcmdremove": {
+    "deletecmd": {
       "usages": ["<command>"],
       "msg": "Remove a custom command"
     },
@@ -332,7 +332,7 @@
   "roll": {
     "invalid": "Wrong usage! Make sure to follow `<# of dice>d<# of faces><modifier>` and keep inputs bellow 50.\n"
   },
-  "custcmd": {
+  "createcmd": {
     "interactiveMode": {
       "name": "Please enter the new custom command's name",
       "action": "Please enter the command's action (`say` or `play`)",
@@ -341,14 +341,14 @@
     "cmdAdded": "Command added",
     "tooLong": "Please keep the name under 25 characters"
   },
-  "custcmdlist": {
+  "listcustomcmd": {
     "empty": "No custom commands found",
-    "msg": "For more information about a command, type {{config.prefix}}custcmdlist <name of the command>.",
+    "msg": "For more information about a command, type {{config.prefix}}listcustomcmd <name of the command>.",
     "action": "Action",
     "creator": "Creator",
     "arg": "Argument"
   },
-  "custcmdremove": {
+  "deletecmd": {
     "interactiveMode": {
       "command": "Please enter the custom command's name"
     },
