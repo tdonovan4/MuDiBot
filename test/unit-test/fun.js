@@ -22,62 +22,62 @@ module.exports = function() {
       msgSend.resetHistory;
       printMsg.resetHistory;
     });
-    var custCmd = new customCmds.CustCmdCommand();
-    describe('Test the custcmd command', function() {
+    var createCmd = new customCmds.CreateCmdCommand();
+    describe('Test the createcmd command', function() {
       beforeEach(async function() {
         //Load test database
         await testUtil.replaceDatabase(config.pathDatabase, 'data1.db');
       });
       describe('Test arguments', function() {
-        it('custcmd should return missing action', async function() {
-          await custCmd.checkArgs(msg, ['test1']);
+        it('createCmd should return missing action', async function() {
+          await createCmd.checkArgs(msg, ['test1']);
           expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.missingArg.action);
         });
-        it('custcmd should return invalid action', async function() {
-          await custCmd.checkArgs(msg, ['test1', 'test']);
+        it('createCmd should return invalid action', async function() {
+          await createCmd.checkArgs(msg, ['test1', 'test']);
           expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.invalidArg.action);
         });
-        it('custcmd should return missing message', async function() {
-          await custCmd.checkArgs(msg, ['test1', 'say']);
+        it('createCmd should return missing message', async function() {
+          await createCmd.checkArgs(msg, ['test1', 'say']);
           expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.missingArg.message);
         });
       });
       describe('Test execute()', function() {
-        it('custcmd should return too long when using a too long name', async function() {
-          await custCmd.execute(msg, ['thisNameIsReallyTooLongToBeACustomCmd',
+        it('createCmd should return too long when using a too long name', async function() {
+          await createCmd.execute(msg, ['thisNameIsReallyTooLongToBeACustomCmd',
             'say', 'This', 'is', 'a', 'test'
           ]);
-          expect(printMsg.lastCall.returnValue).to.equal(lang.custcmd.tooLong);
+          expect(printMsg.lastCall.returnValue).to.equal(lang.createcmd.tooLong);
         });
-        it('custcmd should add the command to the database', async function() {
-          await custCmd.execute(msg, ['test3', 'say',
+        it('createCmd should add the command to the database', async function() {
+          await createCmd.execute(msg, ['test3', 'say',
             'This', 'is', 'a', 'test'
           ]);
           var response = await db.customCmd.getCmd(msg.guild.id, 'test3');
           expect(response.name).to.equal('test3');
-          expect(printMsg.lastCall.returnValue).to.equal(lang.custcmd.cmdAdded);
+          expect(printMsg.lastCall.returnValue).to.equal(lang.createcmd.cmdAdded);
         });
-        it('custcmd should return that the command already exists', async function() {
-          await custCmd.execute(msg, ['test1', 'say', 'This',
+        it('createCmd should return that the command already exists', async function() {
+          await createCmd.execute(msg, ['test1', 'say', 'This',
             'is', 'a', 'test'
           ]);
           expect(printMsg.lastCall.returnValue).to.equal(lang.error.cmdAlreadyExists);
         });
-        it('custcmd should return that the user has too many commands', async function() {
-          config.custcmd.maxCmdsPerUser = 1;
-          await custCmd.execute(msg, ['test2', 'say', 'This',
+        it('createCmd should return that the user has too many commands', async function() {
+          config.createcmd.maxCmdsPerUser = 1;
+          await createCmd.execute(msg, ['test2', 'say', 'This',
             'is', 'a', 'test'
           ]);
           expect(printMsg.lastCall.returnValue).to.equal(lang.error.tooMuch.cmdsUser);
         });
-        it('custcmd should add the command to the database when using an administrator', async function() {
+        it('createCmd should add the command to the database when using an administrator', async function() {
           msg.member.permissions.set('ADMINISTRATOR');
-          await custCmd.execute(msg, ['test4', 'say', 'This',
+          await createCmd.execute(msg, ['test4', 'say', 'This',
             'is', 'a', 'test'
           ]);
           var response = await db.customCmd.getCmd(msg.guild.id, 'test4');
           expect(response.name).to.equal('test4');
-          expect(printMsg.lastCall.returnValue).to.equal(lang.custcmd.cmdAdded);
+          expect(printMsg.lastCall.returnValue).to.equal(lang.createcmd.cmdAdded);
         });
       });
       describe('Test interactive mode', function() {
@@ -87,34 +87,34 @@ module.exports = function() {
             { ...msg, ...{ content: 'say' } },
             { ...msg, ...{ content: 'mode' } }
           ];
-          await custCmd.interactiveMode(msg);
+          await createCmd.interactiveMode(msg);
           expect(msgSend.getCall(msgSend.callCount - 3).returnValue.content).to.equal(
-            lang.custcmd.interactiveMode.name);
+            lang.createcmd.interactiveMode.name);
           expect(msgSend.getCall(msgSend.callCount - 2).returnValue.content).to.equal(
-            lang.custcmd.interactiveMode.action);
+            lang.createcmd.interactiveMode.action);
           expect(msgSend.lastCall.returnValue.content).to.equal(
-            lang.custcmd.interactiveMode.arg);
+            lang.createcmd.interactiveMode.arg);
           var response = await db.customCmd.getCmd(msg.guild.id, 'interactive');
           expect(response.name).to.equal('interactive');
         });
       });
     });
-    describe('Test removeCmd', function() {
+    describe('Test the deletecmd command', function() {
       beforeEach(async function() {
         //Load test database
         await testUtil.replaceDatabase(config.pathDatabase, 'data1.db');
       });
-      var custCmdRemove = new customCmds.CustCmdRemoveCommand();
+      var deleteCmd = new customCmds.DeleteCmdCommand();
       describe('Test execute()', function() {
         it('Should return command not found', async function() {
-          await custCmdRemove.execute(msg, ['test3']);
+          await deleteCmd.execute(msg, ['test3']);
           expect(printMsg.lastCall.returnValue).to.equal(lang.error.notFound.cmd);
         });
         it('Should remove test2', async function() {
-          await custCmdRemove.execute(msg, ['test2']);
+          await deleteCmd.execute(msg, ['test2']);
           var response = await db.customCmd.getCmd(msg.guild.id, 'test2');
           expect(response).to.equal(undefined);
-          expect(printMsg.lastCall.returnValue).to.equal(lang.custcmdremove.cmdRemoved);
+          expect(printMsg.lastCall.returnValue).to.equal(lang.deletecmd.cmdRemoved);
         });
       });
       describe('Test interactive mode', function() {
@@ -122,15 +122,15 @@ module.exports = function() {
           msg.channel.messages = [
             { ...msg, ...{ content: 'interactive' } }
           ];
-          await custCmdRemove.interactiveMode(msg);
+          await deleteCmd.interactiveMode(msg);
           expect(msgSend.lastCall.returnValue.content).to.equal(
-            lang.custcmdremove.interactiveMode.command);
+            lang.deletecmd.interactiveMode.command);
           var response = await db.customCmd.getCmd(msg.guild.id, 'interactive');
           expect(response).to.equal(undefined);
         });
       });
     });
-    describe('Test custcmdlist', function() {
+    describe('Test the listcustomcmd command', function() {
       before(async function() {
         //Load test database
         await testUtil.replaceDatabase(config.pathDatabase, 'data1.db');
@@ -138,9 +138,9 @@ module.exports = function() {
       after(function() {
         msg.mentions.users.clear();
       });
-      var custCmdList = new customCmds.CustCmdListCommand();
+      var listCustomCmd = new customCmds.ListCustomCmdCommand();
       it('Should return info about test1', async function() {
-        await custCmdList.execute(msg, ['test1']);
+        await listCustomCmd.execute(msg, ['test1']);
         var embed = msgSend.lastCall.returnValue.content.embed;
         expect(embed.title).to.equal('test1');
         expect(embed.fields[0].value).to.equal('say');
@@ -151,7 +151,7 @@ module.exports = function() {
         msg.author.id = '357156661105365963';
         //Add another custom cmd
         await db.customCmd.insertCmd(msg.guild.id, msg.author.id, 'test2', 'say', '2');
-        await custCmdList.execute(msg, []);
+        await listCustomCmd.execute(msg, []);
         var response = msgSend.getCall(msgSend.callCount - 2).returnValue.content;
         expect(response).to.have.string('test1');
         expect(response).to.have.string('test2');
@@ -161,7 +161,7 @@ module.exports = function() {
         msg.mentions.users.set('041025599435591424', {});
         msg.author.id = '041025599435591424';
         await db.customCmd.insertCmd(msg.guild.id, '041226789435591424', 'test3', 'say', '3');
-        await custCmdList.execute(msg, ['<@041025599435591424>']);
+        await listCustomCmd.execute(msg, ['<@041025599435591424>']);
         var response = msgSend.getCall(msgSend.callCount - 2).returnValue.content;
         expect(response).to.have.string('test1');
         expect(response).to.have.string('test2');
@@ -170,8 +170,8 @@ module.exports = function() {
       it('Should return that the list is empty', async function() {
         //Load empty database
         await testUtil.replaceDatabase(config.pathDatabase, 'empty.db');
-        await custCmdList.execute(msg, []);
-        expect(printMsg.lastCall.returnValue).to.equal(lang.custcmdlist.empty);
+        await listCustomCmd.execute(msg, []);
+        expect(printMsg.lastCall.returnValue).to.equal(lang.listcustomcmd.empty);
       });
     });
     describe('Test executeCmd()', function() {

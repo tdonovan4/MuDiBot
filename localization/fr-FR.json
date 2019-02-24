@@ -166,15 +166,15 @@
       "usages": ["<Nombre de dés>d<Nombre de faces><modificateur>"],
       "msg": "Lance des dés"
     },
-    "custcmd": {
+    "createcmd": {
       "usages": ["<nom> <action> <arg>"],
       "msg": "Ajoute une commande personnalisée. <action> peut être `say` ou `play`, <arg> est l'argument de l'action."
     },
-    "custcmdlist": {
+    "listcustomcmd": {
       "usages": ["", "<utilisateur>", "<commande>"],
       "msg": "Par défaut, liste toutes les commandes personnalisée. Vous pouvez ajouter un utilisateur pour trouver ses commandes ou une commande pour plus d'information sur celle-ci."
     },
-    "custcmdremove": {
+    "deletecmd": {
       "usages": ["<commande>"],
       "msg": "Supprime une commande personnalisée"
     },
@@ -332,7 +332,7 @@
   "roll": {
     "invalid": "Utilisation incorrecte! Veuillez suivre `<# de dés>d<# de faces><modifieur>` et de garder les nombres en bas de 50.\n"
   },
-  "customcmd": {
+  "createcmd": {
     "interactiveMode": {
       "name": "Veuillez entrer le nom de la nouvelle commande personnalisée",
       "action": "Veuillez entrer l'action de la commande (`say` ou `play`)",
@@ -340,14 +340,14 @@
     },
     "cmdAdded": "Commande ajoutée"
   },
-  "custcmdlist": {
+  "listcustomcmd": {
     "empty": "Aucune commande personnalisée trouvée",
-    "msg": "Pour plus d'information sur une commande, tapez {{prefix}}custcmdlist <nom de la commande>.",
+    "msg": "Pour plus d'information sur une commande, tapez {{prefix}}listcustomcmd <nom de la commande>.",
     "action": "Action",
     "creator": "Créateur",
     "arg": "Argument"
   },
-  "custcmdremove": {
+  "deletecmd": {
     "interactiveMode": {
       "command": "Veuillez entrer le nom de la commande personnalisée"
     },
