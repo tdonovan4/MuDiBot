@@ -22,6 +22,8 @@ class Command {
     this.priority = commandInfo.priority;
     //The required permission level to use this command
     this.permLvl = commandInfo.permLvl;
+    //A function that ignore the permission level if true
+    this.ignorePermLvl = commandInfo.ignorePermLvl;
   }
   checkArgs(msg, msgArgs) {
     var valid = true;
@@ -310,7 +312,6 @@ module.exports = {
         return true;
       }
     }
-
     //Check if user is an administrator
     var permissions = msg.member.permissions;
     if (permissions.has('ADMINISTRATOR')) {
@@ -360,6 +361,12 @@ module.exports = {
     if (msg.content.startsWith(config.prefix) && command != null) {
       console.log(msg.author.username + ' - ' + msg.content);
 
+      //Check the ignorePermLvl function is true if it exists
+      if (command.ignorePermLvl !== undefined) {
+        if (await command.ignorePermLvl(msg, args.slice(1))) {
+          return true
+        }
+      }
       //Check if user has permission
       var result = await this.checkPerm(msg, command.permLvl);
       if (result) {
