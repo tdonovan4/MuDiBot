@@ -728,6 +728,7 @@ module.exports = function() {
       //Clean up
       config.superusers = [''];
       await testUtil.replaceDatabase(config.pathDatabase, 'empty.db');
+      msg.member.permissions.clear();
     })
     it('Should return true when user has the permLvl', async function() {
       //Setup
@@ -757,7 +758,6 @@ module.exports = function() {
       expect(response).to.equal(true);
     })
     it('Should return true if user is a superuser', async function() {
-      msg.member.permissions.clear();
       config.superusers = [msg.author.id];
       var response = await commands.checkPerm(msg, 3);
       expect(response).to.equal(true);
@@ -823,6 +823,39 @@ module.exports = function() {
       checkPerm.resolves(false);
       var response = await commands.checkIfValidCmd(msg, ['help']);
       expect(response).to.equal(false);
+    });
+    describe('Test ignorePermLvl', function() {
+      before(function() {
+        //Create test command
+        class TestCommand extends commands.Command {
+          constructor() {
+            super({
+              name: 'test',
+              aliases: [],
+              category: 'general',
+              priority: 9,
+              permLvl: 3,
+              ignorePermLvl: function(msg, args) {
+                return args[0] === 'yes';
+              }
+            });
+          }
+        }
+        commands.commands.set('test', new TestCommand());
+      });
+      after(function() {
+        //Reset commands
+        commands.commands.clear();
+        commands.registerCommands();
+      });
+      it('Should return true if the ignorePermLvl returns true', async function() {
+        var response = await commands.checkIfValidCmd(msg, ['test', 'yes']);
+        expect(response).to.equal(true);
+      });
+      it('Should return true if the ignorePermLvl returns true', async function() {
+        var response = await commands.checkIfValidCmd(msg, ['test', 'no']);
+        expect(response).to.equal(false);
+      });
     });
     after(function() {
       //Reset
