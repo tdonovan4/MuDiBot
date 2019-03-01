@@ -35,7 +35,6 @@
       "group": "Argument manquant: groupe",
       "field": "Argument manquant: champ",
       "value": "Argument manquant: valeur du champ",
-      "action": "Argument manquant: action",
       "name": "Argument manquant: nom",
       "cmd": "Argument manquant: commande"
     },
@@ -46,8 +45,7 @@
       "user": "Utilisateur invalide",
       "role": "Role invalide",
       "reward": "Récompense invalide",
-      "field": "Champ invalide",
-      "action": "Argument invalide: action (cela doit être `say` ou `play`)"
+      "field": "Champ invalide"
     },
     "notLocalized": {
       "cmd": "Erreur: cette commande n'est pas traduite!",
@@ -167,8 +165,8 @@
       "msg": "Lance des dés"
     },
     "createcmd": {
-      "usages": ["<nom> <action> <arg>"],
-      "msg": "Ajoute une commande personnalisée. <action> peut être `say` ou `play`, <arg> est l'argument de l'action."
+      "usages": ["<nom> <arg>"],
+      "msg": "Ajoute une commande personnalisée. <arg> est ce qui est dit lorsque la commande est exécutée"
     },
     "listcustomcmd": {
       "usages": ["", "<utilisateur>", "<commande>"],
@@ -335,7 +333,6 @@
   "createcmd": {
     "interactiveMode": {
       "name": "Veuillez entrer le nom de la nouvelle commande personnalisée",
-      "action": "Veuillez entrer l'action de la commande (`say` ou `play`)",
       "arg": "Veuillez entrer le message de la commande"
     },
     "cmdAdded": "Commande ajoutée"

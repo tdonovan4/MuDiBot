@@ -38,6 +38,22 @@ module.exports = {
     }
     return response;
   },
+  getHighestPermGroup: async function(serverId, userId) {
+    //In util.js and not in permission-group.js to prevent circular dependency
+    let userGroups = await module.exports.getPermGroups(serverId, userId);
+    let userGroupName;
+    if (userGroups != null && userGroups != 'empty') {
+      userGroupName = userGroups.split(',').sort(function(a, b) {
+        return config.groups.find(x => x.name == a).permLvl <
+          config.groups.find(x => x.name == b).permLvl;
+      })[0];
+    } else {
+      //Default if no group
+      userGroupName = config.groups[0].name;
+    }
+    let userGroup = config.groups.find(x => x.name == userGroupName);
+    return userGroup;
+  },
   getXP: async function(serverId, userId) {
     var query = 'SELECT xp FROM user WHERE server_id = ? AND user_id = ?';
     var response = await queries.runGetQuery(query, [serverId, userId]);

@@ -9,9 +9,13 @@ module.exports = {
     var query = 'SELECT * FROM custom_command WHERE server_id = ?';
     return await queries.runAllQuery(query, serverId);
   },
-  insertCmd: async function(serverId, userId, name, action, arg) {
-    var query = 'INSERT INTO custom_command VALUES (?, ?, ?, ?, ?)';
-    await queries.runQuery(query, [serverId, userId, name, action, arg]);
+  getUserCmds: async function(serverId, userId) {
+    var query = 'SELECT * FROM custom_command WHERE server_id = ? AND author_id = ?';
+    return await queries.runAllQuery(query, [serverId, userId]);
+  },
+  insertCmd: async function(serverId, userId, name, arg) {
+    var query = 'INSERT INTO custom_command VALUES (?, ?, ?, ?)';
+    await queries.runQuery(query, [serverId, userId, name, arg]);
   },
   deleteCmd: async function(serverId, name) {
     var query = 'DELETE FROM custom_command WHERE server_id = ? AND name = ?';

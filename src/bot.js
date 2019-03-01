@@ -76,10 +76,8 @@ async function onMessage(msg) {
       await commands.executeCmd(msg, cmd);
     } else {
       //Check if message is a custom command
-      var custCmds = await db.customCmd.getCmds(msg.guild.id);
-      //The custom command if it exists
-      var custCmd = custCmds.find(x => x.name == msg.content);
-      if (custCmd != undefined) {
+      let custCmd = await db.customCmd.getCmd(msg.guild.id, msg.content);
+      if (custCmd !== undefined) {
         customCmd.executeCmd(msg, custCmd);
       }
     }
