@@ -35,7 +35,6 @@
       "group": "Missing argument: group",
       "field": "Missing argument: field",
       "value": "Missing argument: field value",
-      "action": "Missing argument: action",
       "name": "Missing argument: name",
       "cmd": "Missing argument: command"
     },
@@ -46,8 +45,7 @@
       "user": "Invalid user",
       "role": "Invalid role",
       "reward": "Invalid reward",
-      "field": "Invalid field",
-      "action": "Invalid argument: action (it must be `say` or `play`)"
+      "field": "Invalid field"
     },
     "notLocalized": {
       "cmd": "Error: this command is not localized!",
@@ -167,8 +165,8 @@
       "msg": "Flip digital dice"
     },
     "createcmd": {
-      "usages": ["<name> <action> <arg>"],
-      "msg": "Add a custom cmd. <action> can be `say` or `play`, <arg> is the argument of the action."
+      "usages": ["<name> <arg>"],
+      "msg": "Add a custom cmd. <arg> is what will be said when executed"
     },
     "listcustomcmd": {
       "usages": ["", "<user>", "<command>"],
@@ -335,7 +333,6 @@
   "createcmd": {
     "interactiveMode": {
       "name": "Please enter the new custom command's name",
-      "action": "Please enter the command's action (`say` or `play`)",
       "arg": "Please enter the command's message"
     },
     "cmdAdded": "Command added",

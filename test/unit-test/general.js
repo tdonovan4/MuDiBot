@@ -6,7 +6,7 @@ const mustache = require('mustache');
 const rewire = require('rewire');
 const lang = require('../../localization/en-US.json');
 const testUtil = require('../test-resources/test-util.js');
-const { replaceDatabase, printMsg, msgSend, reply } = testUtil;
+const { replaceDatabase, msgSend, reply } = testUtil;
 
 var config = require('../../src/util.js').getConfig()[1];
 var testMessages = require('../test-resources/test-messages.js');
@@ -27,7 +27,7 @@ module.exports = function() {
     describe('Test arguments', function() {
       it('Should return error message when using a wrong command as an argument', function() {
         helpCmd.checkArgs(msg, ['aWrongCmd']);
-        expect(printMsg.lastCall.returnValue).to.equal(lang.error.invalidArg.cmd);
+        expect(msgSend.lastCall.returnValue.content).to.equal(lang.error.invalidArg.cmd);
       });
     });
     //Real tests

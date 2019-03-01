@@ -546,7 +546,6 @@ module.exports = function() {
       });
       readdirSync.onFirstCall().returns(Array.from(modules.keys()));
     }
-
     it('Should add a command', function() {
       //Setup stubs
       stubRead(new Map([
@@ -724,10 +723,12 @@ module.exports = function() {
     });
   });
   describe('Test checkPerm()', function() {
-    afterEach(async function() {
+    beforeEach(async function() {
+      await testUtil.replaceDatabase(config.pathDatabase, 'empty.db');
+    });
+    afterEach(function() {
       //Clean up
       config.superusers = [''];
-      await testUtil.replaceDatabase(config.pathDatabase, 'empty.db');
       msg.member.permissions.clear();
     })
     it('Should return true when user has the permLvl', async function() {

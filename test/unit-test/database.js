@@ -115,13 +115,16 @@ module.exports = function() {
     });
     it('Should update v001 to last version', async function() {
       await checkDatabaseUpdating('001');
-    })
+    });
     it('Should update v002 to last version', async function() {
       await checkDatabaseUpdating('002');
-    })
+    });
     it('Should update v003 to last version', async function() {
       await checkDatabaseUpdating('003');
-    })
+    });
+    it('Should update v004 to last version', async function() {
+      await checkDatabaseUpdating('004');
+    });
   });
 
   //Test queries submodule
@@ -228,6 +231,14 @@ module.exports = function() {
         var response = await db.user.getAll('1', '2');
         expect(response).to.equal(undefined);
       });
+      it('getPermGroups() should return default role', async function() {
+        var response = await db.user.getPermGroups('1', '2');
+        expect(response).to.equal(config.groups[0].name);
+      });
+      it('getHighestPermGroup() should return default role', async function() {
+        var response = await db.user.getHighestPermGroup('1', '2');
+        expect(response.name).to.equal(config.groups[0].name);
+      });
       it('getXP() should return 0', async function() {
         var response = await db.user.getXP('1', '2');
         expect(response).to.equal(0);
@@ -251,11 +262,6 @@ module.exports = function() {
       it('exists() should return false', async function() {
         var response = await db.user.exists('1', '2');
         expect(response).to.equal(false);
-      });
-      //Last because it does an insert if response is null
-      it('getPermGroups() should return default role', async function() {
-        var response = await db.user.getPermGroups('1', '2');
-        expect(response).to.equal(config.groups[0].name);
       });
     });
     describe('Test update queries with empty database', function() {
@@ -348,6 +354,10 @@ module.exports = function() {
         expect(response[0].user_id).to.equal('3');
         expect(response[1].server_id).to.equal('2');
         expect(response[1].user_id).to.equal('1');
+      });
+      it('getHighestPermGroup() should return Mod', async function() {
+        var response = await db.user.getHighestPermGroup('2', '1');
+        expect(response.name).to.equal('Mod');
       });
       it('getSumXP should merge same user XP', async function() {
         //Add user in another server
@@ -470,6 +480,10 @@ module.exports = function() {
         var response = await db.customCmd.getCmds(msg.guild.id);
         expect(response.length).to.equal(0);
       });
+      it('getUserCmds should return empty array', async function() {
+        var response = await db.customCmd.getUserCmds(msg.guild.id, msg.author.id);
+        expect(response.length).to.equal(0);
+      });
     });
     describe('Test insertCmd', function() {
       describe('Test in empty database', function() {
@@ -477,7 +491,7 @@ module.exports = function() {
           await replaceDatabase(config.pathDatabase, 'empty.db');
         });
         it('Should insert new cmd', async function() {
-          await db.customCmd.insertCmd(msg.guild.id, msg.author.id, 'test1', 'say', 'test1');
+          await db.customCmd.insertCmd(msg.guild.id, msg.author.id, 'test1', 'test1');
           var cmd = await db.customCmd.getCmd(msg.guild.id, 'test1');
           var cmds = await db.customCmd.getCmds(msg.guild.id);
           expect(cmd.arg).to.equal('test1');
@@ -489,22 +503,28 @@ module.exports = function() {
           await replaceDatabase(config.pathDatabase, 'data1.db');
         });
         it('Should insert another cmd', async function() {
-          await db.customCmd.insertCmd(msg.guild.id, msg.author.id, 'test3', 'say', 'test3');
-          var cmd = await db.customCmd.getCmd(msg.guild.id, 'test3');
+          await db.customCmd.insertCmd(msg.guild.id, msg.author.id, 'test4', 'test4');
+          var cmd = await db.customCmd.getCmd(msg.guild.id, 'test4');
           var cmds = await db.customCmd.getCmds(msg.guild.id);
-          expect(cmd.arg).to.equal('test3');
-          expect(cmds.length).to.equal(3);
+          expect(cmd.arg).to.equal('test4');
+          expect(cmds.length).to.equal(4);
         });
         before(async function() {
           await replaceDatabase(config.pathDatabase, 'data1.db');
         });
         it('Should insert cmd in another guild', async function() {
-          await db.customCmd.insertCmd('1', msg.author.id, 'test1', 'say', 'test1');
+          await db.customCmd.insertCmd('1', msg.author.id, 'test1', 'test1');
           var cmd = await db.customCmd.getCmd('1', 'test1');
           var cmds = await db.customCmd.getCmds('1');
           expect(cmd.arg).to.equal('test1');
           expect(cmds.length).to.equal(1);
-        })
+        });
+        it('getUserCmds should return commands by TestUser', async function() {
+          var response = await db.customCmd.getUserCmds(msg.guild.id, msg.author.id);
+          expect(response[0].name).to.equal('test1');
+          expect(response[1].name).to.equal('test2');
+          expect(response.length).to.equal(2);
+        });
       });
     });
     describe('Test deleteCmd', function() {
@@ -516,7 +536,7 @@ module.exports = function() {
         var cmd = await db.customCmd.getCmd(msg.guild.id, 'test1');
         var cmds = await db.customCmd.getCmds(msg.guild.id);
         expect(cmd).to.equal(undefined);
-        expect(cmds.length).to.equal(1);
+        expect(cmds.length).to.equal(2);
       });
     })
   });
