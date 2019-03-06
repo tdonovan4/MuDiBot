@@ -13,8 +13,11 @@
       "rankUp": "Cet utilisateur est maintenant un {{rank}}!",
       "reward": "et reçoit le role {{role}} comme récompense",
       "addReward": "Récompense pour promotion",
-      "removeOldReward": "Ancienne récompense enlevée"
+      "removeOldReward": "Ancienne récompense enlevée",
+      "birthday": "Bonne fête, {{{mention}}}!"
     },
+    "birthdays": "Bonne fête à: {{{users}}}!",
+    "botBirthday": "Bonne fête à moi-même! J'ai maintenant {{age}} ans!",
     "interactiveMode": {
       "optional": "(cet argument est facultative, utilisez `$skip` pour la sauter)",
       "skipped": "Argument sauté"
@@ -32,7 +35,6 @@
       "group": "Argument manquant: groupe",
       "field": "Argument manquant: champ",
       "value": "Argument manquant: valeur du champ",
-      "action": "Argument manquant: action",
       "name": "Argument manquant: nom",
       "cmd": "Argument manquant: commande"
     },
@@ -43,8 +45,7 @@
       "user": "Utilisateur invalide",
       "role": "Role invalide",
       "reward": "Récompense invalide",
-      "field": "Champ invalide",
-      "action": "Argument invalide: action (cela doit être `say` ou `play`)"
+      "field": "Champ invalide"
     },
     "notLocalized": {
       "cmd": "Erreur: cette commande n'est pas traduite!",
@@ -57,7 +58,8 @@
       "rankReward": "Aucune récompense trouvée pour ce rang",
       "video": "Je n'ai pas trouvé de vidéo pour ce que vous avez entré. :thinking: Essayez quelque chose de différent!",
       "voiceChannel": "Vous n'êtes pas dans un salon vocal",
-      "user": "Utilisateur non trouvé"
+      "user": "Utilisateur non trouvé",
+      "defaultChannel": "Le salon par défaut n'existe pas, utilisation du salon de secours (utilisez {{prefix}}setchannel pour changer le salon par défaut)"
     },
     "tooMuch": {
       "cmdsUser:": "Vous avez trop de commandes personnalisée!",
@@ -69,7 +71,8 @@
     "ytdlError": "Cette vidéo n'a pas pu être télécharger (peut-être indisponible?).",
     "notPlaying": "Aucune vidéo ne joue!",
     "formatError": "Veuillez formater la date avec ISO 8601 (aaaa-mm-qq or --mm-qq)",
-        "notInteractiveMode": "Erreur: cette commande ne supporte par encore le mode interactif"
+    "notInteractiveMode": "Erreur: cette commande ne supporte par encore le mode interactif",
+    "notArray": "Erreur: la variable {{var}} devrait être un tableau"
   },
   "database": {
     "noVersion": "La version de la base de donnée n'a pas pu être trouvée. Utilisation de la première version.",
@@ -161,15 +164,15 @@
       "usages": ["<Nombre de dés>d<Nombre de faces><modificateur>"],
       "msg": "Lance des dés"
     },
-    "custcmd": {
-      "usages": ["<nom> <action> <arg>"],
-      "msg": "Ajoute une commande personnalisée. <action> peut être `say` ou `play`, <arg> est l'argument de l'action."
+    "createcmd": {
+      "usages": ["<nom> <arg>"],
+      "msg": "Ajoute une commande personnalisée. <arg> est ce qui est dit lorsque la commande est exécutée"
     },
-    "custcmdlist": {
+    "listcustomcmd": {
       "usages": ["", "<utilisateur>", "<commande>"],
       "msg": "Par défaut, liste toutes les commandes personnalisée. Vous pouvez ajouter un utilisateur pour trouver ses commandes ou une commande pour plus d'information sur celle-ci."
     },
-    "custcmdremove": {
+    "deletecmd": {
       "usages": ["<commande>"],
       "msg": "Supprime une commande personnalisée"
     },
@@ -327,22 +330,21 @@
   "roll": {
     "invalid": "Utilisation incorrecte! Veuillez suivre `<# de dés>d<# de faces><modifieur>` et de garder les nombres en bas de 50.\n"
   },
-  "customcmd": {
+  "createcmd": {
     "interactiveMode": {
       "name": "Veuillez entrer le nom de la nouvelle commande personnalisée",
-      "action": "Veuillez entrer l'action de la commande (`say` ou `play`)",
       "arg": "Veuillez entrer le message de la commande"
     },
     "cmdAdded": "Commande ajoutée"
   },
-  "custcmdlist": {
+  "listcustomcmd": {
     "empty": "Aucune commande personnalisée trouvée",
-    "msg": "Pour plus d'information sur une commande, tapez {{prefix}}custcmdlist <nom de la commande>.",
+    "msg": "Pour plus d'information sur une commande, tapez {{prefix}}listcustomcmd <nom de la commande>.",
     "action": "Action",
     "creator": "Créateur",
     "arg": "Argument"
   },
-  "custcmdremove": {
+  "deletecmd": {
     "interactiveMode": {
       "command": "Veuillez entrer le nom de la commande personnalisée"
     },

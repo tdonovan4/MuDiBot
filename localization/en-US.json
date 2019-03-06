@@ -13,8 +13,11 @@
       "rankUp": "This user is now a {{rank}}",
       "reward": "and receives the role {{role}} as a reward",
       "addReward": "Reward for rank up",
-      "removeOldReward": "Removal of old reward"
+      "removeOldReward": "Removal of old reward",
+      "birthday": "Happy birthday, {{{mention}}}!"
     },
+    "birthdays": "Happy birthday to: {{{users}}}!",
+    "botBirthday": "Happy birthday to me! I'm now {{age}} years old!",
     "interactiveMode": {
       "optional": "(this argument is optional, use `$skip` to skip it)",
       "skipped": "Argument skipped"
@@ -32,7 +35,6 @@
       "group": "Missing argument: group",
       "field": "Missing argument: field",
       "value": "Missing argument: field value",
-      "action": "Missing argument: action",
       "name": "Missing argument: name",
       "cmd": "Missing argument: command"
     },
@@ -43,8 +45,7 @@
       "user": "Invalid user",
       "role": "Invalid role",
       "reward": "Invalid reward",
-      "field": "Invalid field",
-      "action": "Invalid argument: action (it must be `say` or `play`)"
+      "field": "Invalid field"
     },
     "notLocalized": {
       "cmd": "Error: this command is not localized!",
@@ -57,7 +58,8 @@
       "rankReward": "No reward found for this rank",
       "video": "I couldn't find a video matching what you entered. :thinking: Try again with something different!",
       "voiceChannel": "You are not in a voice channel!",
-      "user": "User not found"
+      "user": "User not found",
+      "defaultChannel": "The default channel doesn't exist, using backup channel (use {{prefix}}setchannel to change the default channel)"
     },
     "tooMuch": {
       "cmdsUser": "You have too many custom commands!",
@@ -69,7 +71,8 @@
     "ytdlError": "This video could not be downloaded (maybe unavailable?).",
     "notPlaying": "I'm not playing anything!",
     "formatError": "Please format the date using ISO 8601 (yyyy-mm-dd or --mm-dd)",
-    "notInteractiveMode": "Error: it looks like this command doesn't support interactive mode yet!"
+    "notInteractiveMode": "Error: it looks like this command doesn't support interactive mode yet!",
+    "notArray": "Error: the variable {{var}} should be an array"
   },
   "database": {
     "noVersion": "Could not find database version. Starting from baseline.",
@@ -161,15 +164,15 @@
       "usages": ["<# of dice>d<# of faces><modifier>"],
       "msg": "Flip digital dice"
     },
-    "custcmd": {
-      "usages": ["<name> <action> <arg>"],
-      "msg": "Add a custom cmd. <action> can be `say` or `play`, <arg> is the argument of the action."
+    "createcmd": {
+      "usages": ["<name> <arg>"],
+      "msg": "Add a custom cmd. <arg> is what will be said when executed"
     },
-    "custcmdlist": {
+    "listcustomcmd": {
       "usages": ["", "<user>", "<command>"],
       "msg": "List all custom commands by default. You can add an user to list all of his commands or you can add a command for more information about it."
     },
-    "custcmdremove": {
+    "deletecmd": {
       "usages": ["<command>"],
       "msg": "Remove a custom command"
     },
@@ -327,23 +330,22 @@
   "roll": {
     "invalid": "Wrong usage! Make sure to follow `<# of dice>d<# of faces><modifier>` and keep inputs bellow 50.\n"
   },
-  "custcmd": {
+  "createcmd": {
     "interactiveMode": {
       "name": "Please enter the new custom command's name",
-      "action": "Please enter the command's action (`say` or `play`)",
       "arg": "Please enter the command's message"
     },
     "cmdAdded": "Command added",
     "tooLong": "Please keep the name under 25 characters"
   },
-  "custcmdlist": {
+  "listcustomcmd": {
     "empty": "No custom commands found",
-    "msg": "For more information about a command, type {{config.prefix}}custcmdlist <name of the command>.",
+    "msg": "For more information about a command, type {{config.prefix}}listcustomcmd <name of the command>.",
     "action": "Action",
     "creator": "Creator",
     "arg": "Argument"
   },
-  "custcmdremove": {
+  "deletecmd": {
     "interactiveMode": {
       "command": "Please enter the custom command's name"
     },

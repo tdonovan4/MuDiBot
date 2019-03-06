@@ -1,8 +1,8 @@
 const Discord = require("discord.js");
 var events = require('events');
-var deletedMessages = [];
 
 exports.msg1 = {
+  deletedMessages: [],
   content: '$help',
   author: {
     username: 'TestUser',
@@ -14,8 +14,14 @@ exports.msg1 = {
       return new Promise(resolve => {
         this.roles.set(role, {
           id: 2
-        })
-        resolve()
+        });
+        resolve();
+      });
+    },
+    removeRole: function(role) {
+      return new Promise(resolve => {
+        this.roles.delete(role);
+        resolve();
       });
     },
     voiceChannel: {
@@ -43,28 +49,7 @@ exports.msg1 = {
     id: '357156661105365963',
     roles: new Discord.Collection(),
     channels: new Discord.Collection(),
-    members: {
-      has: function(id) {
-        if (id == '1' || '041025599435591424') {
-          return true;
-        } else {
-          return false;
-        }
-      },
-      get: function(id) {
-        var username = 'TestUser';
-        if (id == '357156661105365963') {
-          username = 'George'
-        }
-        return {
-          user: {
-            username: username,
-            avatarURL: 'https://cdn.discordapp.com/avatars/041025599435591424/',
-            id: id
-          }
-        }
-      }
-    }
+    members: new Discord.Collection()
   },
   reply: function(text) {
     return text;
@@ -170,7 +155,7 @@ exports.msg1 = {
       for (var i = 0; i < args.limit; i++) {
         if (i > predefinedMsg.length - 1) break;
         predefinedMsg[i].delete = function() {
-          deletedMessages.push(this.content);
+          exports.msg1.deletedMessages.push(this.content);
         }
         returnedMsg[i] = predefinedMsg[i]
       }

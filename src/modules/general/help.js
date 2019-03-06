@@ -3,7 +3,7 @@ const commands = require('../../commands.js');
 const mustache = require('mustache');
 var lang = require('../../localization.js').getLocalization();
 
-module.exports = class helpCommand extends commands.Command {
+module.exports = class HelpCommand extends commands.Command {
   constructor() {
     super({
       name: 'help',

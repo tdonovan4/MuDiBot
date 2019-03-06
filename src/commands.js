@@ -1,6 +1,7 @@
 const fs = require('fs');
 const db = require('./modules/database/database.js');
 const util = require('./util.js');
+const mustache = require('mustache');
 var config = util.getConfig()[1];
 var lang = require('./localization.js').getLocalization();
 
@@ -21,13 +22,16 @@ class Command {
     this.priority = commandInfo.priority;
     //The required permission level to use this command
     this.permLvl = commandInfo.permLvl;
+    //A function that ignore the permission level if true
+    this.ignorePermLvl = commandInfo.ignorePermLvl;
   }
   checkArgs(msg, msgArgs) {
     var valid = true;
+    //Check if the commands has args
     if (this.args != undefined) {
       /*
-       *Check if there is no arguments in the message and there is
-       *not just one optional argument
+       * Check if the message has no arguments and if there is non-optional
+       * arguments for the command
        */
       if (msgArgs.length == 0 && this.args.find(x => !x.optional) != undefined) {
         //Enable interactive mode
@@ -162,7 +166,7 @@ class Argument {
     //Check input
     switch (this.type) {
       case 'int':
-        if (Number(msgArg)) {
+        if (!Number(msgArg)) {
           //Argument is not a number
           valid = false;
         }
@@ -176,7 +180,7 @@ class Argument {
         break;
       case 'mention':
         //Checking mention manually, because I care about it's position
-        var mentionID = msgArg.match(/<@(.*?)>/);
+        var mentionID = msgArg.match(/<@!?(.*?[0-9])>/);
         if (mentionID == null || !msg.guild.members.has(mentionID[1])) {
           //Argument is not a mention
           valid = false;
@@ -247,11 +251,20 @@ module.exports = {
   namesAndAliases: [],
   categories: new Map(),
   registerCategories: function(categories) {
+    //Make sure categories is an array
+    if (!Array.isArray(categories)) {
+      console.log(mustache.render(lang.error.notArray, { var: 'categories' }));
+      return;
+    }
     for (category of categories) {
       //Add the category
       var category = new Category(category);
       this.categories.set(category.name, category);
     }
+  },
+  //Wrapper for stubbing when testing
+  loadFile: function(path) {
+    return require(path);
   },
   registerCommands: function() {
     //Search the modules for commands
@@ -261,7 +274,7 @@ module.exports = {
       for (var file of files) {
         //Check if really a file
         if (fs.statSync(`./src/modules/${module}/${file}`).isFile()) {
-          var keys = require(`./modules/${module}/${file}`);
+          var keys = this.loadFile(`./modules/${module}/${file}`);
           //Check if object
           if (typeof keys != 'object') {
             keys = {
@@ -299,24 +312,14 @@ module.exports = {
         return true;
       }
     }
-
     //Check if user is an administrator
     var permissions = msg.member.permissions;
     if (permissions.has('ADMINISTRATOR')) {
       return true;
     }
 
-    var userGroup = await db.user.getPermGroups(msg.guild.id, msg.author.id);
-    if (userGroup != null && userGroup != 'empty') {
-      userGroup = userGroup.split(',').sort(function(a, b) {
-        return config.groups.find(x => x.name == a).permLvl <
-          config.groups.find(x => x.name == b).permLvl;
-      })[0];
-    } else {
-      //Default if no group
-      userGroup = config.groups[0].name;
-    }
-    var userPermLevel = config.groups.find(x => x.name == userGroup).permLvl;
+    var userPermLevel = (await db.user.getHighestPermGroup(msg.guild.id,
+      msg.author.id)).permLvl;
 
     //Compare user and needed permission level
     if (userPermLevel >= permLevel) {
@@ -349,6 +352,12 @@ module.exports = {
     if (msg.content.startsWith(config.prefix) && command != null) {
       console.log(msg.author.username + ' - ' + msg.content);
 
+      //Check the ignorePermLvl function is true if it exists
+      if (command.ignorePermLvl !== undefined) {
+        if (await command.ignorePermLvl(msg, args.slice(1))) {
+          return true
+        }
+      }
       //Check if user has permission
       var result = await this.checkPerm(msg, command.permLvl);
       if (result) {
@@ -356,7 +365,7 @@ module.exports = {
         return true;
       }
     }
-    //The command was not found or didn't execute
+    //The command was not found
     return false;
   },
   executeCmd: async function(msg, args) {

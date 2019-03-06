@@ -38,6 +38,22 @@ module.exports = {
     }
     return response;
   },
+  getHighestPermGroup: async function(serverId, userId) {
+    //In util.js and not in permission-group.js to prevent circular dependency
+    let userGroups = await module.exports.getPermGroups(serverId, userId);
+    let userGroupName;
+    if (userGroups != null && userGroups != 'empty') {
+      userGroupName = userGroups.split(',').sort(function(a, b) {
+        return config.groups.find(x => x.name == a).permLvl <
+          config.groups.find(x => x.name == b).permLvl;
+      })[0];
+    } else {
+      //Default if no group
+      userGroupName = config.groups[0].name;
+    }
+    let userGroup = config.groups.find(x => x.name == userGroupName);
+    return userGroup;
+  },
   getXP: async function(serverId, userId) {
     var query = 'SELECT xp FROM user WHERE server_id = ? AND user_id = ?';
     var response = await queries.runGetQuery(query, [serverId, userId]);
@@ -64,6 +80,15 @@ module.exports = {
       response.warning = 0;
     }
     return response.warning;
+  },
+  getUsersWarnings: async function(serverId) {
+    var query = 'SELECT user_id, warning FROM user WHERE server_id = ?';
+    return await queries.runAllQuery(query, serverId);
+  },
+  getUsersByBirthday: async function(date) {
+    var query = 'SELECT * FROM user WHERE SUBSTR(birthday, -5) = ?';
+    var response = await queries.runAllQuery(query, [date]);
+    return response;
   },
   updatePermGroups: async function(serverId, userId, groups) {
     //Update user's permission groups
@@ -100,10 +125,6 @@ module.exports = {
     var updateQuery = 'UPDATE user SET location = ? WHERE server_id = ? AND user_id = ?';
     var args = [serverId, userId];
     await queries.runInsertUpdateQuery(insertQuery, updateQuery, args, [newLocation]);
-  },
-  getUsersWarnings: async function(serverId) {
-    var query = 'SELECT user_id, warning FROM user WHERE server_id = ?';
-    return await queries.runAllQuery(query, serverId);
   },
   updateUsersWarnings: async function(serverId, newWarnings) {
     var query = 'UPDATE user SET warning = ? WHERE server_id = ?';
