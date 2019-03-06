@@ -3,7 +3,6 @@ const { printMsg } = require('./util.js');
 const permGroups = require('./modules/user/permission-group.js');
 const db = require('./modules/database/database.js');
 const config = require('./util.js').getConfig()[1];
-const lastMessages = [];
 var lang = require('./localization.js').getLocalization();
 var maxValue = 1000;
 
@@ -81,6 +80,7 @@ async function addReward(msg, reward) {
 
 module.exports = {
   ranks: ranks,
+  lastMessages: [],
   getXpForLevel: function(level) {
     return level ** 1.5 - (level ** 1.5) % 5 + 100
   },
@@ -121,7 +121,7 @@ module.exports = {
     return [rank.name, prestige, rank.color]
   },
   newMessage: async function(msg) {
-    var userLastMessage = lastMessages.find(x => x.author == msg.author.id);
+    var userLastMessage = this.lastMessages.find(x => x.author == msg.author.id);
     var currentTime = Date.now();
 
     if (userLastMessage == undefined) {
@@ -129,7 +129,7 @@ module.exports = {
         time: 0
       };
       //Add user
-      lastMessages.push({
+      this.lastMessages.push({
         author: msg.author.id,
         time: currentTime
       })
@@ -140,11 +140,11 @@ module.exports = {
       return;
     }
 
-    if (lastMessages.indexOf(userLastMessage) > -1) {
+    if (this.lastMessages.indexOf(userLastMessage) > -1) {
       //Remove old message
-      lastMessages.splice(lastMessages.indexOf(userLastMessage), 1)
+      this.lastMessages.splice(this.lastMessages.indexOf(userLastMessage), 1)
       //Reset time last message
-      lastMessages.push({
+      this.lastMessages.push({
         author: msg.author.id,
         time: currentTime
       })
@@ -160,6 +160,7 @@ module.exports = {
 
       let progression = this.getProgression(xp);
       let xpForNextLevel = this.getXpForLevel(progression[0]) - progression[1];
+
       //Check if user has level up
       if (xpGained >= xpForNextLevel) {
         //Level up!
@@ -182,7 +183,7 @@ module.exports = {
             });
             //Check if the removal of the old role is enabled
             if (config.levels.removeOldRole == true) {
-              var oldRole = await db.reward.getRankReward(msg.guild.id, this.getRank(progression[2]));
+              var oldRole = await db.reward.getRankReward(msg.guild.id, this.getRank(progression[2])[0]);
               if (oldRole != undefined) {
                 msg.member.removeRole(oldRole, lang.general.member.removeOldReward).catch(error => {
                   console.log(error);

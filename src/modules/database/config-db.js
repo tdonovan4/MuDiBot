@@ -1,5 +1,8 @@
-var queries = require('./queries.js');
+const queries = require('./queries.js');
+const mustache = require('mustache');
+const lang = require('../../localization.js').getLocalization();
 const { client } = require('discord.js');
+var config = require('../../util.js').getConfig()[1];
 
 const insertQuery = 'INSERT OR IGNORE INTO config (server_id) VALUES (?)';
 
@@ -10,10 +13,10 @@ function getBackupChannel(serverId) {
     return channel.type == 'text' && channel.guild.id == serverId;
   });
   //If there is a channel named general, use it
-  channel = channels.find('name', 'general');
+  channel = channels.find(x => x.name === 'general');
   if (channel == null) {
     //General don't exist, using first channel
-    channel = channels.find('position', 0);
+    channel = channels.find(x => x.position === 0);
   }
   return channel;
 }
@@ -31,8 +34,8 @@ module.exports = {
       channel = client.channels.get(response.default_channel);
       if (channel == undefined) {
         //This channel don't exists
-        //TODO: error message
         channel = getBackupChannel(serverId);
+        channel.send(mustache.render(lang.error.notFound.defaultChannel, config));
       }
     }
     return channel;

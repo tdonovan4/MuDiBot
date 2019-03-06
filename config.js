@@ -39,16 +39,20 @@ module.exports = {
   */
   groups: [{
     name: "User",
-    permLvl: 0
+    permLvl: 0,
+    maxCustomCmd: 0
   }, {
     name: "Member",
-    permLvl: 1
+    permLvl: 1,
+    maxCustomCmd: 5
   }, {
     name: "Mod",
-    permLvl: 2
+    permLvl: 2,
+    maxCustomCmd: 10
   }, {
     name: "Admin",
-    permLvl: 3
+    permLvl: 3,
+    maxCustomCmd: 15
   }],
   /*===============
     -Modules-
@@ -210,17 +214,18 @@ module.exports = {
     //Is the command activated? Set to false to disable a command
     activated: true
   },
-  custcmd: {
-    //Is the command activated? Set to false to disable a command
-    activated: true,
-    //The maximum number of custom commands an user can create
-    maxCmdsPerUser: 5
-  },
-  custcmdlist: {
+
+  createcmd: {
     //Is the command activated? Set to false to disable a command
     activated: true
   },
-  custcmdremove: {
+
+  deletecmd: {
+    //Is the command activated? Set to false to disable a command
+    activated: true
+  },
+
+  listcustomcmd: {
     //Is the command activated? Set to false to disable a command
     activated: true
   },

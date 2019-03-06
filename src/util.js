@@ -7,7 +7,7 @@ module.exports = {
     return [config, require(config)];
   },
   getUserFromArg: function(msg, arg) {
-    return msg.guild.members.get(arg.match(/<@(.*?)>/)[1]).user;
+    return msg.guild.members.get(arg.match(/<@!?(.*?[0-9])>/)[1]).user;
   },
   printMsg: function(msg, text) {
     console.log(text);

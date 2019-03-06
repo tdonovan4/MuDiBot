@@ -12,6 +12,7 @@ module.exports = {
       resolve(true);
     });
   },
+  guilds: new Discord.Collection(),
   channels: new Discord.Collection(),
   user: {
     id: 'testID',

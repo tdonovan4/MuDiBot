@@ -4,6 +4,20 @@ const db = require('../database/database.js');
 const config = require('../../util.js').getConfig()[1];
 var lang = require('../../localization.js').getLocalization();
 
+async function purgeGroups(msg) {
+  var user = msg.mentions.users.first();
+
+  //Check if there is a user in msg
+  if (user == undefined) {
+    //Invalid argument: user
+    util.printMsg(msg, lang.error.invalidArg.user);
+    return;
+  }
+  //Back to default group
+  await db.user.updatePermGroups(msg.guild.id, user.id, config.groups[0].name);
+  util.printMsg(msg, lang.purgegroups.purged);
+}
+
 module.exports = {
   SetGroupCommand: class extends commands.Command {
     constructor() {
@@ -133,18 +147,4 @@ module.exports = {
       util.printMsg(msg, lang.unsetgroup.notInGroup);
     }
   },
-}
-
-async function purgeGroups(msg) {
-  var user = msg.mentions.users.first();
-
-  //Check if there is a user in msg
-  if (user == undefined) {
-    //Invalid argument: user
-    util.printMsg(msg, lang.error.invalidArg.user);
-    return;
-  }
-  //Back to default group
-  await db.user.updatePermGroups(msg.guild.id, user.id, config.groups[0].name);
-  util.printMsg(msg, lang.purgegroups.purged);
 }
