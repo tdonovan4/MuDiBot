@@ -1,4 +1,6 @@
 const { Command } = require('../../commands.js');
+const mustache = require('mustache');
+const { client } = require('discord.js');
 var lang = require('../../localization.js').getLocalization();
 
 module.exports = class PingCommand extends Command {
@@ -12,7 +14,10 @@ module.exports = class PingCommand extends Command {
     });
   }
   execute(msg) {
-    msg.reply(lang.ping.pong);
-    console.log(lang.ping.pong);
+    let ping = new Date() - msg.createdAt;
+    let heartbeatPing = client.ping;
+    let response = mustache.render(lang.ping.pong, { ping, heartbeatPing });
+    msg.reply(response);
+    console.log(response);
   }
 }

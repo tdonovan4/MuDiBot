@@ -235,7 +235,7 @@
     }
   },
   "ping": {
-    "pong": "Pong!"
+    "pong": "Pong!\n*Ping reçu après {{ping}} ms. Pulsation moyenne de {{heartbeatPing}} ms.*"
   },
   "info": {
     "title": "~Infos~",
