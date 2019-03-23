@@ -180,14 +180,29 @@ module.exports = function() {
     });
   });
   describe('Test ping', function() {
-    var pingCmd = new Ping();
+    let pingCmd = new Ping();
+    let clock;
+    before(function() {
+      clock = sinon.useFakeTimers(1553308630);
+    });
+    after(function() {
+      clock.restore();
+    })
     it('Should return "Pong!"', function() {
+      msg.createdAt = 1553308565;
       pingCmd.execute(msg, []);
-      expect(reply.lastCall.returnValue).to.equal(lang.ping.pong)
+      expect(reply.lastCall.returnValue).to.equal(mustache.render(lang.ping.pong, {
+        ping: '65',
+        heartbeatPing: '50'
+      }))
     });
     it('Should return "Pong!" with an argument', function() {
+      msg.createdAt = 1553308560;
       pingCmd.execute(msg, ['argument']);
-      expect(reply.lastCall.returnValue).to.equal(lang.ping.pong)
+      expect(reply.lastCall.returnValue).to.equal(mustache.render(lang.ping.pong, {
+        ping: '70',
+        heartbeatPing: '50'
+      }))
     });
   });
   describe('Test say', function() {
