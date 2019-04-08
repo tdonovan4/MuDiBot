@@ -1,20 +1,44 @@
 const http = require('http');
-const client = require('prom-client');
-const register = client.register;
-const collectDefaultMetrics = client.collectDefaultMetrics;
+const prom = require('prom-client');
+const register = prom.register;
+const collectDefaultMetrics = prom.collectDefaultMetrics;
 //TODO: add to config
 const port = 4444;
 
+//Register the default metrics
 collectDefaultMetrics();
 
+//Custom metrics
+module.exports = {
+  startupTime: new prom.Gauge({
+    name: 'mudibot_startup_time',
+    help: 'Time taken to start the bot in ms'
+  }),
+  commandExecutedTotal: new prom.Counter({
+    name: 'mudibot_command_executed_total',
+    help: 'Total number of commands executed',
+    labelNames: ['command']
+  }),
+  commandExecutionTime: new prom.Gauge({
+    name: 'mudibot_command_execution_time',
+    help: 'Execution time of a command in ms',
+    labelNames: ['command']
+  }),
+  customCommandExecutedTotal: new prom.Counter({
+    name: 'mudibot_custom_command_executed_total',
+    help: 'Total number of custom commands executed'
+  }),
+}
+
+//Web server
 function getStarterPage(req, res) {
   res.write('<h1>Mudibot metrics exporter</h1> <a href="metrics">Metrics');
   res.end();
 }
 
 function getMetrics(req, res) {
-  res.write('Content-Type', register.contentType);
-  res.end(register.metrics());
+  res.write(register.metrics());
+  res.end();
 }
 
 //Error message if page doesn't exist
