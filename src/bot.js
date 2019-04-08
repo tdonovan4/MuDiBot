@@ -2,6 +2,7 @@
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const mustache = require('mustache');
+const metrics = require('./modules/metrics/exporter.js');
 var config = require('./util.js').getConfig()[1];
 //For localization
 var lang = require('./localization.js').getLocalization();
@@ -40,10 +41,12 @@ client.on('ready', async () => {
   //Set status
   client.user.setActivity(config.currentStatus);
   //Display startup time
-  var time = Date.now() - startTime; +
+  let time = Date.now() - startTime;
   console.log(mustache.render(lang.general.startupTime, {
     time
   }));
+  //Log startup time to metrics
+  metrics.startupTime.set(time);
 });
 
 const levels = require('./levels.js');
@@ -73,12 +76,20 @@ async function onMessage(msg) {
     //Check if message is a command that can be executed
     var msgValidCmd = await commands.checkIfValidCmd(msg, cmd);
     if (msgValidCmd) {
+      let start = Date.now()
+      //Execute command
       await commands.executeCmd(msg, cmd);
+      let elapsed = Date.now() - start;
+      //Log metrics
+      metrics.commandExecutedTotal.inc({ command: cmd });
+      metrics.commandExecutionTime.set({ command: cmd }, elapsed);
     } else {
       //Check if message is a custom command
       let custCmd = await db.customCmd.getCmd(msg.guild.id, msg.content);
       if (custCmd !== undefined) {
         customCmd.executeCmd(msg, custCmd);
+        //Log metrics
+        metrics.customCommandExecutedTotal.inc();
       }
     }
     if (config.levels.activated == true) {
