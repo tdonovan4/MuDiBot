@@ -28,6 +28,21 @@ module.exports = {
     name: 'mudibot_custom_command_executed_total',
     help: 'Total number of custom commands executed'
   }),
+  dbQueryTotal: new prom.Counter({
+    name: 'mudibot_db_query_total',
+    help: 'Total number of query executed',
+    labelNames: ['type']
+  }),
+  dbQueryExecutionTime: new prom.Gauge({
+    name: 'mudibot_db_query_execution_time',
+    help: 'Execution time of a query in ms',
+    labelNames: ['type']
+  }),
+  dbQueryErrorTotal: new prom.Counter({
+    name: 'mudibot_db_query_error_total',
+    help: 'Total number of query errors',
+    labelNames: ['type']
+  }),
 }
 
 //Web server
