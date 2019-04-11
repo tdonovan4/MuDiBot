@@ -17,7 +17,7 @@ module.exports = {
     let elapsed = Date.now() - start;
     //Log metrics
     metrics.dbQueryTotal.inc({ type: 'run' });
-    metrics.dbQueryExecutionTime.set({ type: 'run' }, elapsed);
+    metrics.dbQueryExecutionSeconds.set({ type: 'run' }, elapsed / 1000);
   },
   runGetQuery: async function(query, args) {
     let start = Date.now()
@@ -33,7 +33,7 @@ module.exports = {
     let elapsed = Date.now() - start;
     //Log metrics
     metrics.dbQueryTotal.inc({ type: 'get' });
-    metrics.dbQueryExecutionTime.set({ type: 'get' }, elapsed);
+    metrics.dbQueryExecutionSeconds.set({ type: 'get' }, elapsed / 1000);
     return response;
   },
   runAllQuery: async function(query, args) {
@@ -45,12 +45,12 @@ module.exports = {
     } catch (e) {
       console.error(e);
       //Log metrics if error
+      metrics.dbQueryTotal.inc({ type: 'all' });
       metrics.dbQueryErrorTotal.inc({ type: 'all' });
     }
     let elapsed = Date.now() - start;
     //Log metrics
-    metrics.dbQueryTotal.inc({ type: 'all' });
-    metrics.dbQueryExecutionTime.set({ type: 'all' }, elapsed);
+    metrics.dbQueryExecutionSeconds.set({ type: 'all' }, elapsed / 1000);
     return response;
   },
   runInsertUpdateQuery: async function(insertQuery, updateQuery, args, newValues) {
@@ -74,7 +74,7 @@ module.exports = {
     let elapsed = Date.now() - start;
     //Log metrics
     metrics.dbQueryTotal.inc({ type: 'insert/update' });
-    metrics.dbQueryExecutionTime.set({ type: 'insert/update' }, elapsed);
+    metrics.dbQueryExecutionSeconds.set({ type: 'insert/update' }, elapsed / 1000);
   },
   runUpdateQuery: async function(query, userId, newValue) {
     let start = Date.now()
@@ -91,6 +91,6 @@ module.exports = {
     let elapsed = Date.now() - start;
     //Log metrics
     metrics.dbQueryTotal.inc({ type: 'update' });
-    metrics.dbQueryExecutionTime.set({ type: 'update' }, elapsed);
+    metrics.dbQueryExecutionSeconds.set({ type: 'update' }, elapsed / 1000);
   }
 }

@@ -46,7 +46,7 @@ client.on('ready', async () => {
     time
   }));
   //Log startup time to metrics
-  metrics.startupTime.set(time);
+  metrics.startupTimeSeconds.set(time / 1000);
 });
 
 const levels = require('./levels.js');
@@ -81,8 +81,8 @@ async function onMessage(msg) {
       await commands.executeCmd(msg, cmd);
       let elapsed = Date.now() - start;
       //Log metrics
-      metrics.commandExecutedTotal.inc({ command: cmd });
-      metrics.commandExecutionTime.set({ command: cmd }, elapsed);
+      metrics.commandExecutedTotal.inc({ command: cmd[0] });
+      metrics.commandExecutionSeconds.set({ command: cmd[0] }, elapsed / 1000);
     } else {
       //Check if message is a custom command
       let custCmd = await db.customCmd.getCmd(msg.guild.id, msg.content);
