@@ -10,18 +10,18 @@ collectDefaultMetrics();
 
 //Custom metrics
 module.exports = {
-  startupTime: new prom.Gauge({
-    name: 'mudibot_startup_time',
-    help: 'Time taken to start the bot in ms'
+  startupTimeSeconds: new prom.Gauge({
+    name: 'mudibot_startup_time_seconds',
+    help: 'Time taken to start the bot in seconds'
   }),
   commandExecutedTotal: new prom.Counter({
     name: 'mudibot_command_executed_total',
     help: 'Total number of commands executed',
     labelNames: ['command']
   }),
-  commandExecutionTime: new prom.Gauge({
-    name: 'mudibot_command_execution_time',
-    help: 'Execution time of a command in ms',
+  commandExecutionSeconds: new prom.Gauge({
+    name: 'mudibot_command_execution_seconds',
+    help: 'Execution time of a command in seconds',
     labelNames: ['command']
   }),
   customCommandExecutedTotal: new prom.Counter({
@@ -33,9 +33,9 @@ module.exports = {
     help: 'Total number of query executed',
     labelNames: ['type']
   }),
-  dbQueryExecutionTime: new prom.Gauge({
-    name: 'mudibot_db_query_execution_time',
-    help: 'Execution time of a query in ms',
+  dbQueryExecutionSeconds: new prom.Gauge({
+    name: 'mudibot_db_query_execution_seconds',
+    help: 'Execution time of a query in seconds',
     labelNames: ['type']
   }),
   dbQueryErrorTotal: new prom.Counter({
