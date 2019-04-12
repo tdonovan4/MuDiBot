@@ -1,12 +1,70 @@
-const http = require('http');
-const prom = require('prom-client');
-const register = prom.register;
-const collectDefaultMetrics = prom.collectDefaultMetrics;
 const config = require('../../util.js').getConfig()[1];
-const port = config.exporterPort;
+let prom;
 
-//Register the default metrics
-collectDefaultMetrics();
+//Check if metrics are activated
+if (config.metrics.activated) {
+  //Setup for prometheus client
+  prom = require('prom-client');
+  const register = prom.register;
+  const collectDefaultMetrics = prom.collectDefaultMetrics;
+
+  //Register the default metrics
+  collectDefaultMetrics();
+
+  //Setup for web server
+  const http = require('http');
+  const port = config.metrics.exporterPort;
+
+  http.createServer((req, res) => {
+    //Route to correct page
+    const router = {
+      'GET/': function(req, res) {
+        res.write('<h1>Mudibot metrics exporter</h1> <a href="metrics">Metrics');
+        res.end();
+      },
+      'GET/metrics': function(req, res) {
+        res.write(register.metrics());
+        res.end();
+      },
+      //Error message if page doesn't exist
+      'default': function(req, res) {
+        res.writeHead(404);
+        res.write('Sorry, but this page doesn\'t exit...');
+        res.end();
+      }
+    };
+
+    //Parse url
+    let reqUrl = new URL(req.url, 'http://127.0.0.1/');
+
+    //Execute correct function based on url
+    let redirectedFunc = router[req.method + reqUrl.pathname] || router.default;
+
+    redirectedFunc(req, res, reqUrl);
+  }).listen(port, () => {
+    console.log(`Listening for prometheus on ${port}`);
+  });
+} else {
+  //Create a fake pom object
+  prom = {
+    Gauge: class {
+      set() {
+        return;
+      }
+      inc() {
+        return;
+      }
+      dec() {
+        return;
+      }
+    },
+    Counter: class {
+      inc() {
+        return;
+      }
+    }
+  }
+}
 
 //Custom metrics
 module.exports = {
@@ -42,46 +100,5 @@ module.exports = {
     name: 'mudibot_db_query_error_total',
     help: 'Total number of query errors',
     labelNames: ['type']
-  }),
-  testExecutionSeconds: new prom.Gauge({
-    name: 'mudibot_test_execution_seconds',
-    help: 'Execution time of the tests in seconds'
-  }),
+  })
 }
-
-//Web server
-function getStarterPage(req, res) {
-  res.write('<h1>Mudibot metrics exporter</h1> <a href="metrics">Metrics');
-  res.end();
-}
-
-function getMetrics(req, res) {
-  res.write(register.metrics());
-  res.end();
-}
-
-//Error message if page doesn't exist
-function noResponse(req, res) {
-  res.writeHead(404);
-  res.write('Sorry, but this page doesn\'t exit...');
-  res.end();
-}
-
-http.createServer((req, res) => {
-  //Route to correct page
-  const router = {
-    'GET/': getStarterPage,
-    'GET/metrics': getMetrics,
-    'default': noResponse
-  };
-
-  //Parse url
-  let reqUrl = new URL(req.url, 'http://127.0.0.1/');
-
-  //Execute correct function based on url
-  let redirectedFunc = router[req.method + reqUrl.pathname] || router.default;
-
-  redirectedFunc(req, res, reqUrl);
-}).listen(port, () => {
-  console.log(`Listening for prometheus on ${port}`);
-});
