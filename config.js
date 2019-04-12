@@ -54,6 +54,13 @@ module.exports = {
     permLvl: 3,
     maxCustomCmd: 15
   }],
+
+  /*===============
+    -Metrics-
+  ===============*/
+  //The port used by the prometheus exporter
+  exporterPort: 4444,
+
   /*===============
     -Modules-
   ===============*/
