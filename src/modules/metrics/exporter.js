@@ -2,8 +2,8 @@ const http = require('http');
 const prom = require('prom-client');
 const register = prom.register;
 const collectDefaultMetrics = prom.collectDefaultMetrics;
-//TODO: add to config
-const port = 4444;
+const config = require('../../util.js').getConfig()[1];
+const port = config.exporterPort;
 
 //Register the default metrics
 collectDefaultMetrics();
@@ -42,6 +42,10 @@ module.exports = {
     name: 'mudibot_db_query_error_total',
     help: 'Total number of query errors',
     labelNames: ['type']
+  }),
+  testExecutionSeconds: new prom.Gauge({
+    name: 'mudibot_test_execution_seconds',
+    help: 'Execution time of the tests in seconds'
   }),
 }
 
