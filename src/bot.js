@@ -45,6 +45,8 @@ client.on('ready', async () => {
   console.log(mustache.render(lang.general.startupTime, {
     time
   }));
+  //Start metrics
+  await metrics.init();
   //Log startup time to metrics
   metrics.startupTimeSeconds.set(time / 1000);
 });

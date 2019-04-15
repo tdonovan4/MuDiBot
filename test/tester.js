@@ -1,6 +1,7 @@
 const Discord = require('discord.js');
 const fs = require('fs');
 const testUtil = require('./test-resources/test-util.js');
+const metrics = require('../src/modules/metrics/exporter.js');
 
 //Add test values to config
 require('./set-config.js').setTestConfig();
@@ -23,6 +24,11 @@ const dbFolder = './test/database/';
 if (!fs.existsSync(dbFolder)) {
   fs.mkdirSync(dbFolder);
 }
+
+//Init metrics
+before(async function() {
+  await metrics.init();
+});
 
 //Test the database module
 const dbTest = require('./unit-test/database.js');
