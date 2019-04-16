@@ -17,7 +17,7 @@ const commands = require('../src/commands.js');
 //Register stuff
 commands.registerCategories(config.categories);
 commands.registerCommands();
-const metrics = require('../src/modules/metrics/exporter.js');
+const metrics = require('../src/modules/metrics/metrics.js');
 
 //Checking for database folder
 const dbFolder = './test/database/';

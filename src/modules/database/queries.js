@@ -1,6 +1,6 @@
 const sql = require('sqlite');
 const config = require('../../util.js').getConfig()[1];
-const metrics = require('../../modules/metrics/exporter.js');
+const metrics = require('../../modules/metrics/metrics.js');
 
 module.exports = {
   runQuery: async function(query, args) {
