@@ -25,6 +25,7 @@
   },
   "error": {
     "usage": "Wrong usage",
+    "portOpen": "The selected port is already opened. Metrics have been disabled.",
     "missingArg": {
       "channel": "Missing argument: channel",
       "message": "Missing argument: message",

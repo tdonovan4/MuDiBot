@@ -1,8 +1,26 @@
+const { Socket } = require('net');
 const util = require('../../util.js');
 const config = util.getConfig()[1];
-const { checkIfPortClosed } = util;
 const port = config.metrics.exporterPort;
+var lang = require('../../localization.js').getLocalization();
 let prom;
+
+function checkIfPortClosed(port) {
+  let socket = new Socket()
+  return new Promise(function(resolve) {
+    socket.once('connect', function() {
+      //In use
+      socket.destroy();
+      console.log(lang.error.portOpen);
+      resolve(false);
+    });
+    socket.once('error', function() {
+      //Not listening
+      resolve(true);
+    });
+    socket.connect(port, '127.0.0.1');
+  });
+}
 
 async function init() {
   //Check if metrics are activated
