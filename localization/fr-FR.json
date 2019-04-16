@@ -25,6 +25,7 @@
   },
   "error": {
     "usage": "Utilisation incorrecte",
+    "portOpen": "Le port sélectionné est déjà utilisé. Les paramètres ont été désactivés",
     "missingArg": {
       "channel": "Argument manquant: salon",
       "message": "Argument manquant: message",

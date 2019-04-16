@@ -1,7 +1,6 @@
 const Discord = require('discord.js');
 const fs = require('fs');
 const testUtil = require('./test-resources/test-util.js');
-const metrics = require('../src/modules/metrics/exporter.js');
 
 //Add test values to config
 require('./set-config.js').setTestConfig();
@@ -18,6 +17,7 @@ const commands = require('../src/commands.js');
 //Register stuff
 commands.registerCategories(config.categories);
 commands.registerCommands();
+const metrics = require('../src/modules/metrics/exporter.js');
 
 //Checking for database folder
 const dbFolder = './test/database/';
