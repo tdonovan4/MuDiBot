@@ -2,7 +2,7 @@
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const mustache = require('mustache');
-const metrics = require('./modules/metrics/exporter.js');
+const metrics = require('./modules/metrics/metrics.js');
 var config = require('./util.js').getConfig()[1];
 //For localization
 var lang = require('./localization.js').getLocalization();
