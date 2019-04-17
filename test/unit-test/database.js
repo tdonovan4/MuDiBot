@@ -255,6 +255,10 @@ module.exports = function() {
         var response = await db.user.getUsersByBirthday('02-19');
         expect(response).to.be.empty;
       });
+      it('getGlobalBirthdayCount should return 0', async function() {
+        var response = await db.user.getGlobalBirthdayCount();
+        expect(response).to.equal(0);
+      });
       it('getUsersWarnings() should return empty array', async function() {
         var response = await db.user.getUsersWarnings('1');
         expect(response).to.be.empty;
@@ -302,7 +306,7 @@ module.exports = function() {
     });
     describe('Test user count', function() {
       beforeEach(async function() {
-        //Load empty database
+        //Load database
         await replaceDatabase(config.pathDatabase, 'data1.db');
       });
       it('getLocalCount should return 1', async function() {
@@ -312,6 +316,10 @@ module.exports = function() {
       it('getGlobalCount should return 4', async function() {
         var response = await db.user.getGlobalCount();
         expect(response).to.equal(4);
+      });
+      it('getGlobalBirthdayCount should return 3', async function() {
+        var response = await db.user.getGlobalBirthdayCount();
+        expect(response).to.equal(3);
       });
     });
     describe('Test updating existing users', function() {
@@ -382,7 +390,7 @@ module.exports = function() {
     });
   });
 
-  //Test config databas submodule
+  //Test config database submodule
   describe('Test config-db', function() {
     describe('Test getDefaultChannel with empty responses', function() {
       beforeEach(async function() {
@@ -472,6 +480,10 @@ module.exports = function() {
       beforeEach(async function() {
         await replaceDatabase(config.pathDatabase, 'empty.db');
       });
+      it('getGlobalCount should return 0', async function() {
+        var response = await db.customCmd.getGlobalCount();
+        expect(response).to.equal(0);
+      });
       it('getCmd should return undefined', async function() {
         var response = await db.customCmd.getCmd(msg.guild.id, 'test');
         expect(response).to.equal(undefined);
@@ -501,6 +513,10 @@ module.exports = function() {
       describe('Test in populated database', function() {
         beforeEach(async function() {
           await replaceDatabase(config.pathDatabase, 'data1.db');
+        });
+        it('getGlobalCount should return 3', async function() {
+          var response = await db.customCmd.getGlobalCount();
+          expect(response).to.equal(14);
         });
         it('Should insert another cmd', async function() {
           await db.customCmd.insertCmd(msg.guild.id, msg.author.id, 'test4', 'test4');

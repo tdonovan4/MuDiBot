@@ -90,6 +90,11 @@ module.exports = {
     var response = await queries.runAllQuery(query, [date]);
     return response;
   },
+  getGlobalBirthdayCount: async function() {
+    var query = 'SELECT COUNT(birthday) FROM user WHERE birthday != "Unknown"';
+    var response = await queries.runGetQuery(query, []);
+    return response['COUNT(birthday)'];
+  },
   updatePermGroups: async function(serverId, userId, groups) {
     //Update user's permission groups
     var updateQuery = 'UPDATE user SET permission_group = (?) WHERE server_id = ? AND user_id = ?';
