@@ -1,9 +1,12 @@
 const { Socket } = require('net');
+const { EventEmitter } = require('events');
 const util = require('../../util.js');
 const config = util.getConfig()[1];
 const port = config.metrics.exporterPort;
 var lang = require('../../localization.js').getLocalization();
 let prom;
+
+let emitter = new EventEmitter();
 
 function checkIfPortClosed(port) {
   let socket = new Socket()
@@ -64,6 +67,8 @@ async function init() {
       redirectedFunc(req, res, reqUrl);
     }).listen(port, () => {
       console.log(`Listening for prometheus on ${port}`);
+      //Emit an event to init the rest
+      emitter.emit('startMetrics', prom);
     });
   } else {
     //Create a fake pom object
@@ -90,3 +95,4 @@ async function init() {
 }
 
 module.exports.init = init;
+module.exports.emitter = emitter;

@@ -37,4 +37,25 @@ module.exports.init = async function() {
     help: 'Total number of query errors',
     labelNames: ['type']
   });
+  //Periodic metrics
+  module.exports.uniqueGuildTotal = new prom.Gauge({
+    name: 'mudibot_unique_guild_total',
+    help: 'Total number of unique guilds the bot is in currently'
+  });
+  module.exports.uniqueUserTotal = new prom.Gauge({
+    name: 'mudibot_unique_user_total',
+    help: 'Total number of unique users in the database'
+  });
+  module.exports.customCommandTotal = new prom.Gauge({
+    name: 'mudibot_custom_command_total',
+    help: 'Total number of custom commands in the database'
+  });
+  module.exports.birthdayTotal = new prom.Gauge({
+    name: 'mudibot_birthday_total',
+    help: 'Total number of birthdays in the database (including duplicates)'
+  });
+  module.exports.periodicMetricSeconds = new prom.Gauge({
+    name: 'mudibot_periodic_metric_seconds',
+    help: 'Time taken to update the periodic metrics'
+  });
 }
