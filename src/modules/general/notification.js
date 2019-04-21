@@ -2,6 +2,7 @@ const schedule = require('node-schedule');
 const db = require('../database/database.js');
 const mustache = require('mustache');
 const { client } = require('discord.js');
+const metrics = require('../metrics/metrics.js');
 var lang = require('../../localization.js').getLocalization();
 
 async function sendDefaultChannel(guild, text) {
@@ -27,6 +28,8 @@ var birthdays = schedule.scheduleJob('0 12 * * *', async function() {
     //Send to all servers
     for (let guild of client.guilds.keys()) {
       await await sendDefaultChannel(guild, message);
+      //Log to metrics
+      metrics.birthdaySentTotal.inc();
     }
   }
   //Group users by server
@@ -64,6 +67,8 @@ var birthdays = schedule.scheduleJob('0 12 * * *', async function() {
       });
     }
     await sendDefaultChannel(guildId, message);
+    //Log to metrics
+    metrics.birthdaySentTotal.inc();
   }
 });
 
