@@ -1,3 +1,4 @@
+const http = require('http');
 const { Socket } = require('net');
 const { EventEmitter } = require('events');
 const util = require('../../util.js');
@@ -37,8 +38,6 @@ async function init() {
     collectDefaultMetrics();
 
     //Setup for web server
-    const http = require('http');
-
     http.createServer((req, res) => {
       //Route to correct page
       const router = {
@@ -68,7 +67,7 @@ async function init() {
     }).listen(port, () => {
       console.log(`Listening for prometheus on ${port}`);
       //Emit an event to init the rest
-      emitter.emit('startMetrics', prom);
+      emitter.emit('startMetrics');
     });
   } else {
     //Create a fake pom object

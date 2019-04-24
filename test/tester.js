@@ -25,8 +25,8 @@ if (!fs.existsSync(dbFolder)) {
   fs.mkdirSync(dbFolder);
 }
 
-//Init metrics
 before(async function() {
+  config.metrics.activated = false;
   await metrics.init();
 });
 
@@ -34,6 +34,13 @@ before(async function() {
 const dbTest = require('./unit-test/database.js');
 describe('Test the database module', function() {
   dbTest();
+});
+
+//Test the metrics module
+const metricsTest = require('./unit-test/metrics.js');
+describe('Test the metrics module', function() {
+  metricsTest();
+  //Init fake metrics for the rest
 });
 
 //Test the commands module
