@@ -125,6 +125,9 @@ module.exports = function() {
     it('Should update v004 to last version', async function() {
       await checkDatabaseUpdating('004');
     });
+    it('Should update v005 to last version', async function() {
+      await checkDatabaseUpdating('005');
+    });
   });
 
   //Test queries submodule
