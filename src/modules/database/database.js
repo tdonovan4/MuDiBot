@@ -10,3 +10,5 @@ module.exports.config = require('./config-db.js');
 module.exports.reward = require('./rewards-db.js');
 //Module for custom commands table
 module.exports.customCmd = require('./custom-cmd-db.js');
+//Module for bot's global variables
+module.exports.botGlobal = require('./bot-global.js');
