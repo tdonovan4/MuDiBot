@@ -609,6 +609,39 @@ module.exports = function() {
       });
     });
   });
+
+  //Test the bot global submodule
+  describe('Test bot-global.js', function() {
+    describe('Test in empty database', function() {
+      beforeEach(async function() {
+        await replaceDatabase(config.pathDatabase, 'empty.db');
+      });
+      it('getLastBirthdayCheck should return undefined', async function() {
+        var response = await db.botGlobal.getLastBirthdayCheck();
+        expect(response).to.be.undefined;
+      });
+      it('updateLastBirthdayCheck should update date to 2019-04-28 12:00:00', async function() {
+        await db.botGlobal.updateLastBirthdayCheck('2019-04-28 12:00:00');
+        var response = await db.botGlobal.getLastBirthdayCheck();
+        expect(response).to.equal('2019-04-28 12:00:00');
+      });
+    });
+    describe('Test in populated database', function() {
+      beforeEach(async function() {
+        await replaceDatabase(config.pathDatabase, 'data1.db');
+      });
+      it('getLastBirthdayCheck should return 2019-04-26 12:00:00', async function() {
+        var response = await db.botGlobal.getLastBirthdayCheck();
+        expect(response).to.equal('2019-04-26 12:00:00');
+      });
+      it('updateLastBirthdayCheck should update existing date to 2019-04-28 12:00:00', async function() {
+        await db.botGlobal.updateLastBirthdayCheck('2019-04-28 12:00:00');
+        var response = await db.botGlobal.getLastBirthdayCheck();
+        expect(response).to.equal('2019-04-28 12:00:00');
+      });
+    });
+  });
+
   after(async function() {
     //Load empty database for the rest of the test
     await replaceDatabase(config.pathDatabase, 'empty.db');
