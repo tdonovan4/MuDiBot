@@ -13,11 +13,18 @@
       "rankUp": "Cet utilisateur est maintenant un {{rank}}!",
       "reward": "et reçoit le role {{role}} comme récompense",
       "addReward": "Récompense pour promotion",
-      "removeOldReward": "Ancienne récompense enlevée",
-      "birthday": "Bonne fête, {{{mention}}}!"
+      "removeOldReward": "Ancienne récompense enlevée"
     },
-    "birthdays": "Bonne fête à: {{{users}}}!",
-    "botBirthday": "Bonne fête à moi-même! J'ai maintenant {{age}} ans!",
+    "birthdays": {
+      "one": "Bonne fête, {{{mention}}}!",
+      "multiple": "Bonne fête à: {{{users}}}!",
+      "botBirthday": "Bonne fête à moi-même! J'ai maintenant {{age}} ans!",
+      "missed": {
+        "one": "On dirait que j'ai manqué un anniversaire le {{{time}}}. Bonne fête en retard, {{{mention}}}!",
+        "multiple": "Quelques anniversaires ont été manqués le {{{time}}} Bonne fête en retard à: {{{users}}}!",
+        "botBirthday": "Bonne fête en retard à moi-même! J'ai maintenant {{age}} ans!"
+      }
+    },
     "interactiveMode": {
       "optional": "(cet argument est facultative, utilisez `$skip` pour la sauter)",
       "skipped": "Argument sauté"
