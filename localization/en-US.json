@@ -13,11 +13,18 @@
       "rankUp": "This user is now a {{rank}}",
       "reward": "and receives the role {{role}} as a reward",
       "addReward": "Reward for rank up",
-      "removeOldReward": "Removal of old reward",
-      "birthday": "Happy birthday, {{{mention}}}!"
+      "removeOldReward": "Removal of old reward"
     },
-    "birthdays": "Happy birthday to: {{{users}}}!",
-    "botBirthday": "Happy birthday to me! I'm now {{age}} years old!",
+    "birthdays": {
+      "one": "Happy birthday, {{{mention}}}!",
+      "multiple": "Happy birthday to: {{{users}}}!",
+      "botBirthday": "Happy birthday to me! I'm now {{age}} years old!",
+      "missed": {
+        "one": "Looks like I missed a birthday on {{{time}}}. Belated happy birthday, {{{mention}}}!",
+        "multiple": "Some birthdays were missed on {{{time}}} Belated happy birthday to: {{{users}}}!",
+        "botBirthday": "Belated happy birthday to me! I'm now {{age}} years old!"
+      }
+    },
     "interactiveMode": {
       "optional": "(this argument is optional, use `$skip` to skip it)",
       "skipped": "Argument skipped"

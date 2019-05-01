@@ -4,6 +4,7 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 const mustache = require('mustache');
 const rewire = require('rewire');
+const db = require('../../src/modules/database/database.js');
 const lang = require('../../localization/en-US.json');
 const testUtil = require('../test-resources/test-util.js');
 const { replaceDatabase, msgSend, reply } = testUtil;
@@ -176,6 +177,41 @@ module.exports = function() {
         expect(channel1.lastCall.lastArg).to.equal('Happy birthday, <@2>!');
         expect(channel2.lastCall.lastArg).to.equal('Happy birthday, <@1>!');
         expect(channel3.called).to.be.false;
+      });
+      describe('Test with lastBirthdayCheck', function() {
+        it('Should print birthdays for the 7 april', async function() {
+          //Set last birthday check date to 6 April
+          await db.botGlobal.updateLastBirthdayCheck('2017-04-06 12:00:00');
+          //Set date to 7 April
+          clock = sinon.useFakeTimers(1491566400000);
+          await notification.birthdays.job();
+          expect(channel1.lastCall.lastArg).to.equal('Happy birthday, <@4>!');
+          expect(channel2.called).to.be.false;
+          expect(channel3.lastCall.lastArg).to.equal('Happy birthday, <@3>!');
+        });
+        it('Should print missed birthdays', async function() {
+          //Set last birthday check date to 3 April
+          await db.botGlobal.updateLastBirthdayCheck('2017-04-03 12:00:00');
+          //Set date to 7 April
+          clock = sinon.useFakeTimers(1491566400000);
+          await notification.birthdays.job();
+          //Channel 1
+          expect(channel1.getCall(channel1.callCount - 3).lastArg).to.equal(
+            'Looks like I missed a birthday on 2017-04-05. Belated happy birthday, <@2>!');
+          expect(channel1.getCall(channel1.callCount - 2).lastArg).to.equal(
+            'Belated happy birthday to me! I\'m now 0 years old!');
+          expect(channel1.lastCall.lastArg).to.equal('Happy birthday, <@4>!');
+          //Channel 2
+          console.log(channel2);
+          expect(channel2.getCall(channel2.callCount - 2).lastArg).to.equal(
+            'Some birthdays were missed on 2017-04-05 Belated happy birthday to: <@1>, <@2>!');
+          expect(channel2.lastCall.lastArg).to.equal(
+            'Belated happy birthday to me! I\'m now 0 years old!');
+          //Channel 3
+          expect(channel3.getCall(channel3.callCount - 2).lastArg).to.equal(
+            'Belated happy birthday to me! I\'m now 0 years old!');
+          expect(channel3.lastCall.lastArg).to.equal('Happy birthday, <@3>!');
+        });
       });
     });
   });

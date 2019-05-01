@@ -62,6 +62,8 @@ client.on('message', msg => {
 });
 
 async function onMessage(msg) {
+  const notification = require('./modules/general/notification.js');
+  await notification.birthdays.job();
   //Just to make it async
   //Ignore bot
   if (msg.author.bot) return;
