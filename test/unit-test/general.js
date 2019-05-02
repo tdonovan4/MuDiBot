@@ -185,9 +185,12 @@ module.exports = function() {
           //Set date to 7 April
           clock = sinon.useFakeTimers(1491566400000);
           await notification.birthdays.job();
+          //Check if time got update
+          let time = await db.botGlobal.getLastBirthdayCheck();
           expect(channel1.lastCall.lastArg).to.equal('Happy birthday, <@4>!');
           expect(channel2.called).to.be.false;
           expect(channel3.lastCall.lastArg).to.equal('Happy birthday, <@3>!');
+          expect(time).to.equal('2017-04-07 12:00:00');
         });
         it('Should print missed birthdays', async function() {
           //Set last birthday check date to 3 April
@@ -202,7 +205,6 @@ module.exports = function() {
             'Belated happy birthday to me! I\'m now 0 years old!');
           expect(channel1.lastCall.lastArg).to.equal('Happy birthday, <@4>!');
           //Channel 2
-          console.log(channel2);
           expect(channel2.getCall(channel2.callCount - 2).lastArg).to.equal(
             'Some birthdays were missed on 2017-04-05 Belated happy birthday to: <@1>, <@2>!');
           expect(channel2.lastCall.lastArg).to.equal(
