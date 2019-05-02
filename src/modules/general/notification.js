@@ -2,6 +2,7 @@ const schedule = require('node-schedule');
 const db = require('../database/database.js');
 const mustache = require('mustache');
 const { client } = require('discord.js');
+const { toDbDate } = require('../../util.js');
 const metrics = require('../metrics/metrics.js');
 var lang = require('../../localization.js').getLocalization();
 
@@ -99,6 +100,7 @@ let birthdays = schedule.scheduleJob('0 12 * * *', async function() {
       }
     }
   }
+  await db.botGlobal.updateLastBirthdayCheck(toDbDate(currentDate));
 });
 
 module.exports.birthdays = birthdays;

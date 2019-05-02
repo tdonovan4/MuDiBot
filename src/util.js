@@ -12,5 +12,8 @@ module.exports = {
   printMsg: function(msg, text) {
     console.log(text);
     msg.channel.send(text);
+  },
+  toDbDate: function(date) {
+    return date.toISOString().replace(/T/, ' ').replace(/\..+/, '');
   }
 }
