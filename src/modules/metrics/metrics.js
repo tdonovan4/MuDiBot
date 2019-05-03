@@ -42,6 +42,10 @@ module.exports.init = async function() {
     help: 'Total birthday messages sent',
     labelNames: ['type']
   });
+  module.exports.birthdayCheckSeconds = new prom.Gauge({
+    name: 'mudibot_birthday_check_seconds',
+    help: 'Execution time of the birthday check in seconds'
+  });
   //Periodic metrics
   module.exports.uniqueGuildTotal = new prom.Gauge({
     name: 'mudibot_unique_guild_total',
