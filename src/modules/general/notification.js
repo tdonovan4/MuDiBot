@@ -101,6 +101,9 @@ let birthdays = schedule.scheduleJob('0 12 * * *', async function() {
     }
   }
   await db.botGlobal.updateLastBirthdayCheck(toDbDate(currentDate));
+  let elapsed = Date.now() - currentDate;
+  //Log execution time to metrics
+  metrics.birthdayCheckSeconds.set(elapsed / 1000);
 });
 
 module.exports.birthdays = birthdays;
