@@ -6,6 +6,8 @@ const { toDbDate } = require('../../util.js');
 const metrics = require('../metrics/metrics.js');
 var lang = require('../../localization.js').getLocalization();
 
+let isBirthdayCheckRunning = false;
+
 async function sendDefaultChannel(guild, text) {
   let channel = await db.config.getDefaultChannel(guild);
   channel.send(text);
@@ -75,6 +77,7 @@ async function printBirthdaysForDate(date, birthdayMessages) {
 
 //Execute everyday at 12:00, send notif about birthdays
 let birthdays = schedule.scheduleJob('0 12 * * *', async function() {
+  isBirthdayCheckRunning = true;
   //A day in ms
   const oneDay = (24 * 60 * 60 * 1000);
   let currentDate = new Date();
@@ -85,6 +88,7 @@ let birthdays = schedule.scheduleJob('0 12 * * *', async function() {
     await printBirthdaysForDate(currentDate, lang.general.birthdays);
   } else {
     let lastCheckDate = new Date(lastCheck);
+    lastCheckDate.setHours(22, 59, 59);
     let startDate = lastCheckDate.getTime() + oneDay;
     let tommorow = currentDate.getTime() + oneDay;
     //Iterate through days since last check
@@ -104,7 +108,26 @@ let birthdays = schedule.scheduleJob('0 12 * * *', async function() {
   let elapsed = Date.now() - currentDate;
   //Log execution time to metrics
   metrics.birthdayCheckSeconds.set(elapsed / 1000);
+  isBirthdayCheckRunning = false;
 });
+
+async function runBirthdaysIfMissed() {
+  let currentDate = new Date();
+  let lastCheck = await db.botGlobal.getLastBirthdayCheck();
+  let formatedDate = (currentDate.getMonth() + 1).toString().padStart(2, '0') + '-' +
+    currentDate.getDate().toString().padStart(2, '0');
+  /*
+   * Check if later than 12:00 (getHours() is indexed from 0) and if we didn't
+   * already check birthdays today and also that the check isn't already running
+   */
+  if (currentDate.getHours() >= 11 &&
+    (lastCheck == null || lastCheck.substring(5, 10) !== formatedDate) &&
+    !isBirthdayCheckRunning) {
+    //Check the birthdays
+    await birthdays.job();
+  }
+}
 
 module.exports.birthdays = birthdays;
 module.exports.sendDefaultChannel = sendDefaultChannel;
+module.exports.runBirthdaysIfMissed = runBirthdaysIfMissed;

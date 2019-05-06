@@ -23,7 +23,7 @@ try {
 const commands = require('./commands.js');
 const customCmd = require('./modules/fun/custom-cmd.js');
 const db = require('./modules/database/database.js');
-const { sendDefaultChannel } = require('./modules/general/notification.js');
+const { sendDefaultChannel, runBirthdaysIfMissed } = require('./modules/general/notification.js');
 
 //Start the bot
 client.on('ready', async () => {
@@ -47,6 +47,8 @@ client.on('ready', async () => {
   }));
   //Start metrics
   await metrics.init();
+  //Check if we missed the birthday check for today and run it if we did
+  await runBirthdaysIfMissed();
   //Log startup time to metrics
   metrics.startupTimeSeconds.set(time / 1000);
 });
@@ -62,8 +64,6 @@ client.on('message', msg => {
 });
 
 async function onMessage(msg) {
-  const notification = require('./modules/general/notification.js');
-  await notification.birthdays.job();
   //Just to make it async
   //Ignore bot
   if (msg.author.bot) return;
