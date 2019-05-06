@@ -114,14 +114,13 @@ let birthdays = schedule.scheduleJob('0 12 * * *', async function() {
 async function runBirthdaysIfMissed() {
   let currentDate = new Date();
   let lastCheck = await db.botGlobal.getLastBirthdayCheck();
-  let formatedDate = (currentDate.getMonth() + 1).toString().padStart(2, '0') + '-' +
-    currentDate.getDate().toString().padStart(2, '0');
+  let formatedDate = toDbDate(currentDate).substring(0, 10);
   /*
    * Check if later than 12:00 (getHours() is indexed from 0) and if we didn't
    * already check birthdays today and also that the check isn't already running
    */
   if (currentDate.getHours() >= 11 &&
-    (lastCheck == null || lastCheck.substring(5, 10) !== formatedDate) &&
+    (lastCheck == null || lastCheck.substring(0, 10) !== formatedDate) &&
     !isBirthdayCheckRunning) {
     //Check the birthdays
     await birthdays.job();

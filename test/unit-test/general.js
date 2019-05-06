@@ -223,16 +223,16 @@ module.exports = function() {
           expect(channel1.called).to.be.false;
           expect(channel2.called).to.be.false;
           expect(channel3.called).to.be.false;
-          it('Should not print birthdays because already ran today', async function() {
-            //Set last birthday check date to 7 April
-            await db.botGlobal.updateLastBirthdayCheck('2017-04-07 12:00:00');
-            //Set date to 7 April 13:00
-            clock = sinon.useFakeTimers(1491584400000);
-            await notification.runBirthdaysIfMissed();
-            expect(channel1.called).to.be.false;
-            expect(channel2.called).to.be.false;
-            expect(channel3.called).to.be.false;
-          });
+        });
+        it('Should not print birthdays because already ran today', async function() {
+          //Set last birthday check date to 7 April
+          await db.botGlobal.updateLastBirthdayCheck('2017-04-07 12:00:00');
+          //Set date to 7 April 13:00
+          clock = sinon.useFakeTimers(1491584400000);
+          await notification.runBirthdaysIfMissed();
+          expect(channel1.called).to.be.false;
+          expect(channel2.called).to.be.false;
+          expect(channel3.called).to.be.false;
         });
         it('Should print birthdays when undefined', async function() {
           //Set date to 7 April 13:00
