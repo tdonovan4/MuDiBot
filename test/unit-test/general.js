@@ -215,6 +215,54 @@ module.exports = function() {
           expect(channel3.lastCall.lastArg).to.equal('Happy birthday, <@3>!');
         });
       });
+      describe('Test runBirthdaysIfMissed', function() {
+        it('Should not print birthdays because before 12:00', async function() {
+          //Set date to 7 April 8:00
+          clock = sinon.useFakeTimers(1491566400000);
+          await notification.runBirthdaysIfMissed();
+          expect(channel1.called).to.be.false;
+          expect(channel2.called).to.be.false;
+          expect(channel3.called).to.be.false;
+          it('Should not print birthdays because already ran today', async function() {
+            //Set last birthday check date to 7 April
+            await db.botGlobal.updateLastBirthdayCheck('2017-04-07 12:00:00');
+            //Set date to 7 April 13:00
+            clock = sinon.useFakeTimers(1491584400000);
+            await notification.runBirthdaysIfMissed();
+            expect(channel1.called).to.be.false;
+            expect(channel2.called).to.be.false;
+            expect(channel3.called).to.be.false;
+          });
+        });
+        it('Should print birthdays when undefined', async function() {
+          //Set date to 7 April 13:00
+          clock = sinon.useFakeTimers(1491584400000);
+          await notification.runBirthdaysIfMissed();
+          expect(channel1.lastCall.lastArg).to.equal('Happy birthday, <@4>!');
+          expect(channel2.called).to.be.false;
+          expect(channel3.lastCall.lastArg).to.equal('Happy birthday, <@3>!');
+        });
+        it('Should print birthdays when last check is April 6', async function() {
+          //Set last birthday check date to 6 April
+          await db.botGlobal.updateLastBirthdayCheck('2017-04-06 12:00:00');
+          //Set date to 7 April 13:00
+          clock = sinon.useFakeTimers(1491584400000);
+          await notification.runBirthdaysIfMissed();
+          expect(channel1.lastCall.lastArg).to.equal('Happy birthday, <@4>!');
+          expect(channel2.called).to.be.false;
+          expect(channel3.lastCall.lastArg).to.equal('Happy birthday, <@3>!');
+        });
+        it('Should print birthdays when time is at 12:00', async function() {
+          //Set last birthday check date to 6 April
+          await db.botGlobal.updateLastBirthdayCheck('2017-04-06 12:00:00');
+          //Set date to 7 April 13:00
+          clock = sinon.useFakeTimers(1491584400000);
+          await notification.runBirthdaysIfMissed();
+          expect(channel1.lastCall.lastArg).to.equal('Happy birthday, <@4>!');
+          expect(channel2.called).to.be.false;
+          expect(channel3.lastCall.lastArg).to.equal('Happy birthday, <@3>!');
+        });
+      });
     });
   });
   describe('Test ping', function() {
