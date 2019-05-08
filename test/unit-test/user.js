@@ -378,6 +378,14 @@ module.exports = function() {
           //Make sure the db was not modified
           expect(response.birthday).to.equal('Unknown');
         });
+        it('The birthday field should return that the format is wrong when using when using wrong month and day', async function() {
+          await modifyProfileCmd.execute(msg, ['birthday', '1999-13-32']);
+          var result = msgSend.lastCall.returnValue.content;
+          var response = await db.user.getAll(msg.guild.id, msg.author.id);
+          expect(result).to.equal(lang.error.formatError);
+          //Make sure the db was not modified
+          expect(response.birthday).to.equal('Unknown');
+        });
       });
       describe('Test if the command actually works', function() {
         it('Should change bio to lorem ipsum', async function() {
