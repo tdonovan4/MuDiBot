@@ -1,6 +1,6 @@
 {
   "name": "MuDiBot",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "A multipurpose Discord bot (MuDiBot) made using discord.js",
   "main": "bot.js",
   "scripts": {
