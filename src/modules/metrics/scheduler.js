@@ -18,7 +18,7 @@ exporter.emitter.on('startMetrics', () => {
     //Get total number of custom commands in db
     metrics.customCommandTotal.set(await db.customCmd.getGlobalCount());
     //Get total number of birthdays in db (including duplicates)
-    metrics.customCommandTotal.set(await db.user.getGlobalBirthdayCount());
+    metrics.birthdayTotal.set(await db.user.getGlobalBirthdayCount());
     let elapsed = Date.now() - start;
     metrics.periodicMetricSeconds.set(elapsed / 1000);
     emitter.emit('endCollection');
