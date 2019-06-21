@@ -9,7 +9,12 @@ const sql = require('sqlite');
 const db = require('../../src/modules/database/database.js');
 const queries = require('../../src/modules/database/queries.js');
 const dbFolder = './test/database/';
-const { deleteDatabase, replaceDatabase } = require('../test-resources/test-util.js');
+const {
+  deleteDatabase,
+  replaceDatabase,
+  spyLog,
+  spyError
+} = require('../test-resources/test-util.js');
 
 const fs = require('fs');
 const { promisify } = require('util');
@@ -85,9 +90,6 @@ async function checkDatabaseUpdating(version) {
   expect(schema).to.deep.equal(lastVersionSchema);
 }
 
-//Make console.log a spy
-var { spyLog } = require('../test-resources/test-util.js');
-
 //Comparaison database
 var lastVersionSchema;
 
@@ -134,6 +136,7 @@ module.exports = function() {
   describe('Test queries', function() {
     beforeEach(async function() {
       await replaceDatabase(config.pathDatabase, 'data1.db');
+      spyError.resetHistory();
     });
     describe('Test the get query', function() {
       it('Should get user based on server and user id', async function() {
@@ -211,6 +214,17 @@ module.exports = function() {
           { permission_group: 'Mod' },
         ]);
         /*eslint-enable camelcase*/
+      });
+    });
+    describe('Test running multiple queries at the same time', function() {
+      it('Should run two queries without error', async function() {
+        let query1 = 'SELECT user_id FROM user';
+        let query2 = 'SELECT server_id FROM user';
+        await Promise.all([
+          queries.runGetQuery(query1, []),
+          queries.runGetQuery(query2, [])
+        ]);
+        expect(spyError.lastCall).to.be.null;
       });
     });
   });
