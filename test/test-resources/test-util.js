@@ -25,5 +25,6 @@ module.exports = {
   printMsg: sinon.stub(util, 'printMsg'),
   msgSend: sinon.spy(msg.channel, 'send'),
   spyLog: sinon.spy(console, 'log'),
+  spyError: sinon.spy(console, 'error'),
   reply: sinon.spy(msg, 'reply')
 }
