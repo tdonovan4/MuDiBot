@@ -336,7 +336,7 @@
     "tails": "pile"
   },
   "roll": {
-    "invalid": "Utilisation incorrecte! Veuillez suivre `<# de dés>d<# de faces><modifieur>` et de garder les nombres en bas de 50.\n"
+    "invalid": "Utilisation incorrecte! Veuillez suivre `<# de dés>d<# de faces><modifieur>` et de garder les nombres en bas de 50. Je roule 1d6:\n"
   },
   "createcmd": {
     "interactiveMode": {
