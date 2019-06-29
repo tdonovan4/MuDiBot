@@ -2,6 +2,7 @@
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const mustache = require('mustache');
+const metrics = require('./modules/metrics/metrics.js');
 var config = require('./util.js').getConfig()[1];
 //For localization
 var lang = require('./localization.js').getLocalization();
@@ -22,7 +23,7 @@ try {
 const commands = require('./commands.js');
 const customCmd = require('./modules/fun/custom-cmd.js');
 const db = require('./modules/database/database.js');
-const { sendDefaultChannel } = require('./modules/general/notification.js');
+const { sendDefaultChannel, runBirthdaysIfMissed } = require('./modules/general/notification.js');
 
 //Start the bot
 client.on('ready', async () => {
@@ -40,10 +41,16 @@ client.on('ready', async () => {
   //Set status
   client.user.setActivity(config.currentStatus);
   //Display startup time
-  var time = Date.now() - startTime; +
+  let time = Date.now() - startTime;
   console.log(mustache.render(lang.general.startupTime, {
     time
   }));
+  //Start metrics
+  await metrics.init();
+  //Check if we missed the birthday check for today and run it if we did
+  await runBirthdaysIfMissed();
+  //Log startup time to metrics
+  metrics.startupTimeSeconds.set(time / 1000);
 });
 
 const levels = require('./levels.js');
@@ -73,12 +80,20 @@ async function onMessage(msg) {
     //Check if message is a command that can be executed
     var msgValidCmd = await commands.checkIfValidCmd(msg, cmd);
     if (msgValidCmd) {
+      let start = Date.now()
+      //Execute command
       await commands.executeCmd(msg, cmd);
+      let elapsed = Date.now() - start;
+      //Log metrics
+      metrics.commandExecutedTotal.inc({ command: cmd[0] });
+      metrics.commandExecutionSeconds.set({ command: cmd[0] }, elapsed / 1000);
     } else {
       //Check if message is a custom command
       let custCmd = await db.customCmd.getCmd(msg.guild.id, msg.content);
       if (custCmd !== undefined) {
         customCmd.executeCmd(msg, custCmd);
+        //Log metrics
+        metrics.customCommandExecutedTotal.inc();
       }
     }
     if (config.levels.activated == true) {

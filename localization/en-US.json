@@ -13,11 +13,18 @@
       "rankUp": "This user is now a {{rank}}",
       "reward": "and receives the role {{role}} as a reward",
       "addReward": "Reward for rank up",
-      "removeOldReward": "Removal of old reward",
-      "birthday": "Happy birthday, {{{mention}}}!"
+      "removeOldReward": "Removal of old reward"
     },
-    "birthdays": "Happy birthday to: {{{users}}}!",
-    "botBirthday": "Happy birthday to me! I'm now {{age}} years old!",
+    "birthdays": {
+      "one": "Happy birthday, {{{mention}}}!",
+      "multiple": "Happy birthday to: {{{users}}}!",
+      "botBirthday": "Happy birthday to me! I'm now {{age}} years old!",
+      "missed": {
+        "one": "Looks like I missed a birthday on {{{time}}}. Belated happy birthday, {{{mention}}}!",
+        "multiple": "Some birthdays were missed on {{{time}}} Belated happy birthday to: {{{users}}}!",
+        "botBirthday": "Belated happy birthday to me! I'm now {{age}} years old!"
+      }
+    },
     "interactiveMode": {
       "optional": "(this argument is optional, use `$skip` to skip it)",
       "skipped": "Argument skipped"
@@ -25,6 +32,7 @@
   },
   "error": {
     "usage": "Wrong usage",
+    "portOpen": "The selected port is already opened. Metrics have been disabled.",
     "missingArg": {
       "channel": "Missing argument: channel",
       "message": "Missing argument: message",
@@ -235,7 +243,7 @@
     }
   },
   "ping": {
-    "pong": "Pong!"
+    "pong": "Pong!\n*Ping received after {{ping}} ms. Average heartbeat ping of {{heartbeatPing}} ms.*"
   },
   "info": {
     "title": "~Infos~",
@@ -328,7 +336,7 @@
     "tails": "tails"
   },
   "roll": {
-    "invalid": "Wrong usage! Make sure to follow `<# of dice>d<# of faces><modifier>` and keep inputs bellow 50.\n"
+    "invalid": "Wrong usage! Make sure to follow `<# of dice>d<# of faces><modifier>` and keep inputs bellow 50. Rolling 1d6:\n"
   },
   "createcmd": {
     "interactiveMode": {

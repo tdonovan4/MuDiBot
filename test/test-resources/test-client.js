@@ -23,5 +23,6 @@ module.exports = {
   users: new Discord.Collection(),
   fetchUser: function(id) {
     return id;
-  }
+  },
+  ping: '50'
 }

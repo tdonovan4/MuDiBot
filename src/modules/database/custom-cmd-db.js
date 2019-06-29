@@ -1,6 +1,11 @@
 var queries = require('./queries.js');
 
 module.exports = {
+  getGlobalCount: async function() {
+    var query = 'SELECT COUNT(name) FROM custom_command';
+    var response = await queries.runGetQuery(query, []);
+    return response['COUNT(name)'];
+  },
   getCmd: async function(serverId, name) {
     var query = 'SELECT * FROM custom_command WHERE server_id = ? AND name = ?';
     return await queries.runGetQuery(query, [serverId, name]);

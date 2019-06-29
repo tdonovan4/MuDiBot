@@ -9,7 +9,12 @@ const sql = require('sqlite');
 const db = require('../../src/modules/database/database.js');
 const queries = require('../../src/modules/database/queries.js');
 const dbFolder = './test/database/';
-const { deleteDatabase, replaceDatabase } = require('../test-resources/test-util.js');
+const {
+  deleteDatabase,
+  replaceDatabase,
+  spyLog,
+  spyError
+} = require('../test-resources/test-util.js');
 
 const fs = require('fs');
 const { promisify } = require('util');
@@ -85,9 +90,6 @@ async function checkDatabaseUpdating(version) {
   expect(schema).to.deep.equal(lastVersionSchema);
 }
 
-//Make console.log a spy
-var { spyLog } = require('../test-resources/test-util.js');
-
 //Comparaison database
 var lastVersionSchema;
 
@@ -125,12 +127,16 @@ module.exports = function() {
     it('Should update v004 to last version', async function() {
       await checkDatabaseUpdating('004');
     });
+    it('Should update v005 to last version', async function() {
+      await checkDatabaseUpdating('005');
+    });
   });
 
   //Test queries submodule
   describe('Test queries', function() {
     beforeEach(async function() {
       await replaceDatabase(config.pathDatabase, 'data1.db');
+      spyError.resetHistory();
     });
     describe('Test the get query', function() {
       it('Should get user based on server and user id', async function() {
@@ -210,6 +216,17 @@ module.exports = function() {
         /*eslint-enable camelcase*/
       });
     });
+    describe('Test running multiple queries at the same time', function() {
+      it('Should run two queries without error', async function() {
+        let query1 = 'SELECT user_id FROM user';
+        let query2 = 'SELECT server_id FROM user';
+        await Promise.all([
+          queries.runGetQuery(query1, []),
+          queries.runGetQuery(query2, [])
+        ]);
+        expect(spyError.lastCall).to.be.null;
+      });
+    });
   });
 
   //Test user database submodule
@@ -254,6 +271,10 @@ module.exports = function() {
       it('getUsersByBirthday() should return empty array', async function() {
         var response = await db.user.getUsersByBirthday('02-19');
         expect(response).to.be.empty;
+      });
+      it('getGlobalBirthdayCount should return 0', async function() {
+        var response = await db.user.getGlobalBirthdayCount();
+        expect(response).to.equal(0);
       });
       it('getUsersWarnings() should return empty array', async function() {
         var response = await db.user.getUsersWarnings('1');
@@ -302,7 +323,7 @@ module.exports = function() {
     });
     describe('Test user count', function() {
       beforeEach(async function() {
-        //Load empty database
+        //Load database
         await replaceDatabase(config.pathDatabase, 'data1.db');
       });
       it('getLocalCount should return 1', async function() {
@@ -312,6 +333,10 @@ module.exports = function() {
       it('getGlobalCount should return 4', async function() {
         var response = await db.user.getGlobalCount();
         expect(response).to.equal(4);
+      });
+      it('getGlobalBirthdayCount should return 3', async function() {
+        var response = await db.user.getGlobalBirthdayCount();
+        expect(response).to.equal(3);
       });
     });
     describe('Test updating existing users', function() {
@@ -382,7 +407,7 @@ module.exports = function() {
     });
   });
 
-  //Test config databas submodule
+  //Test config database submodule
   describe('Test config-db', function() {
     describe('Test getDefaultChannel with empty responses', function() {
       beforeEach(async function() {
@@ -472,6 +497,10 @@ module.exports = function() {
       beforeEach(async function() {
         await replaceDatabase(config.pathDatabase, 'empty.db');
       });
+      it('getGlobalCount should return 0', async function() {
+        var response = await db.customCmd.getGlobalCount();
+        expect(response).to.equal(0);
+      });
       it('getCmd should return undefined', async function() {
         var response = await db.customCmd.getCmd(msg.guild.id, 'test');
         expect(response).to.equal(undefined);
@@ -501,6 +530,10 @@ module.exports = function() {
       describe('Test in populated database', function() {
         beforeEach(async function() {
           await replaceDatabase(config.pathDatabase, 'data1.db');
+        });
+        it('getGlobalCount should return 3', async function() {
+          var response = await db.customCmd.getGlobalCount();
+          expect(response).to.equal(14);
         });
         it('Should insert another cmd', async function() {
           await db.customCmd.insertCmd(msg.guild.id, msg.author.id, 'test4', 'test4');
@@ -590,6 +623,39 @@ module.exports = function() {
       });
     });
   });
+
+  //Test the bot global submodule
+  describe('Test bot-global.js', function() {
+    describe('Test in empty database', function() {
+      beforeEach(async function() {
+        await replaceDatabase(config.pathDatabase, 'empty.db');
+      });
+      it('getLastBirthdayCheck should return undefined', async function() {
+        var response = await db.botGlobal.getLastBirthdayCheck();
+        expect(response).to.be.undefined;
+      });
+      it('updateLastBirthdayCheck should update date to 2019-04-28 12:00:00', async function() {
+        await db.botGlobal.updateLastBirthdayCheck('2019-04-28 12:00:00');
+        var response = await db.botGlobal.getLastBirthdayCheck();
+        expect(response).to.equal('2019-04-28 12:00:00');
+      });
+    });
+    describe('Test in populated database', function() {
+      beforeEach(async function() {
+        await replaceDatabase(config.pathDatabase, 'data1.db');
+      });
+      it('getLastBirthdayCheck should return 2019-04-26 12:00:00', async function() {
+        var response = await db.botGlobal.getLastBirthdayCheck();
+        expect(response).to.equal('2019-04-26 12:00:00');
+      });
+      it('updateLastBirthdayCheck should update existing date to 2019-04-28 12:00:00', async function() {
+        await db.botGlobal.updateLastBirthdayCheck('2019-04-28 12:00:00');
+        var response = await db.botGlobal.getLastBirthdayCheck();
+        expect(response).to.equal('2019-04-28 12:00:00');
+      });
+    });
+  });
+
   after(async function() {
     //Load empty database for the rest of the test
     await replaceDatabase(config.pathDatabase, 'empty.db');

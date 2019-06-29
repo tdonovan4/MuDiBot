@@ -17,6 +17,7 @@ const commands = require('../src/commands.js');
 //Register stuff
 commands.registerCategories(config.categories);
 commands.registerCommands();
+const metrics = require('../src/modules/metrics/metrics.js');
 
 //Checking for database folder
 const dbFolder = './test/database/';
@@ -24,10 +25,22 @@ if (!fs.existsSync(dbFolder)) {
   fs.mkdirSync(dbFolder);
 }
 
+before(async function() {
+  config.metrics.activated = false;
+  await metrics.init();
+});
+
 //Test the database module
 const dbTest = require('./unit-test/database.js');
 describe('Test the database module', function() {
   dbTest();
+});
+
+//Test the metrics module
+const metricsTest = require('./unit-test/metrics.js');
+describe('Test the metrics module', function() {
+  metricsTest();
+  //Init fake metrics for the rest
 });
 
 //Test the commands module

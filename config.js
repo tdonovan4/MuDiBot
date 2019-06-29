@@ -54,9 +54,21 @@ module.exports = {
     permLvl: 3,
     maxCustomCmd: 15
   }],
+
   /*===============
     -Modules-
   ===============*/
+
+  //Disabled by default
+  /*===============
+    -Metrics-
+  ===============*/
+  metrics: {
+    //Is this module activated? Set to false to disable the module
+    activated: false,
+    //The port used by the prometheus exporter
+    exporterPort: 4444,
+  },
 
   /*---------------
   -Xp and levels-
