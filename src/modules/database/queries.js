@@ -2,13 +2,31 @@ const sql = require('sqlite');
 const config = require('../../util.js').getConfig()[1];
 const metrics = require('../../modules/metrics/metrics.js');
 
+let queriesRunning = 0
+
+async function openDb() {
+  //Only open db if closed
+  if (!sql.driver.open) {
+    await sql.open(config.pathDatabase);
+  }
+  queriesRunning++;
+}
+
+async function closeDb() {
+  //Only close db is open and there is no more queries running
+  queriesRunning--;
+  if (sql.driver.open && queriesRunning == 0) {
+    await sql.close();
+  }
+}
+
 module.exports = {
   runQuery: async function(query, args) {
     let start = Date.now()
     try {
-      await sql.open(config.pathDatabase);
+      await openDb()
       await sql.run(query, args);
-      await sql.close();
+      await closeDb();
     } catch (e) {
       console.error(e);
       //Log metrics if error
@@ -22,9 +40,9 @@ module.exports = {
   runGetQuery: async function(query, args) {
     let start = Date.now()
     try {
-      await sql.open(config.pathDatabase);
+      await openDb()
       var response = await sql.get(query, args);
-      await sql.close();
+      await closeDb();
     } catch (e) {
       console.error(e);
       //Log metrics if error
@@ -39,9 +57,9 @@ module.exports = {
   runAllQuery: async function(query, args) {
     let start = Date.now()
     try {
-      await sql.open(config.pathDatabase);
+      await openDb()
       var response = await sql.all(query, args);
-      await sql.close();
+      await closeDb();
     } catch (e) {
       console.error(e);
       //Log metrics if error
@@ -56,7 +74,7 @@ module.exports = {
   runInsertUpdateQuery: async function(insertQuery, updateQuery, args, newValues) {
     let start = Date.now()
     try {
-      await sql.open(config.pathDatabase);
+      await openDb()
       //If user don't exist, insert
       await sql.run(insertQuery, args);
       if (newValues != undefined) {
@@ -65,7 +83,7 @@ module.exports = {
       }
       //Update user
       await sql.run(updateQuery, args);
-      await sql.close();
+      await closeDb();
     } catch (e) {
       console.error(e);
       //Log metrics if error
@@ -79,10 +97,10 @@ module.exports = {
   runUpdateQuery: async function(query, userId, newValue) {
     let start = Date.now()
     try {
-      await sql.open(config.pathDatabase);
+      await openDb()
       //Update user
       await sql.run(query, [newValue, userId]);
-      await sql.close();
+      await closeDb();
     } catch (e) {
       console.error(e);
       //Log metrics if error

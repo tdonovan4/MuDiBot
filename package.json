@@ -1,6 +1,6 @@
 {
   "name": "MuDiBot",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "A multipurpose Discord bot (MuDiBot) made using discord.js",
   "main": "bot.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "sqlite": "^3.0.3",
     "sqlite3": "^4.0.9",
     "uws": "^0.14.5",
-    "ytdl-core": "^0.20.4"
+    "ytdl-core": "github:fent/node-ytdl-core"
   },
   "devDependencies": {
     "chai": "^4.2.0",
