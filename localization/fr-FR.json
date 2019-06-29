@@ -13,11 +13,18 @@
       "rankUp": "Cet utilisateur est maintenant un {{rank}}!",
       "reward": "et reçoit le role {{role}} comme récompense",
       "addReward": "Récompense pour promotion",
-      "removeOldReward": "Ancienne récompense enlevée",
-      "birthday": "Bonne fête, {{{mention}}}!"
+      "removeOldReward": "Ancienne récompense enlevée"
     },
-    "birthdays": "Bonne fête à: {{{users}}}!",
-    "botBirthday": "Bonne fête à moi-même! J'ai maintenant {{age}} ans!",
+    "birthdays": {
+      "one": "Bonne fête, {{{mention}}}!",
+      "multiple": "Bonne fête à: {{{users}}}!",
+      "botBirthday": "Bonne fête à moi-même! J'ai maintenant {{age}} ans!",
+      "missed": {
+        "one": "On dirait que j'ai manqué un anniversaire le {{{time}}}. Bonne fête en retard, {{{mention}}}!",
+        "multiple": "Quelques anniversaires ont été manqués le {{{time}}} Bonne fête en retard à: {{{users}}}!",
+        "botBirthday": "Bonne fête en retard à moi-même! J'ai maintenant {{age}} ans!"
+      }
+    },
     "interactiveMode": {
       "optional": "(cet argument est facultative, utilisez `$skip` pour la sauter)",
       "skipped": "Argument sauté"
@@ -25,6 +32,7 @@
   },
   "error": {
     "usage": "Utilisation incorrecte",
+    "portOpen": "Le port sélectionné est déjà utilisé. Les paramètres ont été désactivés",
     "missingArg": {
       "channel": "Argument manquant: salon",
       "message": "Argument manquant: message",
@@ -235,7 +243,7 @@
     }
   },
   "ping": {
-    "pong": "Pong!"
+    "pong": "Pong!\n*Ping reçu après {{ping}} ms. Pulsation moyenne de {{heartbeatPing}} ms.*"
   },
   "info": {
     "title": "~Infos~",
@@ -328,7 +336,7 @@
     "tails": "pile"
   },
   "roll": {
-    "invalid": "Utilisation incorrecte! Veuillez suivre `<# de dés>d<# de faces><modifieur>` et de garder les nombres en bas de 50.\n"
+    "invalid": "Utilisation incorrecte! Veuillez suivre `<# de dés>d<# de faces><modifieur>` et de garder les nombres en bas de 50. Je roule 1d6:\n"
   },
   "createcmd": {
     "interactiveMode": {

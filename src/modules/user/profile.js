@@ -105,7 +105,7 @@ profileFields.set('bio', new ProfileField('bio', {
 }));
 profileFields.set('birthday', new ProfileField('birthday', {
   req: {
-    format: /([0-9]{4}|-)(-[0-9]{2}){2}/
+    format: /^\d\d\d\d-(0[1-9]|1[0-2])-(0[1-9]|[1-2]\d|3[0-1])$/
   },
   dbModifyFunction: db.user.updateBirthday
 }));

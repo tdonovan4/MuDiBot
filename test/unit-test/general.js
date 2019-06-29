@@ -4,6 +4,7 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 const mustache = require('mustache');
 const rewire = require('rewire');
+const db = require('../../src/modules/database/database.js');
 const lang = require('../../localization/en-US.json');
 const testUtil = require('../test-resources/test-util.js');
 const { replaceDatabase, msgSend, reply } = testUtil;
@@ -177,17 +178,117 @@ module.exports = function() {
         expect(channel2.lastCall.lastArg).to.equal('Happy birthday, <@1>!');
         expect(channel3.called).to.be.false;
       });
+      describe('Test with lastBirthdayCheck', function() {
+        it('Should print birthdays for the 7 april', async function() {
+          //Set last birthday check date to 6 April
+          await db.botGlobal.updateLastBirthdayCheck('2017-04-06 12:00:00');
+          //Set date to 7 April
+          clock = sinon.useFakeTimers(1491566400000);
+          await notification.birthdays.job();
+          //Check if time got update
+          let time = await db.botGlobal.getLastBirthdayCheck();
+          expect(channel1.lastCall.lastArg).to.equal('Happy birthday, <@4>!');
+          expect(channel2.called).to.be.false;
+          expect(channel3.lastCall.lastArg).to.equal('Happy birthday, <@3>!');
+          expect(time).to.equal('2017-04-07 12:00:00');
+        });
+        it('Should print missed birthdays', async function() {
+          //Set last birthday check date to 3 April
+          await db.botGlobal.updateLastBirthdayCheck('2017-04-03 12:00:00');
+          //Set date to 7 April
+          clock = sinon.useFakeTimers(1491566400000);
+          await notification.birthdays.job();
+          //Channel 1
+          expect(channel1.getCall(channel1.callCount - 3).lastArg).to.equal(
+            'Looks like I missed a birthday on 2017-04-05. Belated happy birthday, <@2>!');
+          expect(channel1.getCall(channel1.callCount - 2).lastArg).to.equal(
+            'Belated happy birthday to me! I\'m now 0 years old!');
+          expect(channel1.lastCall.lastArg).to.equal('Happy birthday, <@4>!');
+          //Channel 2
+          expect(channel2.getCall(channel2.callCount - 2).lastArg).to.equal(
+            'Some birthdays were missed on 2017-04-05 Belated happy birthday to: <@1>, <@2>!');
+          expect(channel2.lastCall.lastArg).to.equal(
+            'Belated happy birthday to me! I\'m now 0 years old!');
+          //Channel 3
+          expect(channel3.getCall(channel3.callCount - 2).lastArg).to.equal(
+            'Belated happy birthday to me! I\'m now 0 years old!');
+          expect(channel3.lastCall.lastArg).to.equal('Happy birthday, <@3>!');
+        });
+      });
+      describe('Test runBirthdaysIfMissed', function() {
+        it('Should not print birthdays because before 12:00', async function() {
+          //Set date to 7 April 8:00
+          clock = sinon.useFakeTimers(1491566400000);
+          await notification.runBirthdaysIfMissed();
+          expect(channel1.called).to.be.false;
+          expect(channel2.called).to.be.false;
+          expect(channel3.called).to.be.false;
+        });
+        it('Should not print birthdays because already ran today', async function() {
+          //Set last birthday check date to 7 April
+          await db.botGlobal.updateLastBirthdayCheck('2017-04-07 12:00:00');
+          //Set date to 7 April 13:00
+          clock = sinon.useFakeTimers(1491584400000);
+          await notification.runBirthdaysIfMissed();
+          expect(channel1.called).to.be.false;
+          expect(channel2.called).to.be.false;
+          expect(channel3.called).to.be.false;
+        });
+        it('Should print birthdays when undefined', async function() {
+          //Set date to 7 April 13:00
+          clock = sinon.useFakeTimers(1491584400000);
+          await notification.runBirthdaysIfMissed();
+          expect(channel1.lastCall.lastArg).to.equal('Happy birthday, <@4>!');
+          expect(channel2.called).to.be.false;
+          expect(channel3.lastCall.lastArg).to.equal('Happy birthday, <@3>!');
+        });
+        it('Should print birthdays when last check is April 6', async function() {
+          //Set last birthday check date to 6 April
+          await db.botGlobal.updateLastBirthdayCheck('2017-04-06 12:00:00');
+          //Set date to 7 April 13:00
+          clock = sinon.useFakeTimers(1491584400000);
+          await notification.runBirthdaysIfMissed();
+          expect(channel1.lastCall.lastArg).to.equal('Happy birthday, <@4>!');
+          expect(channel2.called).to.be.false;
+          expect(channel3.lastCall.lastArg).to.equal('Happy birthday, <@3>!');
+        });
+        it('Should print birthdays when time is at 12:00', async function() {
+          //Set last birthday check date to 6 April
+          await db.botGlobal.updateLastBirthdayCheck('2017-04-06 12:00:00');
+          //Set date to 7 April 13:00
+          clock = sinon.useFakeTimers(1491584400000);
+          await notification.runBirthdaysIfMissed();
+          expect(channel1.lastCall.lastArg).to.equal('Happy birthday, <@4>!');
+          expect(channel2.called).to.be.false;
+          expect(channel3.lastCall.lastArg).to.equal('Happy birthday, <@3>!');
+        });
+      });
     });
   });
   describe('Test ping', function() {
-    var pingCmd = new Ping();
+    let pingCmd = new Ping();
+    let clock;
+    before(function() {
+      clock = sinon.useFakeTimers(1553308630);
+    });
+    after(function() {
+      clock.restore();
+    })
     it('Should return "Pong!"', function() {
+      msg.createdAt = 1553308565;
       pingCmd.execute(msg, []);
-      expect(reply.lastCall.returnValue).to.equal(lang.ping.pong)
+      expect(reply.lastCall.returnValue).to.equal(mustache.render(lang.ping.pong, {
+        ping: '65',
+        heartbeatPing: '50'
+      }))
     });
     it('Should return "Pong!" with an argument', function() {
+      msg.createdAt = 1553308560;
       pingCmd.execute(msg, ['argument']);
-      expect(reply.lastCall.returnValue).to.equal(lang.ping.pong)
+      expect(reply.lastCall.returnValue).to.equal(mustache.render(lang.ping.pong, {
+        ping: '70',
+        heartbeatPing: '50'
+      }))
     });
   });
   describe('Test say', function() {

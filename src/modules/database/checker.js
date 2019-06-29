@@ -1,7 +1,8 @@
 const sql = require('sqlite');
 const mustache = require('mustache');
 const fs = require('fs');
-const config = require('../../util.js').getConfig()[1];
+const util = require('../../util.js');
+const config = util.getConfig()[1];
 var lang = require('../../localization.js').getLocalization();
 
 var Table = class {
@@ -89,7 +90,7 @@ function versionString(integer) {
 }
 
 async function updateDatabaseVersion(version) {
-  var date = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+  var date = util.toDbDate(new Date());
   await sql.run('INSERT INTO database_settings (version, date) VALUES (?,?)', [version, date]);
 }
 
