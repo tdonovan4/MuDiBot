@@ -309,17 +309,20 @@ module.exports = {
     //Check if user is superuser
     for (var i = 0; i < config.superusers.length; i++) {
       if (msg.author.id === config.superusers[i]) {
+        //Bypass permissions
         return true;
       }
-    }
-    //Check if user is an administrator
-    var permissions = msg.member.permissions;
-    if (permissions.has('ADMINISTRATOR')) {
-      return true;
     }
 
     var userPermLevel = (await db.user.getHighestPermGroup(msg.guild.id,
       msg.author.id)).permLvl;
+
+    //Check if user is an administrator
+    var permissions = msg.member.permissions;
+    if (permissions.has('ADMINISTRATOR')) {
+      //Permission level is highest between 3 and current permission level
+      userPermLevel = userPermLevel < 3 ? 3 : userPermLevel
+    }
 
     //Compare user and needed permission level
     if (userPermLevel >= permLevel) {
