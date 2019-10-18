@@ -386,6 +386,12 @@ module.exports = function() {
           //Make sure the db was not modified
           expect(response.birthday).to.equal('Unknown');
         });
+        it('The birthday field should work --mm-dd', async function() {
+          await modifyProfileCmd.execute(msg, ['birthday', '--07-28']);
+          var response = await db.user.getAll(msg.guild.id, msg.author.id);
+          //Make sure the db was not modified
+          expect(response.birthday).to.equal('--07-28');
+        });
       });
       describe('Test if the command actually works', function() {
         it('Should change bio to lorem ipsum', async function() {
