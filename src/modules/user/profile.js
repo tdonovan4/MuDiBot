@@ -160,8 +160,8 @@ module.exports = {
       if (groups != null) {
         groups = groups.split(',').sort(function(a, b) {
           //Sorting by order of permission level
-          return config.groups.find(x => x.name == a).permLvl <
-            config.groups.find(x => x.name == b).permLvl;
+          return config.groups.find(x => x.name == b).permLvl -
+            config.groups.find(x => x.name == a).permLvl;
         });
         //If user is a superuser, add that to groups
         if (config.superusers.find(x => x == user.id) != null) {
