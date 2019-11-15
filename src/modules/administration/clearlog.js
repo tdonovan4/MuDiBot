@@ -36,10 +36,12 @@ module.exports = class ClearlogCommand extends commands.Command {
 
     //In case the number to delete isn't a valid number
     if (isNaN(numToDel)) {
-      numToDel = '50';
+      numToDel = 50;
     } else {
       //Remove the number so that the other arguments work
       args.splice(args.length - 1);
+      //Convert to int
+      numToDel = parseInt(numToDel);
     }
 
     if (args.length > 0) {
@@ -67,8 +69,13 @@ module.exports = class ClearlogCommand extends commands.Command {
     }
 
     var messages = await getMsgToDelete(msg, clearList, usersToClear, numToDel, filter);
-    //Send confirmation message
-    var confirmationMsg = await msg.channel.send(mustache.render(lang.clearlog.confirm, messages));
+    //Send confirmation message (substract one because not counting calling cmd)
+    var confirmationMsg = await msg.channel.send(
+      mustache.render(
+        lang.clearlog.confirm, {
+          length: messages.length > 0 ? messages.length - 1 : 0
+        })
+    );
     //React with two options
     await confirmationMsg.react('✅');
     await confirmationMsg.react('❌');
@@ -100,7 +107,8 @@ async function getMsgToDelete(msg, strings, users, num, filter) {
   //Fetch a specific number of messages
   try {
     var messages = await msg.channel.fetchMessages({
-      limit: parseInt(num)
+      //The calling command doesn't count so +1
+      limit: parseInt(num + 1)
     })
   } catch (e) {
     console.log(e);
@@ -108,17 +116,20 @@ async function getMsgToDelete(msg, strings, users, num, filter) {
   messages = messages.array();
   console.log(lang.clearlog.maxNum + num);
 
-  //Filter message by author and content
-  messages = messages.filter(message => {
-    var containsUser = users.some(user => user == message.author.id);
-    var containsString = strings.some(string => message.content.startsWith(string));
-    if (filter) {
-      return (containsUser || users.length == 0) &&
-        (containsString || strings.length == 0);
-    }
-    //Default
-    return containsUser || containsString;
-  });
+  //Check if not special filter all
+  if (strings[0] !== 'all' || strings.length > 1) {
+    //Filter message by author and content
+    messages = messages.filter(message => {
+      var containsUser = users.some(user => user == message.author.id);
+      var containsString = strings.some(string => message.content.startsWith(string));
+      if (filter) {
+        return (containsUser || users.length == 0) &&
+          (containsString || strings.length == 0);
+      }
+      //Default
+      return containsUser || containsString;
+    });
+  }
   return messages;
 }
 

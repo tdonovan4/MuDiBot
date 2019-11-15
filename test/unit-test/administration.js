@@ -66,8 +66,8 @@ module.exports = function() {
     });
     const clearlogCmd = new Clearlog();
     it('Should delete nothing', async function() {
-      msg.content = '$clearlog 1';
-      await clearlogCmd.execute(msg, ['1']);
+      msg.content = '$clearlog 0';
+      await clearlogCmd.execute(msg, ['0']);
       var deletedMessages = msg.deletedMessages;
       expect(deletedMessages).to.deep.equal([]);
     });
@@ -113,6 +113,11 @@ module.exports = function() {
       await clearlogCmd.execute(msg, ['flower', '<@384633488400140664>', '15']);
       var deletedMessages = msg.deletedMessages;
       expect(deletedMessages).to.deep.equal(['flower']);
+    });
+    it('Should delete all messages', async function() {
+      await clearlogCmd.execute(msg, ['all', '15']);
+      var deletedMessages = msg.deletedMessages;
+      expect(deletedMessages.length).to.equal(13);
     });
   });
 

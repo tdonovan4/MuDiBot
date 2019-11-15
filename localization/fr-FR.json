@@ -218,7 +218,8 @@
     },
     "clearlog": {
       "usages": ["","<nombre de messages>", "<utilisateur à supprimer> <nombre de messages>",
-        "<mots à supprimer> <nombre de messages>", "<utilisateur à supprimer> <mots à supprimer> <nombre de messages>"],
+        "<mots à supprimer> <nombre de messages>", "<utilisateur à supprimer> <mots à supprimer> <nombre de messages>",
+        "all", "all <nombre de messages>"],
       "msg": "Par défaut, supprime les commands. Peut aussi être utiliser avec des filtres."
     },
     "kill": {

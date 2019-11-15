@@ -44,8 +44,8 @@ module.exports = {
     let userGroupName;
     if (userGroups != null && userGroups != 'empty') {
       userGroupName = userGroups.split(',').sort(function(a, b) {
-        return config.groups.find(x => x.name == a).permLvl <
-          config.groups.find(x => x.name == b).permLvl;
+        return config.groups.find(x => x.name == b).permLvl -
+          config.groups.find(x => x.name == a).permLvl;
       })[0];
     } else {
       //Default if no group

@@ -218,7 +218,8 @@
     },
     "clearlog": {
       "usages": ["","<message num>", "<user to delete> <message num>",
-        "<string to delete> <message num>", "<user to delete> <string to delete> <message num>"],
+        "<string to delete> <message num>", "<user to delete> <string to delete> <message num>",
+        "all", "all <message num>"],
       "msg": "By default, delete bot commands. Can also be used with filters."
     },
     "kill": {
