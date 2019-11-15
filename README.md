@@ -1,6 +1,6 @@
 # MuDiBot
 
-![node version](https://img.shields.io/badge/node-%3E%3D8.0.0-green.svg)
+![node version](https://img.shields.io/badge/node-%3E%3D12.0.0-green.svg)
 ![version](https://img.shields.io/github/release/tdonovan4/MuDiBot.svg)
 ![license](https://img.shields.io/github/license/tdonovan4/MuDiBot.svg)
 ![pipeline status](https://gitlab.com/tdonovan4/MuDiBot/badges/master/pipeline.svg)
@@ -25,7 +25,7 @@ This bot's goal is to offer many functionalities for both server moderation and 
 Special thanks to [mozico555](https://github.com/mozico555) and Neyo for suggestions, ideas and bug reports.
 
 ## Install
-**This bot require Node.js 8.0.0 or newer. You can get it here: https://nodejs.org/en/**
+**This bot require Node.js 12.0.0 or newer. You can get it here: https://nodejs.org/en/**
 
 Start by running this command in your local bot directory
 ```

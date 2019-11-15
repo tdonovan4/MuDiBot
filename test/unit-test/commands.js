@@ -757,7 +757,19 @@ module.exports = function() {
       msg.member.permissions.set('ADMINISTRATOR');
       var response = await commands.checkPerm(msg, 3);
       expect(response).to.equal(true);
-    })
+    });
+    it('Should return true if user has ADMINISTRATOR permissions and permission level of 4', async function() {
+      //Create new permission group with permission level of 4
+      config.groups.push({
+        name: "SuperAdmin",
+        permLvl: 4,
+        maxCustomCmd: 20
+      })
+      await permGroups.setGroup(msg, msg.author, 'SuperAdmin');
+      msg.member.permissions.set('ADMINISTRATOR');
+      var response = await commands.checkPerm(msg, 4);
+      expect(response).to.equal(true);
+    });
     it('Should return true if user is a superuser', async function() {
       config.superusers = [msg.author.id];
       var response = await commands.checkPerm(msg, 3);

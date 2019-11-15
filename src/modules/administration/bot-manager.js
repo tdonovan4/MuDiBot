@@ -9,7 +9,8 @@ module.exports = {
         aliases: [],
         category: 'administration',
         priority: 9,
-        permLvl: 3
+        //Only for superusers
+        permLvl: 99
       });
     }
     execute() {
@@ -25,7 +26,8 @@ module.exports = {
         aliases: [],
         category: 'administration',
         priority: 8,
-        permLvl: 3
+        //Only for superusers
+        permLvl: 99
       });
     }
     execute() {
