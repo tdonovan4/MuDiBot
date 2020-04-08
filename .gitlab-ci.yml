@@ -1,30 +1,36 @@
-image: node:12
+variables:
+  CARGO_HOME: $CI_PROJECT_DIR/.cargo
+
+cache:
+  paths:
+    - .cargo
+    - target
 
 stages:
+  - pre-build
   - build
-  - test
 
-build:
+clippy_and_rustfmt:
+  stage: pre-build
+  image: guangie88/rustfmt-clippy:stable
+  script:
+   - cargo clippy --verbose
+   - cargo fmt -- --check
+  allow_failure: true
+
+rust-latest:
   stage: build
+  image: rust:latest
   script:
-  - npm install
-  artifacts:
-    paths: [node_modules/]
-    expire_in: 1 day
+    - cargo build --verbose
+    - cargo test --verbose
+  needs: []
 
-lint:
-  stage: test
+rust-nightly:
+  stage: build
+  image: rustlang/rust:nightly
   script:
-    - npm run lint
+    - cargo build --verbose
+    - cargo test --verbose
   allow_failure: true
-
-unit_tests:
-  stage: test
-  script:
-   - npm run test
-
-dependencies_audit:
-  stage: test
-  script:
-   - npm audit
-  allow_failure: true
+  needs: []

@@ -1,11 +1,10 @@
 # MuDiBot
 
-![node version](https://img.shields.io/badge/node-%3E%3D12.0.0-green.svg)
 ![version](https://img.shields.io/github/release/tdonovan4/MuDiBot.svg)
 ![license](https://img.shields.io/github/license/tdonovan4/MuDiBot.svg)
 ![pipeline status](https://gitlab.com/tdonovan4/MuDiBot/badges/master/pipeline.svg)
 
-> MuDiBot is a multipurpose Discord bot made using discord.js
+> MuDiBot is a multipurpose Discord bot made using Serenity
 
 This homemade bot aims to be a highly customizable and versatile bot that can be used for moderation and entertainment. Here some features: a warning system, a YouTube videos player and a text channel cleaner (useful for clearing commands).
 
@@ -25,19 +24,11 @@ This bot's goal is to offer many functionalities for both server moderation and 
 Special thanks to [mozico555](https://github.com/mozico555) and Neyo for suggestions, ideas and bug reports.
 
 ## Install
-**This bot require Node.js 12.0.0 or newer. You can get it here: https://nodejs.org/en/**
 
-Start by running this command in your local bot directory
-```
-npm install
-```
-
-Then, fill `config.js`. More information will be found inside.
-
-**You will also need to create a bot user and invite it to your guild! A guide is on the way.**
+Start by cloning this repo and then, fill the `config`. More information will be found inside.
 
 ## Usage
-Start the bot by running `run.sh` or `run.bat`.
+Start the bot by running `cargo run`
 
 You can then write `$help` (by default) to display all the available commands.
 
