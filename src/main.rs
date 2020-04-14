@@ -8,6 +8,7 @@ use serenity::{
 };
 
 mod commands;
+mod config;
 
 use commands::meta::*;
 
@@ -34,13 +35,25 @@ impl EventHandler for Handler {
 struct General;
 
 fn main() {
-    let token = env::var("DISCORD_TOKEN")
-        .expect("Please put your bot token in the DISCORD_TOKEN environment variable");
-    let mut client = Client::new(&token, Handler).expect("Err creating client");
+    let env_var_token = env::var("DISCORD_TOKEN");
+    let config = config::Config::new();
+    let token = env_var_token.as_ref().map(|x| x.as_str()).unwrap_or(
+        config
+            .get_creds()
+            .bot_token
+            .as_ref()
+            .expect("Bot token expected")
+            .as_str(),
+    );
+
+    let prefix = config.get_prefix().to_string();
+
+    let mut client = Client::new(token, Handler).expect("Err creating client");
 
     {
         let mut data = client.data.write();
         data.insert::<ShardManagerContainer>(Arc::clone(&client.shard_manager));
+        data.insert::<config::Config>(config);
     }
 
     let owners = match client.cache_and_http.http.get_current_application_info() {
@@ -55,7 +68,7 @@ fn main() {
 
     client.with_framework(
         StandardFramework::new()
-            .configure(|c| c.owners(owners).prefix("$"))
+            .configure(|c| c.owners(owners).prefix(prefix.as_str()))
             .group(&GENERAL_GROUP)
             .help(&HELP),
     );
