@@ -1,16 +1,24 @@
 use std::{
     default::Default,
-    fs::{self, File},
-    io::{self, Read},
-    path::{Path, PathBuf},
+    io::{self, Read, Write},
+    path::PathBuf,
 };
 
-use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 use serenity::prelude::*;
 
+cfg_if::cfg_if! {
+    if #[cfg(test)] {
+        use crate::test_doubles::directories::ProjectDirs;
+        use crate::test_doubles::std::{fs::{self, File}, path::Path};
+    } else {
+        use directories::ProjectDirs;
+        use std::{fs::{self, File}, path::Path};
+    }
+}
+
 /// A table to store all the tokens of the different APIs used by to bot.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Credentials {
     /// The main token used to connect to the Discord API.
     /// Create or get it here: https://discordapp.com/developers/applications.
@@ -176,7 +184,7 @@ impl Config {
     fn write_config_file(path: &Path, config: &Self) -> io::Result<()> {
         // Before writing, create folder for config
         fs::create_dir_all(path.parent().unwrap())?;
-        fs::write(path, toml::to_string(&config).unwrap())?;
+        File::create(path)?.write_all(toml::to_string(&config).unwrap().as_ref())?;
         Ok(())
     }
 
@@ -190,4 +198,145 @@ impl Config {
 
 impl TypeMapKey for Config {
     type Value = Config;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_doubles::{std::path::PathBuf, CONTEXT_SYNCHRONIZER};
+
+    use std::cell::RefCell;
+
+    thread_local! {
+        static READ_INDEX: RefCell<usize> = RefCell::new(0);
+    }
+
+    #[test]
+    fn create_new_config() {
+        // Mock config dir
+        let mut config_dir = Path::new();
+        config_dir.expect_join().once().returning(|_| {
+            // Mock config path
+            // As Path
+            let mut config_path = Path::new();
+            config_path
+                .expect_parent()
+                .once()
+                .returning(|| Some(Path::new()));
+
+            // As PathBuf
+            let mut config_path_buf = PathBuf::new();
+            config_path_buf.expect_exists().once().return_const(false);
+            config_path_buf.expect_fmt().once().return_const(Ok(()));
+            config_path_buf
+                .expect_deref()
+                .once()
+                .return_const(config_path);
+            config_path_buf
+        });
+
+        // Guards for mock contexts
+        let _guards = CONTEXT_SYNCHRONIZER.get_ctx_guards(vec!["project_dirs_from", "file_create"]);
+
+        // Mock project dir
+        let project_dirs_ctx = ProjectDirs::from_context();
+        project_dirs_ctx.expect().once().return_once(|_, _, _| {
+            let mut project_dir = ProjectDirs::new();
+            project_dir
+                .expect_config_dir()
+                .once()
+                .return_const(config_dir);
+            Some(project_dir)
+        });
+
+        // Mock config file
+        let file_ctx = File::create_context();
+        file_ctx.expect().once().return_once(|_| {
+            let mut config_file = File::new();
+            config_file
+                .expect_write()
+                .once()
+                .return_once(|x| Ok(x.len()));
+            Ok(config_file)
+        });
+
+        Config::new();
+    }
+
+    #[test]
+    fn read_config() {
+        // Mock config dir
+        let mut config_dir = Path::new();
+        config_dir.expect_join().once().returning(|_| {
+            // Mock config path
+            // As PathBuf
+            let mut config_path_buf = PathBuf::new();
+            config_path_buf.expect_exists().once().return_const(true);
+            config_path_buf.expect_fmt().once().return_const(Ok(()));
+            config_path_buf
+                .expect_deref()
+                .once()
+                .return_const(Path::new());
+            config_path_buf
+        });
+
+        // Guards for mock contexts
+        let _guards = CONTEXT_SYNCHRONIZER.get_ctx_guards(vec!["project_dirs_from", "file_open"]);
+
+        // Mock project dir
+        let project_dirs_ctx = ProjectDirs::from_context();
+        project_dirs_ctx.expect().once().return_once(|_, _, _| {
+            let mut project_dir = ProjectDirs::new();
+            project_dir
+                .expect_config_dir()
+                .once()
+                .return_const(config_dir);
+            Some(project_dir)
+        });
+
+        // Mock config file
+        let file_ctx = File::open_context();
+        file_ctx.expect().once().return_once(|_| {
+            let mut config_file = File::new();
+            let toml_string = toml::to_string(&Config::default()).unwrap();
+
+            config_file.expect_read().returning(move |buf| {
+                let bytes = toml_string.as_bytes();
+                let mut index = READ_INDEX.with(|x| *x.borrow());
+                let mut total = 0;
+
+                for byte in buf.iter_mut() {
+                    if index < toml_string.len() {
+                        *byte = bytes[index];
+                        total += 1;
+                    } else {
+                        *byte = 0;
+                    }
+                    index += 1;
+                }
+
+                // Update index
+                READ_INDEX.with(|x| *x.borrow_mut() = index);
+
+                Ok(total)
+            });
+            Ok(config_file)
+        });
+
+        Config::new();
+    }
+
+    #[test]
+    fn borrow_creds() {
+        let config = Config::default();
+
+        assert_eq!(config.get_creds(), &config.credentials);
+    }
+
+    #[test]
+    fn borrow_prefix() {
+        let config = Config::default();
+
+        assert_eq!(config.get_prefix(), config.server_specific.prefix.as_str());
+    }
 }

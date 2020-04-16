@@ -1,17 +1,33 @@
-use std::{collections::HashSet, env, sync::Arc};
+mod commands;
+mod config;
+#[cfg(test)]
+mod test_doubles;
+
+use std::sync::Arc;
 
 use serenity::{
-    client::bridge::gateway::ShardManager,
-    framework::{standard::macros::group, StandardFramework},
     model::{event::ResumedEvent, gateway::Ready},
     prelude::*,
 };
 
-mod commands;
-mod config;
+cfg_if::cfg_if! {
+    if #[cfg(test)] {
+        use test_doubles::serenity::client::bridge::gateway::ShardManager;
+    } else {
+        use std::{collections::HashSet, env};
 
-use commands::meta::*;
+        use serenity::{
+            client::bridge::gateway::ShardManager,
+            framework::{standard::macros::group, StandardFramework}
+        };
 
+        use commands::meta::commands::*;
+
+        #[group]
+        #[commands(ping, info)]
+        struct General;
+    }
+}
 struct ShardManagerContainer;
 
 impl TypeMapKey for ShardManagerContainer {
@@ -30,21 +46,21 @@ impl EventHandler for Handler {
     }
 }
 
-#[group]
-#[commands(ping, info)]
-struct General;
-
+#[cfg(not(test))]
 fn main() {
     let env_var_token = env::var("DISCORD_TOKEN");
     let config = config::Config::new();
-    let token = env_var_token.as_ref().map(|x| x.as_str()).unwrap_or(
-        config
-            .get_creds()
-            .bot_token
-            .as_ref()
-            .expect("Bot token expected")
-            .as_str(),
-    );
+    let token = env_var_token
+        .as_ref()
+        .map(|x| x.as_str())
+        .unwrap_or_else(|_| {
+            config
+                .get_creds()
+                .bot_token
+                .as_ref()
+                .expect("Bot token expected")
+                .as_str()
+        });
 
     let prefix = config.get_prefix().to_string();
 

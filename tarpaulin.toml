@@ -1,0 +1,6 @@
+[default]
+ignore-tests = true
+out = ["Html"]
+output-dir = "target/tarpaulin"
+# Still won't exclude with ignore-tests
+exclude-files = ["test_doubles.rs"]
