@@ -1,12 +1,14 @@
+use crate::localization::{L10NBundle, Localize};
+use crate::ShardManagerContainer;
+
 use std::{
     env,
     time::{Duration, UNIX_EPOCH},
 };
 
 use chrono::DateTime;
+use fluent::fluent_args;
 use serenity::{client::bridge::gateway::ShardId, framework::standard::CommandResult};
-
-use crate::ShardManagerContainer;
 
 cfg_if::cfg_if! {
     if #[cfg(test)] {
@@ -44,18 +46,20 @@ fn duration_to_str(duration: chrono::Duration) -> String {
 
 fn ping(ctx: &mut Context, msg: &Message) -> CommandResult {
     let ping = DateTime::from(Utc::now()) - msg.id.created_at();
-
-    let mut msg_str = format!(
-        "Pong! *Ping received after {} ms.*",
-        ping.num_milliseconds(),
-    );
-
-    if let Some(heartbeat) = get_heartbeat_latency(ctx) {
-        msg_str += &format!(
-            " Current shard heartbeat ping of {} ms.",
-            heartbeat.as_millis()
-        )
-    }
+    let msg_str = if let Some(heartbeat) = get_heartbeat_latency(ctx) {
+        let args = fluent_args![
+            "ping" => ping.num_milliseconds(),
+            "heartbeat" => heartbeat.as_millis()
+        ];
+        ctx.localize_msg("ping-msg-heartbeat", Some(&args))
+            .unwrap()
+            .into_owned()
+    } else {
+        let args = fluent_args!["ping" => ping.num_milliseconds()];
+        ctx.localize_msg("ping-msg", Some(&args))
+            .unwrap()
+            .into_owned()
+    };
 
     let _ = msg.channel_id.say(&ctx.http, msg_str.as_str());
     Ok(())
@@ -75,25 +79,57 @@ fn info(ctx: &mut Context, msg: &Message) -> CommandResult {
 
     let bot = &(*ctx.cache).read().user;
 
+    let data = ctx.data.read();
+    let l10n = data.get::<L10NBundle>().unwrap().lock();
+    let bundle = (*l10n).get_bundle();
+
+    let embed_text = bundle.get_message("info-embed").unwrap();
+    let args_general = fluent_args![
+        "version" => version,
+        "uptime" => duration_to_str(uptime)
+    ];
+    let args_footer = fluent_args![
+        "id" => bot.id.to_string()
+    ];
+    let mut errors = vec![];
+
     let _ = msg.channel_id.send_message(&ctx.http, |m| {
         m.embed(|e| {
-            e.title("__**~Infos~**__");
+            e.title(bundle.format_pattern(embed_text.value.unwrap(), None, &mut errors));
             e.colour(0x0000_80c0);
             e.field(
-                "**General**",
-                format!(
-                    "**Name:** MuDiBot\n\
-                **Description:** A multipurpose Discord bot (MuDiBot) made using discord.js\n\
-                **Author:** Thomas Donovan (tdonovan4)\n\
-                **Version:** {}\n\
-                **Uptime:** {}",
-                    version,
-                    duration_to_str(uptime)
+                bundle.format_pattern(
+                    embed_text.attributes.get("general-title").unwrap(),
+                    None,
+                    &mut errors,
+                ),
+                bundle.format_pattern(
+                    embed_text.attributes.get("general-body").unwrap(),
+                    Some(&args_general),
+                    &mut errors,
                 ),
                 false,
             );
-            e.field("**Config**", "**Language:** TODO", false);
-            e.footer(|f| f.text(format!("Client ID: {}", bot.id)));
+            e.field(
+                bundle.format_pattern(
+                    embed_text.attributes.get("config-title").unwrap(),
+                    None,
+                    &mut errors,
+                ),
+                bundle.format_pattern(
+                    embed_text.attributes.get("config-body").unwrap(),
+                    None,
+                    &mut errors,
+                ),
+                false,
+            );
+            e.footer(|f| {
+                f.text(bundle.format_pattern(
+                    embed_text.attributes.get("footer").unwrap(),
+                    Some(&args_footer),
+                    &mut errors,
+                ))
+            });
             e
         })
     });
@@ -171,6 +207,7 @@ mod tests {
             data.insert::<ShardManagerContainer>(Arc::new(serenity::prelude::Mutex::new(
                 ShardManager::_new(map),
             )));
+            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")));
         }
 
         // Mock message
@@ -194,7 +231,7 @@ mod tests {
 
         assert_eq!(
             receiver.recv().unwrap(),
-            MessageData::StrMsg("Pong! *Ping received after 100 ms.*".to_string())
+            MessageData::StrMsg("Pong! *Ping received after \u{2068}100\u{2069} ms.*".to_string())
         );
     }
 
@@ -215,6 +252,7 @@ mod tests {
             data.insert::<ShardManagerContainer>(Arc::new(serenity::prelude::Mutex::new(
                 ShardManager::_new(map),
             )));
+            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")));
         }
 
         // Mock message
@@ -239,7 +277,7 @@ mod tests {
         assert_eq!(
             receiver.recv().unwrap(),
             MessageData::StrMsg(
-                "Pong! *Ping received after 1100 ms.* Current shard heartbeat ping of 64 ms."
+                "Pong! *Ping received after \u{2068}1100\u{2069} ms.* *Current shard heartbeat ping of \u{2068}64\u{2069} ms.*"
                     .to_string()
             )
         );
@@ -256,6 +294,7 @@ mod tests {
             data.insert::<ShardManagerContainer>(Arc::new(serenity::prelude::Mutex::new(
                 ShardManager::_new(map),
             )));
+            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")));
         }
 
         // Mock message
@@ -292,22 +331,22 @@ mod tests {
 
         // The expected embed
         let mut embed = CreateEmbed(HashMap::new());
-        embed.title("__**~Infos~**__");
+        embed.title("__**~Info~**__");
         embed.colour(0x0080c0);
         embed.field(
             "**General**",
             format!(
                 "**Name:** MuDiBot\n\
-            **Description:** A multipurpose Discord bot (MuDiBot) made using discord.js\n\
+            **Description:** A multipurpose Discord bot (MuDiBot) made using serenity\n\
             **Author:** Thomas Donovan (tdonovan4)\n\
-            **Version:** {}\n\
-            **Uptime:** 1d:3h:45m:0s",
+            **Version:** \u{2068}{}\u{2069}\n\
+            **Uptime:** \u{2068}1d:3h:45m:0s\u{2069}",
                 env::var("CARGO_PKG_VERSION").unwrap(),
             ),
             false,
         );
         embed.field("**Config**", "**Language:** TODO", false);
-        embed.footer(|f| f.text("Client ID: 0"));
+        embed.footer(|f| f.text("Client ID: \u{2068}0\u{2069}"));
 
         info(&mut ctx, &msg).unwrap();
 

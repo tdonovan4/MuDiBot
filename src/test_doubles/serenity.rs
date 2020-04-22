@@ -2,8 +2,21 @@ use std::sync::{mpsc::Sender, Arc};
 
 pub mod client {
     use super::*;
-    use model::id::MessageData;
-    use serenity::prelude::{RwLock, ShareMap};
+    use model::{gateway::Ready, id::MessageData};
+    use serenity::{
+        model::event::ResumedEvent,
+        prelude::{RwLock, ShareMap},
+    };
+
+    pub trait EventHandler {
+        fn ready(&self, ctx: Context, ready: Ready);
+
+        fn resume(&self, ctx: Context, _: ResumedEvent);
+    }
+
+    pub struct Client {
+        pub data: Arc<RwLock<ShareMap>>,
+    }
 
     pub struct Context {
         pub data: Arc<RwLock<ShareMap>>,
@@ -21,7 +34,10 @@ pub mod client {
                 shard_id: 0,
                 http: Arc::new(http::client::Http::_new(sender)),
                 cache: Arc::new(RwLock::new(cache::Cache {
-                    user: model::user::CurrentUser { id: 0 },
+                    user: model::user::CurrentUser {
+                        id: 0,
+                        name: "TestUser".to_string(),
+                    },
                 })),
             }
         }
@@ -70,6 +86,7 @@ pub mod model {
 
         pub struct CurrentUser {
             pub id: UserId,
+            pub name: String,
         }
     }
 
@@ -138,6 +155,13 @@ pub mod model {
                     channel_id: ChannelId {},
                 }
             }
+        }
+    }
+
+    pub mod gateway {
+        use super::model::user::CurrentUser;
+        pub struct Ready {
+            pub user: CurrentUser,
         }
     }
 }

@@ -1,3 +1,5 @@
+use crate::util;
+
 use std::{
     default::Default,
     io::{self, Read, Write},
@@ -9,10 +11,8 @@ use serenity::prelude::*;
 
 cfg_if::cfg_if! {
     if #[cfg(test)] {
-        use crate::test_doubles::directories::ProjectDirs;
         use crate::test_doubles::std::{fs::{self, File}, path::Path};
     } else {
-        use directories::ProjectDirs;
         use std::{fs::{self, File}, path::Path};
     }
 }
@@ -157,15 +157,16 @@ pub struct Config {
 impl Config {
     pub fn new() -> Self {
         // Get the path to the config file
-        let project_dir = ProjectDirs::from("dev", "tdonovan", "MuDiBot").unwrap();
+        let project_dir = util::get_project_dir().unwrap();
         let config_path = project_dir.config_dir().join("config.toml");
         // Check if the config file exists
         if config_path.exists() {
-            println!("Configuration file found at {:?}", config_path);
             // Read it
             Self::read_config_file(&config_path).unwrap()
         } else {
             // We create the file and use the default
+
+            // This message is not localized because english is the default language
             println!("Creating the configuration file at {:?}", config_path);
             let default = Self::default();
             Self::write_config_file(&config_path, &default).unwrap();
@@ -179,6 +180,10 @@ impl Config {
 
     pub fn get_prefix(&self) -> &str {
         self.server_specific.prefix.as_str()
+    }
+
+    pub fn get_locale(&self) -> &str {
+        self.server_specific.locale.as_str()
     }
 
     fn write_config_file(path: &Path, config: &Self) -> io::Result<()> {
@@ -203,6 +208,7 @@ impl TypeMapKey for Config {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_doubles::directories::ProjectDirs;
     use crate::test_doubles::{std::path::PathBuf, CONTEXT_SYNCHRONIZER};
 
     use std::cell::RefCell;
@@ -214,15 +220,15 @@ mod tests {
     #[test]
     fn create_new_config() {
         // Mock config dir
-        let mut config_dir = Path::new();
+        let mut config_dir = Path::default();
         config_dir.expect_join().once().returning(|_| {
             // Mock config path
             // As Path
-            let mut config_path = Path::new();
+            let mut config_path = Path::default();
             config_path
                 .expect_parent()
                 .once()
-                .returning(|| Some(Path::new()));
+                .returning(|| Some(Path::default()));
 
             // As PathBuf
             let mut config_path_buf = PathBuf::new();
@@ -266,17 +272,16 @@ mod tests {
     #[test]
     fn read_config() {
         // Mock config dir
-        let mut config_dir = Path::new();
+        let mut config_dir = Path::default();
         config_dir.expect_join().once().returning(|_| {
             // Mock config path
             // As PathBuf
             let mut config_path_buf = PathBuf::new();
             config_path_buf.expect_exists().once().return_const(true);
-            config_path_buf.expect_fmt().once().return_const(Ok(()));
             config_path_buf
                 .expect_deref()
                 .once()
-                .return_const(Path::new());
+                .return_const(Path::default());
             config_path_buf
         });
 
@@ -338,5 +343,12 @@ mod tests {
         let config = Config::default();
 
         assert_eq!(config.get_prefix(), config.server_specific.prefix.as_str());
+    }
+
+    #[test]
+    fn borrow_locale() {
+        let config = Config::default();
+
+        assert_eq!(config.get_locale(), config.server_specific.locale.as_str());
     }
 }

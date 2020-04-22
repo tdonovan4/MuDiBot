@@ -1,24 +1,30 @@
 mod commands;
 mod config;
+mod localization;
 #[cfg(test)]
 mod test_doubles;
+mod util;
+
+use localization::Localize;
 
 use std::sync::Arc;
 
-use serenity::{
-    model::{event::ResumedEvent, gateway::Ready},
-    prelude::*,
-};
+use fluent::fluent_args;
+use serenity::{model::event::ResumedEvent, prelude::*};
 
 cfg_if::cfg_if! {
     if #[cfg(test)] {
-        use test_doubles::serenity::client::bridge::gateway::ShardManager;
+        use test_doubles::serenity::{
+            client::{bridge::gateway::ShardManager, Context, EventHandler},
+            model::gateway::Ready,
+        };
     } else {
         use std::{collections::HashSet, env};
 
         use serenity::{
-            client::bridge::gateway::ShardManager,
-            framework::{standard::macros::group, StandardFramework}
+            client::{bridge::gateway::ShardManager, Context, EventHandler},
+            framework::{standard::macros::group, StandardFramework},
+            model::gateway::Ready,
         };
 
         use commands::meta::commands::*;
@@ -37,19 +43,32 @@ impl TypeMapKey for ShardManagerContainer {
 struct Handler;
 
 impl EventHandler for Handler {
-    fn ready(&self, _: Context, ready: Ready) {
-        println!("{} is connected!", ready.user.name);
+    fn ready(&self, ctx: Context, ready: Ready) {
+        let args = fluent_args!["bot-user" => ready.user.name];
+        println!("{}⁨", ctx.localize_msg("connected", Some(&args)).unwrap());
     }
 
-    fn resume(&self, _: Context, _: ResumedEvent) {
-        println!("Resumed");
+    fn resume(&self, ctx: Context, _: ResumedEvent) {
+        println!("{}", ctx.localize_msg("resumed", None).unwrap());
     }
 }
 
 #[cfg(not(test))]
 fn main() {
-    let env_var_token = env::var("DISCORD_TOKEN");
     let config = config::Config::new();
+
+    // Init localization
+    let bundle = localization::L10NBundle::new(config.get_locale());
+    println!("{}", bundle.localize_msg("startup", None).unwrap());
+
+    let project_dir = util::get_project_dir().unwrap();
+    let args = fluent_args!["config-dir" => project_dir.config_dir().to_string_lossy()];
+    println!(
+        "{}",
+        bundle.localize_msg("config-loaded", Some(&args)).unwrap()
+    );
+
+    let env_var_token = env::var("DISCORD_TOKEN");
     let token = env_var_token
         .as_ref()
         .map(|x| x.as_str())
@@ -58,18 +77,24 @@ fn main() {
                 .get_creds()
                 .bot_token
                 .as_ref()
-                .expect("Bot token expected")
+                .expect(bundle.localize_msg("no-token", None).unwrap().as_ref())
                 .as_str()
         });
 
     let prefix = config.get_prefix().to_string();
 
-    let mut client = Client::new(token, Handler).expect("Err creating client");
+    let mut client = Client::new(token, Handler).expect(
+        bundle
+            .localize_msg("client-creation-error", None)
+            .unwrap()
+            .as_ref(),
+    );
 
     {
         let mut data = client.data.write();
         data.insert::<ShardManagerContainer>(Arc::clone(&client.shard_manager));
         data.insert::<config::Config>(config);
+        data.insert::<localization::L10NBundle>(Mutex::new(bundle));
     }
 
     let owners = match client.cache_and_http.http.get_current_application_info() {
@@ -79,7 +104,13 @@ fn main() {
 
             set
         }
-        Err(why) => panic!("Couldn't get application info: {:?}", why),
+        Err(why) => panic!(client
+            .localize_msg(
+                "application-info-error",
+                Some(&fluent_args!["error" => why.to_string()])
+            )
+            .unwrap()
+            .into_owned()),
     };
 
     client.with_framework(
@@ -90,6 +121,14 @@ fn main() {
     );
 
     if let Err(why) = client.start() {
-        println!("Client error: {:?}", why);
+        println!(
+            "{}",
+            client
+                .localize_msg(
+                    "client-error",
+                    Some(&fluent_args!["error" => why.to_string()])
+                )
+                .unwrap()
+        );
     }
 }
