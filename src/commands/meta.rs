@@ -325,14 +325,14 @@ mod tests {
         mock_sys_time
             .expect_duration_since()
             .once()
-            .return_const(Ok(Duration::from_secs(100000)));
+            .return_const(Ok(Duration::from_secs(100_000)));
         let sys_time_ctx = SystemTime::now_context();
         sys_time_ctx.expect().return_once(|| mock_sys_time);
 
         // The expected embed
         let mut embed = CreateEmbed(HashMap::new());
         embed.title("__**~Info~**__");
-        embed.colour(0x0080c0);
+        embed.colour(0x0000_80c0);
         embed.field(
             "**General**",
             format!(

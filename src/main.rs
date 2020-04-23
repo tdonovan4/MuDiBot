@@ -77,18 +77,20 @@ fn main() {
                 .get_creds()
                 .bot_token
                 .as_ref()
-                .expect(bundle.localize_msg("no-token", None).unwrap().as_ref())
+                .unwrap_or_else(|| {
+                    panic!(bundle.localize_msg("no-token", None).unwrap().into_owned())
+                })
                 .as_str()
         });
 
     let prefix = config.get_prefix().to_string();
 
-    let mut client = Client::new(token, Handler).expect(
-        bundle
+    let mut client = Client::new(token, Handler).unwrap_or_else(|_| {
+        panic!(bundle
             .localize_msg("client-creation-error", None)
             .unwrap()
-            .as_ref(),
-    );
+            .into_owned())
+    });
 
     {
         let mut data = client.data.write();
