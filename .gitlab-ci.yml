@@ -14,7 +14,7 @@ clippy_and_rustfmt:
   stage: pre-build
   image: guangie88/rustfmt-clippy:stable
   script:
-   - cargo clippy --verbose
+   - cargo clippy --verbose --all-targets --all-features -- -D warnings
    - cargo fmt -- --check
   allow_failure: true
 
