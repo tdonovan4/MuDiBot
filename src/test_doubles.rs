@@ -7,8 +7,7 @@ pub mod sysinfo;
 use once_cell::sync::Lazy;
 use parking_lot::{Mutex, MutexGuard};
 
-pub static CONTEXT_SYNCHRONIZER: Lazy<ContextSynchronizer> =
-    Lazy::new(|| ContextSynchronizer::new());
+pub static CONTEXT_SYNCHRONIZER: Lazy<ContextSynchronizer> = Lazy::new(ContextSynchronizer::new);
 
 pub struct ContextSynchronizer {
     meta_lock: Mutex<()>,
