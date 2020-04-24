@@ -1,7 +1,7 @@
 ping-msg = Pong! *Ping received after { $ping } ms.*
 ping-msg-heartbeat = { ping-msg } *Current shard heartbeat ping of { $heartbeat } ms.*
 
-# TODO: info-uptime
+info-uptime = { $days }d:{ $hours }h:{ $mins }m:{ $secs }s⁩
 info-embed = __**~Info~**__
     .general-title = **General**
     .general-body = **Name:** MuDiBot
@@ -10,5 +10,5 @@ info-embed = __**~Info~**__
                 {"**"}Version:** { $version }
                 {"**"}Uptime:** { $uptime }
     .config-title = **Config**
-    .config-body = **Language:** TODO
+    .config-body = **Language:** { $langid }
     .footer = Client ID: { $id }

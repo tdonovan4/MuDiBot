@@ -1,3 +1,4 @@
+use crate::config::Config;
 use crate::localization::{L10NBundle, Localize};
 use crate::ShardManagerContainer;
 
@@ -35,13 +36,17 @@ fn get_heartbeat_latency(ctx: &Context) -> Option<Duration> {
         .latency
 }
 
-fn duration_to_str(duration: chrono::Duration) -> String {
-    let days = duration.num_days();
-    let hours = duration.num_hours() - duration.num_days() * 24;
-    let minutes = duration.num_minutes() - duration.num_hours() * 60;
-    let seconds = duration.num_seconds() - duration.num_minutes() * 60;
+fn duration_to_str(bundle: &L10NBundle, duration: chrono::Duration) -> Option<String> {
+    let args = fluent_args![
+        "days" => duration.num_days(),
+        "hours" => duration.num_hours() - duration.num_days() * 24,
+        "mins" => duration.num_minutes() - duration.num_hours() * 60,
+        "secs" => duration.num_seconds() - duration.num_minutes() * 60
+    ];
 
-    format!("{}d:{}h:{}m:{}s", days, hours, minutes, seconds)
+    bundle
+        .localize_msg("info-uptime", Some(&args))
+        .map(|cow| cow.into_owned())
 }
 
 fn ping(ctx: &mut Context, msg: &Message) -> CommandResult {
@@ -80,16 +85,21 @@ fn info(ctx: &mut Context, msg: &Message) -> CommandResult {
     let bot = &(*ctx.cache).read().user;
 
     let data = ctx.data.read();
+    let config = data.get::<Config>().unwrap();
+
     let l10n = data.get::<L10NBundle>().unwrap().lock();
     let bundle = (*l10n).get_bundle();
 
     let embed_text = bundle.get_message("info-embed").unwrap();
     let args_general = fluent_args![
         "version" => version,
-        "uptime" => duration_to_str(uptime)
+        "uptime" => duration_to_str(&*l10n, uptime).unwrap()
     ];
     let args_footer = fluent_args![
         "id" => bot.id.to_string()
+    ];
+    let args_config = fluent_args![
+        "langid" => config.get_locale()
     ];
     let mut errors = vec![];
 
@@ -118,7 +128,7 @@ fn info(ctx: &mut Context, msg: &Message) -> CommandResult {
                 ),
                 bundle.format_pattern(
                     embed_text.attributes.get("config-body").unwrap(),
-                    None,
+                    Some(&args_config),
                     &mut errors,
                 ),
                 false,
@@ -294,6 +304,7 @@ mod tests {
             data.insert::<ShardManagerContainer>(Arc::new(serenity::prelude::Mutex::new(
                 ShardManager::_new(map),
             )));
+            data.insert::<Config>(Config::default());
             data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")));
         }
 
@@ -340,12 +351,12 @@ mod tests {
             **Description:** A multipurpose Discord bot (MuDiBot) made using serenity\n\
             **Author:** Thomas Donovan (tdonovan4)\n\
             **Version:** \u{2068}{}\u{2069}\n\
-            **Uptime:** \u{2068}1d:3h:45m:0s\u{2069}",
+            **Uptime:** \u{2068}\u{2068}1\u{2069}d:\u{2068}3\u{2069}h:\u{2068}45\u{2069}m:\u{2068}0\u{2069}s\u{2069}\u{2069}",
                 env::var("CARGO_PKG_VERSION").unwrap(),
             ),
             false,
         );
-        embed.field("**Config**", "**Language:** TODO", false);
+        embed.field("**Config**", "**Language:** \u{2068}en-US\u{2069}", false);
         embed.footer(|f| f.text("Client ID: \u{2068}0\u{2069}"));
 
         info(&mut ctx, &msg).unwrap();
