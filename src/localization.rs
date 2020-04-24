@@ -116,6 +116,7 @@ mod tests {
     use super::*;
 
     use fluent::fluent_args;
+    use std::sync::mpsc::channel;
 
     #[test]
     fn create_bundle_and_get_msg() {
@@ -157,6 +158,33 @@ mod tests {
                 .localize_msg("connected", Some(&fluent_args!["bot-user" => "TestBot"]))
                 .unwrap(),
             "\u{2068}TestBot\u{2069} is connected!"
+        )
+    }
+
+    #[test]
+    fn context_localize_msg() {
+        let (sender, _) = channel();
+        let ctx = Context::_new(sender);
+        {
+            let mut data = ctx.data.write();
+            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")));
+        }
+        assert_eq!(
+            ctx.localize_msg("startup", None).unwrap(),
+            "MuDiBot is starting up..."
+        )
+    }
+
+    #[test]
+    fn client_localize_msg() {
+        let client = Client::_new();
+        {
+            let mut data = client.data.write();
+            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")));
+        }
+        assert_eq!(
+            client.localize_msg("startup", None).unwrap(),
+            "MuDiBot is starting up..."
         )
     }
 }

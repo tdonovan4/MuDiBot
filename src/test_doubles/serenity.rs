@@ -2,11 +2,10 @@ use std::sync::{mpsc::Sender, Arc};
 
 pub mod client {
     use super::*;
+    use model::event::ResumedEvent;
+
     use model::{gateway::Ready, id::MessageData};
-    use serenity::{
-        model::event::ResumedEvent,
-        prelude::{RwLock, ShareMap},
-    };
+    use serenity::prelude::{RwLock, ShareMap};
 
     pub trait EventHandler {
         fn ready(&self, ctx: Context, ready: Ready);
@@ -16,6 +15,16 @@ pub mod client {
 
     pub struct Client {
         pub data: Arc<RwLock<ShareMap>>,
+    }
+
+    impl Client {
+        pub fn _new() -> Self {
+            let map = ShareMap::custom();
+
+            Self {
+                data: Arc::new(RwLock::new(map)),
+            }
+        }
     }
 
     pub struct Context {
@@ -163,6 +172,10 @@ pub mod model {
         pub struct Ready {
             pub user: CurrentUser,
         }
+    }
+
+    pub mod event {
+        pub struct ResumedEvent {}
     }
 }
 

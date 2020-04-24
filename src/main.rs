@@ -10,21 +10,21 @@ use localization::Localize;
 use std::sync::Arc;
 
 use fluent::fluent_args;
-use serenity::{model::event::ResumedEvent, prelude::*};
+use serenity::prelude::{Mutex, TypeMapKey};
 
 cfg_if::cfg_if! {
     if #[cfg(test)] {
         use test_doubles::serenity::{
             client::{bridge::gateway::ShardManager, Context, EventHandler},
-            model::gateway::Ready,
+            model::{gateway::Ready, event::ResumedEvent},
         };
     } else {
         use std::{collections::HashSet, env};
 
         use serenity::{
-            client::{bridge::gateway::ShardManager, Context, EventHandler},
+            client::{bridge::gateway::ShardManager, Client, Context, EventHandler},
             framework::{standard::macros::group, StandardFramework},
-            model::gateway::Ready,
+            model::{gateway::Ready, event::ResumedEvent},
         };
 
         use commands::meta::commands::*;
@@ -132,5 +132,47 @@ fn main() {
                 )
                 .unwrap()
         );
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use localization::L10NBundle;
+    use test_doubles::serenity::model::user::CurrentUser;
+
+    use std::sync::mpsc::channel;
+
+    #[test]
+    fn ready_event() {
+        let (sender, _) = channel();
+        let ctx = Context::_new(sender);
+        {
+            let mut data = ctx.data.write();
+            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")));
+        }
+        Handler.ready(
+            ctx,
+            Ready {
+                user: CurrentUser {
+                    id: 0,
+                    name: "TestBot".to_string(),
+                },
+            },
+        );
+        //TODO: when using a logging crate, test output
+    }
+
+    #[test]
+    fn resume_event() {
+        let (sender, _) = channel();
+        let ctx = Context::_new(sender);
+        {
+            let mut data = ctx.data.write();
+            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")));
+        }
+        Handler.resume(ctx, ResumedEvent {});
+        //TODO: when using a logging crate, test output
     }
 }
