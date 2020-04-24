@@ -167,7 +167,7 @@ impl Config {
             // We create the file and use the default
 
             // This message is not localized because english is the default language
-            println!("Creating the configuration file at {:?}", config_path);
+            info!("Creating the configuration file at {:?}", config_path);
             let default = Self::default();
             Self::write_config_file(&config_path, &default).unwrap();
             default
@@ -233,7 +233,6 @@ mod tests {
             // As PathBuf
             let mut config_path_buf = PathBuf::new();
             config_path_buf.expect_exists().once().return_const(false);
-            config_path_buf.expect_fmt().once().return_const(Ok(()));
             config_path_buf
                 .expect_deref()
                 .once()
