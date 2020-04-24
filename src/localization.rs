@@ -116,7 +116,6 @@ mod tests {
     use super::*;
 
     use fluent::fluent_args;
-    use std::sync::mpsc::channel;
 
     #[test]
     fn create_bundle_and_get_msg() {
@@ -163,8 +162,7 @@ mod tests {
 
     #[test]
     fn context_localize_msg() {
-        let (sender, _) = channel();
-        let ctx = Context::_new(sender);
+        let ctx = Context::_new(None);
         {
             let mut data = ctx.data.write();
             data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")));

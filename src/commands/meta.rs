@@ -200,7 +200,7 @@ mod tests {
     fn send_ping_without_heartbeat() {
         // Mock context
         let (sender, receiver) = channel();
-        let mut ctx = Context::_new(sender);
+        let mut ctx = Context::_new(Some(sender));
         {
             let mut data = ctx.data.write();
             let map = HashMap::new();
@@ -239,7 +239,7 @@ mod tests {
     fn send_ping_with_heartbeat() {
         // Mock context
         let (sender, receiver) = channel();
-        let mut ctx = Context::_new(sender);
+        let mut ctx = Context::_new(Some(sender));
         {
             let mut data = ctx.data.write();
             let mut map = HashMap::new();
@@ -287,7 +287,7 @@ mod tests {
     fn send_info() {
         // Mock context
         let (sender, receiver) = channel();
-        let mut ctx = Context::_new(sender);
+        let mut ctx = Context::_new(Some(sender));
         {
             let mut data = ctx.data.write();
             let map = HashMap::new();

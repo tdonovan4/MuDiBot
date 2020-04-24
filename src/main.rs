@@ -142,12 +142,9 @@ mod tests {
     use localization::L10NBundle;
     use test_doubles::serenity::model::user::CurrentUser;
 
-    use std::sync::mpsc::channel;
-
     #[test]
     fn ready_event() {
-        let (sender, _) = channel();
-        let ctx = Context::_new(sender);
+        let ctx = Context::_new(None);
         {
             let mut data = ctx.data.write();
             data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")));
@@ -166,8 +163,7 @@ mod tests {
 
     #[test]
     fn resume_event() {
-        let (sender, _) = channel();
-        let ctx = Context::_new(sender);
+        let ctx = Context::_new(None);
         {
             let mut data = ctx.data.write();
             data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")));

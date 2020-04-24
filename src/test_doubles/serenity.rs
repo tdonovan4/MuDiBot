@@ -35,7 +35,7 @@ pub mod client {
     }
 
     impl Context {
-        pub fn _new(sender: Sender<MessageData>) -> Self {
+        pub fn _new(sender: Option<Sender<MessageData>>) -> Self {
             let map = ShareMap::custom();
 
             Self {
@@ -188,18 +188,18 @@ pub mod http {
 
         // Sneaky way to old information for manual mocks
         pub struct Http {
-            _mock_sender: Sender<MessageData>,
+            _mock_sender: Option<Sender<MessageData>>,
         }
 
         impl Http {
-            pub fn _new(sender: Sender<MessageData>) -> Self {
+            pub fn _new(sender: Option<Sender<MessageData>>) -> Self {
                 Self {
                     _mock_sender: sender,
                 }
             }
 
             pub fn _send(&self, data: MessageData) {
-                self._mock_sender.send(data).unwrap();
+                self._mock_sender.as_ref().unwrap().send(data).unwrap();
             }
         }
     }
