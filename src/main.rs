@@ -87,9 +87,9 @@ fn main() {
 fn run_bot() -> Result<(), BotError> {
     let env = Env::default()
         .filter_or("RUST_LOG", "info")
-        .write_style_or("RUST_LOG_STYLE", "always");
+        .write_style_or("RUST_LOG_STYLE", "auto");
 
-    Builder::from_env(env).target(Target::Stdout).init();
+    Builder::from_env(env).target(Target::Stderr).init();
 
     let config = config::Config::new()?;
     // Init localization
