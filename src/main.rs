@@ -7,7 +7,7 @@ mod util;
 
 use localization::Localize;
 
-use std::sync::Arc;
+use std::{borrow::Cow, sync::Arc};
 
 use fluent::fluent_args;
 use serenity::prelude::{Mutex, TypeMapKey};
@@ -30,6 +30,7 @@ cfg_if::cfg_if! {
             framework::{standard::macros::group, StandardFramework},
             model::{gateway::Ready, event::ResumedEvent},
         };
+        use thiserror::Error;
 
         use commands::meta::commands::*;
 
@@ -48,59 +49,114 @@ struct Handler;
 
 impl EventHandler for Handler {
     fn ready(&self, ctx: Context, ready: Ready) {
-        let args = fluent_args!["bot-user" => ready.user.name];
-        info!("{}⁨", ctx.localize_msg("connected", Some(&args)).unwrap());
+        let args = fluent_args!["bot-user" => ready.user.name.as_str()];
+        let msg = ctx
+            .localize_msg("connected", Some(&args))
+            .unwrap_or_else(|e| {
+                warn!("{}", e);
+                Cow::Owned(format!("[fallback msg] {} is connected!", ready.user.name))
+            });
+        info!("{}⁨", msg);
     }
 
     fn resume(&self, ctx: Context, _: ResumedEvent) {
-        info!("{}", ctx.localize_msg("resumed", None).unwrap());
+        let msg = ctx.localize_msg("resumed", None).unwrap_or_else(|e| {
+            warn!("{}", e);
+            Cow::Borrowed("[fallback msg] Resumed")
+        });
+        info!("{}", msg);
     }
 }
 
 #[cfg(not(test))]
+#[derive(Error, Debug)]
+enum BotError {
+    #[error(transparent)]
+    Config(#[from] config::ConfigError),
+    #[error(transparent)]
+    L10N(#[from] localization::L10NError),
+    #[error(
+        "Please provide a Discord token for the bot in the environment \
+        variable DISCORD_TOKEN or the config file"
+    )]
+    MissingToken,
+    #[error("Error from serenity: {0}")]
+    Serenity(#[from] serenity::Error),
+    #[error("Error with client: {0}")]
+    Client(#[from] serenity::client::ClientError),
+}
+
+#[cfg(not(test))]
 fn main() {
+    // Ensure destructors are run bo moving main logic to run_bot()
+    if let Err(e) = run_bot() {
+        error!("{}", e);
+        std::process::exit(1);
+    } else {
+        std::process::exit(0);
+    }
+}
+
+#[cfg(not(test))]
+fn run_bot() -> Result<(), BotError> {
     let env = Env::default()
         .filter_or("RUST_LOG", "info")
         .write_style_or("RUST_LOG_STYLE", "always");
 
     Builder::from_env(env).target(Target::Stdout).init();
 
-    let config = config::Config::new();
-
+    let config = config::Config::new()?;
     // Init localization
-    let bundle = localization::L10NBundle::new(config.get_locale());
-    info!("{}", bundle.localize_msg("startup", None).unwrap());
+    let bundle = localization::L10NBundle::new(config.get_locale())?;
 
-    let project_dir = util::get_project_dir().unwrap();
-    let args = fluent_args!["config-dir" => project_dir.config_dir().to_string_lossy()];
+    // Print that we're starting up
     info!(
         "{}",
-        bundle.localize_msg("config-loaded", Some(&args)).unwrap()
+        bundle.localize_msg("startup", None).unwrap_or_else(|e| {
+            // Non fatal error
+            warn!("{}", e);
+            Cow::Borrowed("[fallback msg] MuDiBot is starting up...")
+        })
     );
 
-    let env_var_token = env::var("DISCORD_TOKEN");
-    let token = env_var_token
-        .as_ref()
-        .map(|x| x.as_str())
-        .unwrap_or_else(|_| {
-            config
-                .get_creds()
-                .bot_token
-                .as_ref()
-                .unwrap_or_else(|| {
-                    panic!(bundle.localize_msg("no-token", None).unwrap().into_owned())
-                })
-                .as_str()
-        });
+    // Print configuration file location
+    match util::get_project_dir() {
+        Some(project_dir) => {
+            let config_dir = project_dir.config_dir().to_string_lossy();
+            let args = fluent_args!["config-dir" => config_dir.as_ref()];
+            info!(
+                "{}",
+                bundle
+                    .localize_msg("config-loaded", Some(&args))
+                    .unwrap_or_else(|e| {
+                        warn!("{}", e);
+                        Cow::Owned(format!(
+                            "[fallback msg] Configuration file loaded from {}/config.toml",
+                            config_dir
+                        ))
+                    })
+            );
+        }
+        None => {
+            // Most likely will never happen because config won't load without project dir
+            warn!("Config was loaded, but cannot find the project directory")
+        }
+    }
+
+    // Load token from env var (with priority) or config
+    let token = match env::var("DISCORD_TOKEN") {
+        Ok(token) => token,
+        Err(_) => config
+            .get_creds()
+            .bot_token
+            .as_ref()
+            .ok_or(BotError::MissingToken)?
+            .to_string(),
+    };
 
     let prefix = config.get_prefix().to_string();
 
-    let mut client = Client::new(token, Handler).unwrap_or_else(|_| {
-        panic!(bundle
-            .localize_msg("client-creation-error", None)
-            .unwrap()
-            .into_owned())
-    });
+    let mut client = Client::new(token, Handler)?;
 
     {
         let mut data = client.data.write();
@@ -109,21 +165,9 @@ fn main() {
         data.insert::<localization::L10NBundle>(Mutex::new(bundle));
     }
 
-    let owners = match client.cache_and_http.http.get_current_application_info() {
-        Ok(info) => {
-            let mut set = HashSet::new();
-            set.insert(info.owner.id);
-
-            set
-        }
-        Err(why) => panic!(client
-            .localize_msg(
-                "application-info-error",
-                Some(&fluent_args!["error" => why.to_string()])
-            )
-            .unwrap()
-            .into_owned()),
-    };
+    let info = client.cache_and_http.http.get_current_application_info()?;
+    let mut owners = HashSet::new();
+    owners.insert(info.owner.id);
 
     client.with_framework(
         StandardFramework::new()
@@ -138,36 +182,34 @@ fn main() {
                 }
                 true
             })
+            .after(|_ctx, _msg, cmd_name, error| {
+                if let Err(e) = error {
+                    warn!("Error in {}: {:?}", cmd_name, e);
+                }
+            })
             .group(&GENERAL_GROUP)
             .help(&HELP),
     );
 
-    if let Err(why) = client.start() {
-        warn!(
-            "{}",
-            client
-                .localize_msg(
-                    "client-error",
-                    Some(&fluent_args!["error" => why.to_string()])
-                )
-                .unwrap()
-        );
-    }
+    //Setup done, actually start
+    client.start()?;
+
+    Ok(())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    use localization::L10NBundle;
+    use localization::{L10NBundle, L10NError};
     use test_doubles::serenity::model::user::CurrentUser;
 
     #[test]
-    fn ready_event() {
+    fn ready_event() -> Result<(), L10NError> {
         let ctx = Context::_new(None);
         {
             let mut data = ctx.data.write();
-            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")));
+            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")?));
         }
         Handler.ready(
             ctx,
@@ -178,15 +220,19 @@ mod tests {
                 },
             },
         );
+
+        Ok(())
     }
 
     #[test]
-    fn resume_event() {
+    fn resume_event() -> Result<(), L10NError> {
         let ctx = Context::_new(None);
         {
             let mut data = ctx.data.write();
-            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")));
+            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")?));
         }
         Handler.resume(ctx, ResumedEvent {});
+
+        Ok(())
     }
 }

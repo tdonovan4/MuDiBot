@@ -1,12 +1,13 @@
 use std::{
     borrow::Cow,
     fs::File,
-    io::{Read, Result},
+    io::{self, Read},
 };
 
-use fluent::{concurrent::FluentBundle, FluentArgs, FluentResource};
+use fluent::{concurrent::FluentBundle, FluentArgs, FluentError, FluentMessage, FluentResource};
 use serenity::prelude::{Mutex, TypeMapKey};
-use unic_langid::LanguageIdentifier;
+use thiserror::Error;
+use unic_langid::{LanguageIdentifier, LanguageIdentifierError};
 
 cfg_if::cfg_if! {
     if #[cfg(test)] {
@@ -16,12 +17,43 @@ cfg_if::cfg_if! {
     }
 }
 
+#[derive(Error, Debug)]
+pub enum L10NError {
+    #[error(transparent)]
+    Io(#[from] io::Error),
+    #[error("Error(s) while parsing localization file: {0:?}")]
+    Fluent(Vec<FluentError>),
+    #[error("The localization bundle could not be extracted from the ShareMap")]
+    MissingFromShareMap,
+    #[error("The message \"{0}\" was not found")]
+    MissingMsg(String),
+    #[error("The message \"{0}\" does not have a value")]
+    MissingValue(String),
+    #[error("The message \"{0}\" does not have the \"{1}\" attribute")]
+    MissingAttribute(String, String),
+    #[error("Wrong locale: {0}")]
+    LanguageIdentifierError(#[from] LanguageIdentifierError),
+}
+
+impl From<Vec<FluentError>> for L10NError {
+    fn from(errors: Vec<FluentError>) -> Self {
+        Self::Fluent(errors)
+    }
+}
+
+type Result<T> = std::result::Result<T, L10NError>;
+
+pub struct L10NMessage<'a> {
+    pub name: &'a str,
+    pub msg: FluentMessage<'a>,
+}
+
 pub trait Localize {
     fn localize_msg<'bundle>(
         &'bundle self,
-        id: &'bundle str,
+        msg_id: &'bundle str,
         args: Option<&'bundle FluentArgs>,
-    ) -> Option<Cow<str>>;
+    ) -> Result<Cow<str>>;
 }
 
 pub struct L10NBundle {
@@ -29,33 +61,83 @@ pub struct L10NBundle {
 }
 
 impl L10NBundle {
-    pub fn new(locale: &str) -> Self {
-        let langid: LanguageIdentifier = locale.parse().expect("Wrong locale");
+    pub fn new(locale: &str) -> Result<Self> {
+        let langid: LanguageIdentifier = locale.parse()?;
         let mut bundle = FluentBundle::new(&[langid]);
 
         // Add ressources
-        bundle
-            .add_resource(Self::load_res_file(locale, "general").unwrap())
-            .expect("Failed to add FTL resources to the bundle.");
-        bundle
-            .add_resource(Self::load_res_file(locale, "errors").unwrap())
-            .expect("Failed to add FTL resources to the bundle.");
-        bundle
-            .add_resource(Self::load_res_file(locale, "commands").unwrap())
-            .expect("Failed to add FTL resources to the bundle.");
+        bundle.add_resource(Self::load_res_file(locale, "general")?)?;
+        bundle.add_resource(Self::load_res_file(locale, "errors")?)?;
+        bundle.add_resource(Self::load_res_file(locale, "commands")?)?;
 
-        Self { bundle }
+        Ok(Self { bundle })
     }
 
-    pub fn get_bundle(&self) -> &FluentBundle<FluentResource> {
-        &self.bundle
+    pub fn get_message<'a>(&'a self, msg_id: &'a str) -> Result<L10NMessage> {
+        Ok(L10NMessage::<'a> {
+            name: msg_id,
+            msg: self
+                .bundle
+                .get_message(msg_id)
+                .ok_or(L10NError::MissingMsg(msg_id.to_string()))?,
+        })
+    }
+
+    pub fn get_msg_value<'bundle>(
+        &'bundle self,
+        msg: &L10NMessage<'bundle>,
+        args: Option<&'bundle FluentArgs>,
+    ) -> Result<Cow<str>> {
+        let mut errors = vec![];
+        let pattern = msg
+            .msg
+            .value
+            .ok_or(L10NError::MissingValue(msg.name.to_string()))?;
+        let localized_msg = self.bundle.format_pattern(&pattern, args, &mut errors);
+
+        //Only log the errors, since they are non fatal
+        for error in errors {
+            warn!("{:?}", error);
+        }
+
+        Ok(localized_msg)
+    }
+
+    pub fn get_msg_attribute<'bundle>(
+        &'bundle self,
+        msg: &L10NMessage<'bundle>,
+        attribute: &'bundle str,
+        args: Option<&'bundle FluentArgs>,
+    ) -> Result<Cow<str>> {
+        let mut errors = vec![];
+        let pattern = msg
+            .msg
+            .attributes
+            .get(attribute)
+            .ok_or(L10NError::MissingAttribute(
+                msg.name.to_string(),
+                attribute.to_string(),
+            ))?;
+        let localized_msg = self.bundle.format_pattern(&pattern, args, &mut errors);
+
+        //Only log the errors, since they are non fatal
+        for error in errors {
+            warn!("{:?}", error);
+        }
+
+        Ok(localized_msg)
     }
 
     fn load_res_file(locale: &str, name: &str) -> Result<FluentResource> {
         let mut file = File::open(format!("resources/{}/{}.ftl", locale, name))?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
-        let res = FluentResource::try_new(contents).expect("Failed to parse an FTL string.");
+        let res = FluentResource::try_new(contents).map_err(|(_, e)| {
+            // Convert Vec<ParserError> into Vec<FluentError> because ParserError is not public
+            e.into_iter()
+                .map(|error| FluentError::ParserError(error))
+                .collect::<Vec<FluentError>>()
+        })?;
         Ok(res)
     }
 }
@@ -63,13 +145,10 @@ impl L10NBundle {
 impl Localize for L10NBundle {
     fn localize_msg<'bundle>(
         &'bundle self,
-        id: &'bundle str,
+        msg_id: &'bundle str,
         args: Option<&'bundle FluentArgs>,
-    ) -> Option<Cow<str>> {
-        let msg = self.bundle.get_message(id)?;
-        let mut errors = vec![];
-        let pattern = msg.value?;
-        Some(self.bundle.format_pattern(&pattern, args, &mut errors))
+    ) -> Result<Cow<str>> {
+        Ok(self.get_msg_value(&self.get_message(msg_id)?, args)?)
     }
 }
 
@@ -80,15 +159,16 @@ impl TypeMapKey for L10NBundle {
 impl Localize for Context {
     fn localize_msg<'bundle>(
         &'bundle self,
-        id: &'bundle str,
+        msg_id: &'bundle str,
         args: Option<&'bundle FluentArgs>,
-    ) -> Option<Cow<str>> {
-        Some(Cow::Owned(
+    ) -> Result<Cow<str>> {
+        Ok(Cow::Owned(
             self.data
                 .read()
-                .get::<L10NBundle>()?
+                .get::<L10NBundle>()
+                .ok_or(L10NError::MissingFromShareMap)?
                 .lock()
-                .localize_msg(id, args)?
+                .localize_msg(msg_id, args)?
                 .into_owned(),
         ))
     }
@@ -97,15 +177,16 @@ impl Localize for Context {
 impl Localize for Client {
     fn localize_msg<'bundle>(
         &'bundle self,
-        id: &'bundle str,
+        msg_id: &'bundle str,
         args: Option<&'bundle FluentArgs>,
-    ) -> Option<Cow<str>> {
-        Some(Cow::Owned(
+    ) -> Result<Cow<str>> {
+        Ok(Cow::Owned(
             self.data
                 .read()
-                .get::<L10NBundle>()?
+                .get::<L10NBundle>()
+                .ok_or(L10NError::MissingFromShareMap)?
                 .lock()
-                .localize_msg(id, args)?
+                .localize_msg(msg_id, args)?
                 .into_owned(),
         ))
     }
@@ -118,71 +199,86 @@ mod tests {
     use fluent::fluent_args;
 
     #[test]
-    fn create_bundle_and_get_msg() {
-        let bundle = L10NBundle::new("en-US");
+    fn create_bundle_and_get_msg() -> Result<()> {
+        let bundle = L10NBundle::new("en-US")?;
         assert_eq!(
-            bundle.localize_msg("startup", None).unwrap(),
+            bundle.localize_msg("startup", None)?,
             "MuDiBot is starting up..."
-        )
+        );
+
+        Ok(())
     }
 
     #[test]
-    fn create_bundle_and_get_msg_but_in_french() {
-        let bundle = L10NBundle::new("fr");
-        assert_eq!(
-            bundle.localize_msg("startup", None).unwrap(),
-            "MuDiBot démarre..."
-        )
+    fn create_bundle_and_get_msg_but_in_french() -> Result<()> {
+        let bundle = L10NBundle::new("fr")?;
+        assert_eq!(bundle.localize_msg("startup", None)?, "MuDiBot démarre...");
+
+        Ok(())
     }
 
     #[test]
-    fn borrow_bundle() {
-        let bundle = L10NBundle::new("en-US");
-        let msg = bundle.get_bundle().get_message("startup").unwrap();
-        let mut errors = vec![];
-        let pattern = msg.value.unwrap();
+    fn get_message_and_its_value() -> Result<()> {
+        let bundle = L10NBundle::new("en-US")?;
+        let msg = bundle.get_message("startup")?;
         assert_eq!(
-            bundle
-                .get_bundle()
-                .format_pattern(&pattern, None, &mut errors),
+            bundle.get_msg_value(&msg, None)?,
             "MuDiBot is starting up..."
-        )
+        );
+
+        Ok(())
     }
 
     #[test]
-    fn message_with_placeable() {
-        let bundle = L10NBundle::new("en-US");
+    fn get_message_and_an_attribute() -> Result<()> {
+        let bundle = L10NBundle::new("en-US")?;
+        let msg = bundle.get_message("info-embed")?;
         assert_eq!(
-            bundle
-                .localize_msg("connected", Some(&fluent_args!["bot-user" => "TestBot"]))
-                .unwrap(),
+            bundle.get_msg_attribute(&msg, "general-title", None)?,
+            "**General**"
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn message_with_placeable() -> Result<()> {
+        let bundle = L10NBundle::new("en-US")?;
+        assert_eq!(
+            bundle.localize_msg("connected", Some(&fluent_args!["bot-user" => "TestBot"]))?,
             "\u{2068}TestBot\u{2069} is connected!"
-        )
+        );
+
+        Ok(())
     }
 
     #[test]
-    fn context_localize_msg() {
+    fn context_localize_msg() -> Result<()> {
         let ctx = Context::_new(None);
         {
             let mut data = ctx.data.write();
-            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")));
+            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")?));
         }
         assert_eq!(
-            ctx.localize_msg("startup", None).unwrap(),
+            ctx.localize_msg("startup", None)?,
             "MuDiBot is starting up..."
-        )
+        );
+
+        Ok(())
     }
 
     #[test]
-    fn client_localize_msg() {
+    fn client_localize_msg() -> Result<()> {
         let client = Client::_new();
         {
             let mut data = client.data.write();
-            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")));
+            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")?));
         }
         assert_eq!(
-            client.localize_msg("startup", None).unwrap(),
+            client.localize_msg("startup", None)?,
             "MuDiBot is starting up..."
-        )
+        );
+
+        Ok(())
     }
 }

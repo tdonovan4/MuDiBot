@@ -51,6 +51,7 @@ impl ContextSynchronizer {
             if let Some(guard) = self.from_name(name) {
                 guards.push(guard);
             } else {
+                // Only for tests, panicking is ok
                 panic!("Wrong name: {}", name);
             }
         }

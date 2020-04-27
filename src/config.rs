@@ -2,12 +2,13 @@ use crate::util;
 
 use std::{
     default::Default,
-    io::{self, Read, Write},
+    io::{self, ErrorKind, Read, Write},
     path::PathBuf,
 };
 
 use serde::{Deserialize, Serialize};
 use serenity::prelude::*;
+use thiserror::Error;
 
 cfg_if::cfg_if! {
     if #[cfg(test)] {
@@ -17,6 +18,20 @@ cfg_if::cfg_if! {
     }
 }
 
+#[derive(Error, Debug)]
+pub enum ConfigError {
+    #[error(transparent)]
+    Io(#[from] io::Error),
+    #[error("The config file could not be serialized: {0}")]
+    Seserialize(#[from] toml::ser::Error),
+    #[error("The config file could not be deserialized: {0}")]
+    Deserialize(#[from] toml::de::Error),
+    #[error("The config could not be extracted from the ShareMap")]
+    MissingFromShareMap,
+}
+
+type Result<T> = std::result::Result<T, ConfigError>;
+
 /// A table to store all the tokens of the different APIs used by to bot.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Credentials {
@@ -24,7 +39,7 @@ pub struct Credentials {
     /// Create or get it here: https://discordapp.com/developers/applications.
     ///
     /// This field is not mandatory because it can be overwrited by the `DISCORD_TOKEN` environment variable.
-    /// If the field and the environment variable are not set, the bot will panic.
+    /// If the field and the environment variable are not set, the bot will not launch.
     pub bot_token: Option<String>,
     /// Token to connect to the Youtube v3 API.
     pub youtube_api_key: Option<String>,
@@ -155,22 +170,23 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new() -> Self {
+    pub fn new() -> Result<Self> {
         // Get the path to the config file
-        let project_dir = util::get_project_dir().unwrap();
+        let project_dir = util::get_project_dir()
+            .ok_or(io::Error::new(ErrorKind::NotFound, "Project dir not found"))?;
         let config_path = project_dir.config_dir().join("config.toml");
         // Check if the config file exists
         if config_path.exists() {
             // Read it
-            Self::read_config_file(&config_path).unwrap()
+            Ok(Self::read_config_file(&config_path)?)
         } else {
             // We create the file and use the default
 
             // This message is not localized because english is the default language
             info!("Creating the configuration file at {:?}", config_path);
             let default = Self::default();
-            Self::write_config_file(&config_path, &default).unwrap();
-            default
+            Self::write_config_file(&config_path, &default)?;
+            Ok(default)
         }
     }
 
@@ -186,18 +202,21 @@ impl Config {
         self.server_specific.locale.as_str()
     }
 
-    fn write_config_file(path: &Path, config: &Self) -> io::Result<()> {
+    fn write_config_file(path: &Path, config: &Self) -> Result<()> {
         // Before writing, create folder for config
-        fs::create_dir_all(path.parent().unwrap())?;
-        File::create(path)?.write_all(toml::to_string(&config).unwrap().as_ref())?;
+        fs::create_dir_all(
+            path.parent()
+                .ok_or(io::Error::new(ErrorKind::NotFound, "Config dir not found"))?,
+        )?;
+        File::create(path)?.write_all(toml::to_string(&config)?.as_ref())?;
         Ok(())
     }
 
-    fn read_config_file(path: &Path) -> io::Result<Self> {
+    fn read_config_file(path: &Path) -> Result<Self> {
         let mut file = File::open(path)?;
         let mut data = String::new();
         file.read_to_string(&mut data)?;
-        Ok(toml::from_str(data.as_str()).unwrap())
+        Ok(toml::from_str(data.as_str())?)
     }
 }
 
@@ -218,7 +237,7 @@ mod tests {
     }
 
     #[test]
-    fn create_new_config() {
+    fn create_new_config() -> Result<()> {
         // Mock config dir
         let mut config_dir = Path::default();
         config_dir.expect_join().once().returning(|_| {
@@ -265,11 +284,13 @@ mod tests {
             Ok(config_file)
         });
 
-        Config::new();
+        Config::new()?;
+
+        Ok(())
     }
 
     #[test]
-    fn read_config() {
+    fn read_config() -> Result<()> {
         // Mock config dir
         let mut config_dir = Path::default();
         config_dir.expect_join().once().returning(|_| {
@@ -299,10 +320,10 @@ mod tests {
         });
 
         // Mock config file
+        let toml_string = toml::to_string(&Config::default())?;
         let file_ctx = File::open_context();
         file_ctx.expect().once().return_once(|_| {
             let mut config_file = File::new();
-            let toml_string = toml::to_string(&Config::default()).unwrap();
 
             config_file.expect_read().returning(move |buf| {
                 let bytes = toml_string.as_bytes();
@@ -327,7 +348,9 @@ mod tests {
             Ok(config_file)
         });
 
-        Config::new();
+        Config::new()?;
+
+        Ok(())
     }
 
     #[test]

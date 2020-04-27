@@ -1,5 +1,5 @@
-use crate::config::Config;
-use crate::localization::{L10NBundle, Localize};
+use crate::config::{Config, ConfigError};
+use crate::localization::{L10NBundle, L10NError, Localize};
 use crate::ShardManagerContainer;
 
 use std::{
@@ -36,7 +36,7 @@ fn get_heartbeat_latency(ctx: &Context) -> Option<Duration> {
         .latency
 }
 
-fn duration_to_str(bundle: &L10NBundle, duration: chrono::Duration) -> Option<String> {
+fn duration_to_str(bundle: &L10NBundle, duration: chrono::Duration) -> Result<String, L10NError> {
     let args = fluent_args![
         "days" => duration.num_days(),
         "hours" => duration.num_hours() - duration.num_days() * 24,
@@ -56,18 +56,21 @@ fn ping(ctx: &mut Context, msg: &Message) -> CommandResult {
             "ping" => ping.num_milliseconds(),
             "heartbeat" => heartbeat.as_millis()
         ];
-        ctx.localize_msg("ping-msg-heartbeat", Some(&args))
-            .unwrap()
+        ctx.localize_msg("ping-msg-heartbeat", Some(&args))?
             .into_owned()
     } else {
         let args = fluent_args!["ping" => ping.num_milliseconds()];
-        ctx.localize_msg("ping-msg", Some(&args))
-            .unwrap()
-            .into_owned()
+        ctx.localize_msg("ping-msg", Some(&args))?.into_owned()
     };
 
     let _ = msg.channel_id.say(&ctx.http, msg_str.as_str());
     Ok(())
+}
+
+#[derive(thiserror::Error, Debug)]
+#[error("{msg}")]
+struct ProcessError {
+    msg: String,
 }
 
 fn info(ctx: &mut Context, msg: &Message) -> CommandResult {
@@ -75,74 +78,61 @@ fn info(ctx: &mut Context, msg: &Message) -> CommandResult {
 
     let mut sys = System::new();
     sys.refresh_all();
-    // TODO: Remove unwrap()
     let process = sys
-        .get_process(sysinfo::get_current_pid().unwrap())
-        .unwrap();
+        .get_process(sysinfo::get_current_pid()?)
+        .ok_or(ProcessError {
+            msg: "Alright, so somehow we cannot get info about this current process. \
+                I mean this really should not happen."
+                .to_string(),
+        })?;
     let now = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
     let uptime = chrono::Duration::seconds((now - process.start_time()) as i64);
 
     let bot = &(*ctx.cache).read().user;
 
     let data = ctx.data.read();
-    let config = data.get::<Config>().unwrap();
+    let config = data
+        .get::<Config>()
+        .ok_or(ConfigError::MissingFromShareMap)?;
 
-    let l10n = data.get::<L10NBundle>().unwrap().lock();
-    let bundle = (*l10n).get_bundle();
+    let l10n = data
+        .get::<L10NBundle>()
+        .ok_or(L10NError::MissingFromShareMap)?
+        .lock();
 
-    let embed_text = bundle.get_message("info-embed").unwrap();
+    let embed_msg = l10n.get_message("info-embed")?;
+
+    let embed_title = l10n.get_msg_value(&embed_msg, None)?;
+
+    let general_title = l10n.get_msg_attribute(&embed_msg, "general-title", None)?;
     let args_general = fluent_args![
         "version" => version,
-        "uptime" => duration_to_str(&*l10n, uptime).unwrap()
+        "uptime" => duration_to_str(&*l10n, uptime)?
     ];
-    let args_footer = fluent_args![
-        "id" => bot.id.to_string()
-    ];
+    let general_body = l10n.get_msg_attribute(&embed_msg, "general-body", Some(&args_general))?;
+
+    let config_title = l10n.get_msg_attribute(&embed_msg, "config-title", None)?;
     let args_config = fluent_args![
         "langid" => config.get_locale()
     ];
-    let mut errors = vec![];
+    let config_body = l10n.get_msg_attribute(&embed_msg, "config-body", Some(&args_config))?;
+
+    let args_footer = fluent_args![
+        "id" => bot.id.to_string()
+    ];
+    let footer = l10n.get_msg_attribute(&embed_msg, "footer", Some(&args_footer))?;
 
     let _ = msg.channel_id.send_message(&ctx.http, |m| {
         m.embed(|e| {
-            e.title(bundle.format_pattern(embed_text.value.unwrap(), None, &mut errors));
+            e.title(embed_title);
             e.colour(0x0000_80c0);
-            e.field(
-                bundle.format_pattern(
-                    embed_text.attributes.get("general-title").unwrap(),
-                    None,
-                    &mut errors,
-                ),
-                bundle.format_pattern(
-                    embed_text.attributes.get("general-body").unwrap(),
-                    Some(&args_general),
-                    &mut errors,
-                ),
-                false,
-            );
-            e.field(
-                bundle.format_pattern(
-                    embed_text.attributes.get("config-title").unwrap(),
-                    None,
-                    &mut errors,
-                ),
-                bundle.format_pattern(
-                    embed_text.attributes.get("config-body").unwrap(),
-                    Some(&args_config),
-                    &mut errors,
-                ),
-                false,
-            );
-            e.footer(|f| {
-                f.text(bundle.format_pattern(
-                    embed_text.attributes.get("footer").unwrap(),
-                    Some(&args_footer),
-                    &mut errors,
-                ))
-            });
+            e.field(general_title, general_body, false);
+            e.field(config_title, config_body, false);
+            e.footer(|f| f.text(footer));
             e
         })
     });
+
     Ok(())
 }
 
@@ -207,7 +197,7 @@ mod tests {
     };
 
     #[test]
-    fn send_ping_without_heartbeat() {
+    fn send_ping_without_heartbeat() -> CommandResult {
         // Mock context
         let (sender, receiver) = channel();
         let mut ctx = Context::_new(Some(sender));
@@ -217,7 +207,7 @@ mod tests {
             data.insert::<ShardManagerContainer>(Arc::new(serenity::prelude::Mutex::new(
                 ShardManager::_new(map),
             )));
-            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")));
+            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")?));
         }
 
         // Mock message
@@ -225,7 +215,7 @@ mod tests {
         msg_id
             .expect_created_at()
             .times(1)
-            .return_const(DateTime::parse_from_rfc3339("1999-12-31T23:59:59.9-05:00").unwrap());
+            .return_const(DateTime::parse_from_rfc3339("1999-12-31T23:59:59.9-05:00")?);
         let msg = Message::_new(msg_id);
 
         // Guards for mock contexts
@@ -235,18 +225,20 @@ mod tests {
         let utc_now_ctx = Utc::now_context();
         utc_now_ctx
             .expect()
-            .return_const(DateTime::parse_from_rfc3339("2000-01-01T00:00:00-05:00").unwrap());
+            .return_const(DateTime::parse_from_rfc3339("2000-01-01T00:00:00-05:00")?);
 
-        ping(&mut ctx, &msg).unwrap();
+        ping(&mut ctx, &msg)?;
 
         assert_eq!(
-            receiver.recv().unwrap(),
+            receiver.recv()?,
             MessageData::StrMsg("Pong! *Ping received after \u{2068}100\u{2069} ms.*".to_string())
         );
+
+        Ok(())
     }
 
     #[test]
-    fn send_ping_with_heartbeat() {
+    fn send_ping_with_heartbeat() -> CommandResult {
         // Mock context
         let (sender, receiver) = channel();
         let mut ctx = Context::_new(Some(sender));
@@ -262,7 +254,7 @@ mod tests {
             data.insert::<ShardManagerContainer>(Arc::new(serenity::prelude::Mutex::new(
                 ShardManager::_new(map),
             )));
-            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")));
+            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")?));
         }
 
         // Mock message
@@ -270,7 +262,7 @@ mod tests {
         msg_id
             .expect_created_at()
             .once()
-            .return_const(DateTime::parse_from_rfc3339("1999-12-31T23:59:59.9-05:00").unwrap());
+            .return_const(DateTime::parse_from_rfc3339("1999-12-31T23:59:59.9-05:00")?);
         let msg = Message::_new(msg_id);
 
         // Guards for mock contexts
@@ -280,21 +272,23 @@ mod tests {
         let utc_now_ctx = Utc::now_context();
         utc_now_ctx
             .expect()
-            .return_const(DateTime::parse_from_rfc3339("2000-01-01T00:00:01-05:00").unwrap());
+            .return_const(DateTime::parse_from_rfc3339("2000-01-01T00:00:01-05:00")?);
 
-        ping(&mut ctx, &msg).unwrap();
+        ping(&mut ctx, &msg)?;
 
         assert_eq!(
-            receiver.recv().unwrap(),
+            receiver.recv()?,
             MessageData::StrMsg(
                 "Pong! *Ping received after \u{2068}1100\u{2069} ms.* *Current shard heartbeat ping of \u{2068}64\u{2069} ms.*"
                     .to_string()
             )
         );
+
+        Ok(())
     }
 
     #[test]
-    fn send_info() {
+    fn send_info() -> CommandResult {
         // Mock context
         let (sender, receiver) = channel();
         let mut ctx = Context::_new(Some(sender));
@@ -305,7 +299,7 @@ mod tests {
                 ShardManager::_new(map),
             )));
             data.insert::<Config>(Config::default());
-            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")));
+            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")?));
         }
 
         // Mock message
@@ -352,20 +346,22 @@ mod tests {
             **Author:** Thomas Donovan (tdonovan4)\n\
             **Version:** \u{2068}{}\u{2069}\n\
             **Uptime:** \u{2068}\u{2068}1\u{2069}d:\u{2068}3\u{2069}h:\u{2068}45\u{2069}m:\u{2068}0\u{2069}s\u{2069}\u{2069}",
-                env::var("CARGO_PKG_VERSION").unwrap(),
+                env::var("CARGO_PKG_VERSION")?,
             ),
             false,
         );
         embed.field("**Config**", "**Language:** \u{2068}en-US\u{2069}", false);
         embed.footer(|f| f.text("Client ID: \u{2068}0\u{2069}"));
 
-        info(&mut ctx, &msg).unwrap();
+        info(&mut ctx, &msg)?;
 
         assert_eq!(
-            receiver.recv().unwrap(),
+            receiver.recv()?,
             MessageData::CreateMessage(CreateMessage {
                 _embed: Some(embed),
             })
         );
+
+        Ok(())
     }
 }

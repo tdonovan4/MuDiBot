@@ -1,4 +1,1 @@
-no-token = Identificateur du bot non trouvé
-application-info-error = Impossible d'obtenir l'information de l'application: { $error }
-client-error = Erreur du client: { $error }
-client-creation-error = Erreur lors de la création client
+### Fichier pour les erreurs de commandes, les erreurs du bot ne sont pas traduites

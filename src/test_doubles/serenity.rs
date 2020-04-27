@@ -199,6 +199,7 @@ pub mod http {
             }
 
             pub fn _send(&self, data: MessageData) {
+                // Used only for tests so panicking is ok
                 self._mock_sender.as_ref().unwrap().send(data).unwrap();
             }
         }
