@@ -78,7 +78,7 @@ impl L10NBundle {
             msg: self
                 .bundle
                 .get_message(msg_id)
-                .ok_or(L10NError::MissingMsg(msg_id.to_string()))?,
+                .ok_or_else(|| L10NError::MissingMsg(msg_id.to_string()))?,
         })
     }
 
@@ -91,7 +91,7 @@ impl L10NBundle {
         let pattern = msg
             .msg
             .value
-            .ok_or(L10NError::MissingValue(msg.name.to_string()))?;
+            .ok_or_else(|| L10NError::MissingValue(msg.name.to_string()))?;
         let localized_msg = self.bundle.format_pattern(&pattern, args, &mut errors);
 
         //Only log the errors, since they are non fatal
@@ -109,14 +109,9 @@ impl L10NBundle {
         args: Option<&'bundle FluentArgs>,
     ) -> Result<Cow<str>> {
         let mut errors = vec![];
-        let pattern = msg
-            .msg
-            .attributes
-            .get(attribute)
-            .ok_or(L10NError::MissingAttribute(
-                msg.name.to_string(),
-                attribute.to_string(),
-            ))?;
+        let pattern = msg.msg.attributes.get(attribute).ok_or_else(|| {
+            L10NError::MissingAttribute(msg.name.to_string(), attribute.to_string())
+        })?;
         let localized_msg = self.bundle.format_pattern(&pattern, args, &mut errors);
 
         //Only log the errors, since they are non fatal
@@ -134,7 +129,7 @@ impl L10NBundle {
         let res = FluentResource::try_new(contents).map_err(|(_, e)| {
             // Convert Vec<ParserError> into Vec<FluentError> because ParserError is not public
             e.into_iter()
-                .map(|error| FluentError::ParserError(error))
+                .map(FluentError::ParserError)
                 .collect::<Vec<FluentError>>()
         })?;
         Ok(res)

@@ -173,7 +173,7 @@ impl Config {
     pub fn new() -> Result<Self> {
         // Get the path to the config file
         let project_dir = util::get_project_dir()
-            .ok_or(io::Error::new(ErrorKind::NotFound, "Project dir not found"))?;
+            .ok_or_else(|| io::Error::new(ErrorKind::NotFound, "Project dir not found"))?;
         let config_path = project_dir.config_dir().join("config.toml");
         // Check if the config file exists
         if config_path.exists() {
@@ -206,7 +206,7 @@ impl Config {
         // Before writing, create folder for config
         fs::create_dir_all(
             path.parent()
-                .ok_or(io::Error::new(ErrorKind::NotFound, "Config dir not found"))?,
+                .ok_or_else(|| io::Error::new(ErrorKind::NotFound, "Config dir not found"))?,
         )?;
         File::create(path)?.write_all(toml::to_string(&config)?.as_ref())?;
         Ok(())
