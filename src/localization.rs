@@ -66,7 +66,6 @@ impl L10NBundle {
         let mut bundle = FluentBundle::new(&[langid]);
 
         // Add ressources
-        bundle.add_resource(Self::load_res_file(locale, "general")?)?;
         bundle.add_resource(Self::load_res_file(locale, "errors")?)?;
         bundle.add_resource(Self::load_res_file(locale, "commands")?)?;
 
@@ -201,10 +200,7 @@ mod tests {
     #[test]
     fn create_bundle_and_get_msg() -> Result<()> {
         let bundle = L10NBundle::new("en-US")?;
-        assert_eq!(
-            bundle.localize_msg("startup", None)?,
-            "MuDiBot is starting up..."
-        );
+        assert_eq!(bundle.localize_msg("info-embed", None)?, "__**~Info~**__");
 
         Ok(())
     }
@@ -212,7 +208,7 @@ mod tests {
     #[test]
     fn create_bundle_and_get_msg_but_in_french() -> Result<()> {
         let bundle = L10NBundle::new("fr")?;
-        assert_eq!(bundle.localize_msg("startup", None)?, "MuDiBot démarre...");
+        assert_eq!(bundle.localize_msg("info-embed", None)?, "__**~Infos~**__");
 
         Ok(())
     }
@@ -220,11 +216,8 @@ mod tests {
     #[test]
     fn get_message_and_its_value() -> Result<()> {
         let bundle = L10NBundle::new("en-US")?;
-        let msg = bundle.get_message("startup")?;
-        assert_eq!(
-            bundle.get_msg_value(&msg, None)?,
-            "MuDiBot is starting up..."
-        );
+        let msg = bundle.get_message("info-embed")?;
+        assert_eq!(bundle.get_msg_value(&msg, None)?, "__**~Info~**__");
 
         Ok(())
     }
@@ -245,8 +238,8 @@ mod tests {
     fn message_with_placeable() -> Result<()> {
         let bundle = L10NBundle::new("en-US")?;
         assert_eq!(
-            bundle.localize_msg("connected", Some(&fluent_args!["bot-user" => "TestBot"]))?,
-            "\u{2068}TestBot\u{2069} is connected!"
+            bundle.localize_msg("ping-msg", Some(&fluent_args!["ping" => "15"]))?,
+            "Pong! *Ping received after \u{2068}15\u{2069} ms.*"
         );
 
         Ok(())
@@ -259,10 +252,7 @@ mod tests {
             let mut data = ctx.data.write();
             data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")?));
         }
-        assert_eq!(
-            ctx.localize_msg("startup", None)?,
-            "MuDiBot is starting up..."
-        );
+        assert_eq!(ctx.localize_msg("info-embed", None)?, "__**~Info~**__");
 
         Ok(())
     }
@@ -274,10 +264,7 @@ mod tests {
             let mut data = client.data.write();
             data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")?));
         }
-        assert_eq!(
-            client.localize_msg("startup", None)?,
-            "MuDiBot is starting up..."
-        );
+        assert_eq!(client.localize_msg("info-embed", None)?, "__**~Info~**__");
 
         Ok(())
     }

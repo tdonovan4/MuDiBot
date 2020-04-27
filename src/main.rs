@@ -5,11 +5,8 @@ mod localization;
 mod test_doubles;
 mod util;
 
-use localization::Localize;
+use std::sync::Arc;
 
-use std::{borrow::Cow, sync::Arc};
-
-use fluent::fluent_args;
 use serenity::prelude::{Mutex, TypeMapKey};
 
 #[macro_use]
@@ -48,23 +45,12 @@ impl TypeMapKey for ShardManagerContainer {
 struct Handler;
 
 impl EventHandler for Handler {
-    fn ready(&self, ctx: Context, ready: Ready) {
-        let args = fluent_args!["bot-user" => ready.user.name.as_str()];
-        let msg = ctx
-            .localize_msg("connected", Some(&args))
-            .unwrap_or_else(|e| {
-                warn!("{}", e);
-                Cow::Owned(format!("[fallback msg] {} is connected!", ready.user.name))
-            });
-        info!("{}⁨", msg);
+    fn ready(&self, _ctx: Context, ready: Ready) {
+        info!("{} is connected!", ready.user.name)
     }
 
-    fn resume(&self, ctx: Context, _: ResumedEvent) {
-        let msg = ctx.localize_msg("resumed", None).unwrap_or_else(|e| {
-            warn!("{}", e);
-            Cow::Borrowed("[fallback msg] Resumed")
-        });
-        info!("{}", msg);
+    fn resume(&self, _ctx: Context, _: ResumedEvent) {
+        info!("Resumed");
     }
 }
 
@@ -110,31 +96,14 @@ fn run_bot() -> Result<(), BotError> {
     let bundle = localization::L10NBundle::new(config.get_locale())?;
 
     // Print that we're starting up
-    info!(
-        "{}",
-        bundle.localize_msg("startup", None).unwrap_or_else(|e| {
-            // Non fatal error
-            warn!("{}", e);
-            Cow::Borrowed("[fallback msg] MuDiBot is starting up...")
-        })
-    );
+    info!("MuDiBot is starting up...");
 
     // Print configuration file location
     match util::get_project_dir() {
         Some(project_dir) => {
-            let config_dir = project_dir.config_dir().to_string_lossy();
-            let args = fluent_args!["config-dir" => config_dir.as_ref()];
             info!(
-                "{}",
-                bundle
-                    .localize_msg("config-loaded", Some(&args))
-                    .unwrap_or_else(|e| {
-                        warn!("{}", e);
-                        Cow::Owned(format!(
-                            "[fallback msg] Configuration file loaded from {}/config.toml",
-                            config_dir
-                        ))
-                    })
+                "Configuration file loaded from {}/config.toml",
+                project_dir.config_dir().to_string_lossy()
             );
         }
         None => {
