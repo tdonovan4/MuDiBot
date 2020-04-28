@@ -66,8 +66,12 @@ impl L10NBundle {
         let mut bundle = FluentBundle::new(&[langid]);
 
         // Add ressources
-        bundle.add_resource(Self::load_res_file(locale, "errors")?)?;
-        bundle.add_resource(Self::load_res_file(locale, "commands")?)?;
+        for res_name in ["errors", "commands"].iter() {
+            let mut file = File::open(format!("resources/{}/{}.ftl", locale, res_name))?;
+            let mut contents = String::new();
+            file.read_to_string(&mut contents)?;
+            bundle.add_resource(Self::load_res_file(contents)?)?;
+        }
 
         Ok(Self { bundle })
     }
@@ -122,10 +126,7 @@ impl L10NBundle {
         Ok(localized_msg)
     }
 
-    fn load_res_file(locale: &str, name: &str) -> Result<FluentResource> {
-        let mut file = File::open(format!("resources/{}/{}.ftl", locale, name))?;
-        let mut contents = String::new();
-        file.read_to_string(&mut contents)?;
+    fn load_res_file(contents: String) -> Result<FluentResource> {
         let res = FluentResource::try_new(contents).map_err(|(_, e)| {
             // Convert Vec<ParserError> into Vec<FluentError> because ParserError is not public
             e.into_iter()
@@ -260,6 +261,57 @@ mod tests {
             data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")?));
         }
         assert_eq!(client.localize_msg("info-embed", None)?, "__**~Info~**__");
+
+        Ok(())
+    }
+
+    #[test]
+    fn wrong_message_id() -> Result<()> {
+        let bundle = L10NBundle::new("en-US")?;
+        assert!(bundle.localize_msg("awsxc", None).is_err());
+
+        Ok(())
+    }
+
+    #[test]
+    fn wrong_message_attribute() -> Result<()> {
+        let bundle = L10NBundle::new("en-US")?;
+        let msg = bundle.get_message("info-embed")?;
+        assert!(bundle.get_msg_attribute(&msg, "cxswa", None).is_err());
+
+        Ok(())
+    }
+
+    #[test]
+    fn parse_wrong_text() {
+        assert!(L10NBundle::load_res_file("incomplete = ".to_string()).is_err());
+    }
+
+    #[test]
+    fn value_recover_from_small_errors() -> Result<()> {
+        let langid: LanguageIdentifier = "en-US".parse()?;
+        let mut bundle = FluentBundle::new(&[langid]);
+        // Cyclic
+        bundle.add_resource(L10NBundle::load_res_file("test = { test }".to_string())?)?;
+
+        assert!(L10NBundle { bundle }.localize_msg("test", None).is_ok());
+
+        Ok(())
+    }
+
+    #[test]
+    fn attribute_recover_from_small_errors() -> Result<()> {
+        let langid: LanguageIdentifier = "en-US".parse()?;
+        let mut bundle = FluentBundle::new(&[langid]);
+        // Cyclic
+        bundle.add_resource(L10NBundle::load_res_file(
+            "test = { test }\n    .cyclic = { test }".to_string(),
+        )?)?;
+        let l10n = L10NBundle { bundle };
+
+        assert!(l10n
+            .get_msg_attribute(&l10n.get_message("test")?, "cyclic", None)
+            .is_ok());
 
         Ok(())
     }
