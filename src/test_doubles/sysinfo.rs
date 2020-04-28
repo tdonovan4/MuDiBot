@@ -1,3 +1,5 @@
+use sysinfo::Pid;
+
 pub use MockSystem as System;
 
 mockall::mock! {
@@ -11,7 +13,7 @@ mockall::mock! {
         * https://github.com/asomers/mockall/issues/85
         * fn get_process<'a>(&self, pid: i32) -> Option<&'a MockProcess>;
         */
-        fn get_process(&self, pid: i32) -> Option<MockProcess>;
+        fn get_process(&self, pid: Pid) -> Option<MockProcess>;
     }
 }
 
@@ -21,7 +23,7 @@ pub trait SystemExt {
      * https://github.com/asomers/mockall/issues/85
      * fn get_process<'a>(&self, pid: i32) -> Option<&'a MockProcess>;
      */
-    fn get_process(&self, pid: i32) -> Option<MockProcess>;
+    fn get_process(&self, pid: Pid) -> Option<MockProcess>;
 }
 
 mockall::mock! {
