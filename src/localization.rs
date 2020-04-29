@@ -243,7 +243,7 @@ mod tests {
 
     #[test]
     fn context_localize_msg() -> Result<()> {
-        let ctx = Context::_new(None);
+        let ctx = Context::_new(None, None);
         {
             let mut data = ctx.data.write();
             data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")?));

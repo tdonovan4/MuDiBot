@@ -7,7 +7,10 @@ mod util;
 
 use std::sync::Arc;
 
-use serenity::prelude::{Mutex, TypeMapKey};
+use serenity::{
+    model::gateway::Activity,
+    prelude::{Mutex, RwLock, TypeMapKey},
+};
 
 #[macro_use]
 extern crate log;
@@ -32,7 +35,7 @@ cfg_if::cfg_if! {
         use commands::meta::commands::*;
 
         #[group]
-        #[commands(ping, info)]
+        #[commands(ping, info, setactivity)]
         struct General;
     }
 }
@@ -45,8 +48,19 @@ impl TypeMapKey for ShardManagerContainer {
 struct Handler;
 
 impl EventHandler for Handler {
-    fn ready(&self, _ctx: Context, ready: Ready) {
-        info!("{} is connected!", ready.user.name)
+    fn ready(&self, ctx: Context, ready: Ready) {
+        //set activity
+        let data = ctx.data.read();
+        match data.get::<config::Config>() {
+            Some(config) => {
+                if let Some(activity) = config.read().get_activity() {
+                    ctx.set_activity(Activity::playing(activity));
+                }
+            }
+            None => warn!("{}", config::ConfigError::MissingFromShareMap),
+        }
+
+        info!("{} is connected!", ready.user.name);
     }
 
     fn resume(&self, _ctx: Context, _: ResumedEvent) {
@@ -130,7 +144,7 @@ fn run_bot() -> Result<(), BotError> {
     {
         let mut data = client.data.write();
         data.insert::<ShardManagerContainer>(Arc::clone(&client.shard_manager));
-        data.insert::<config::Config>(config);
+        data.insert::<config::Config>(RwLock::new(config));
         data.insert::<localization::L10NBundle>(Mutex::new(bundle));
     }
 
@@ -171,15 +185,41 @@ mod tests {
     use super::*;
 
     use localization::{L10NBundle, L10NError};
-    use test_doubles::serenity::model::user::CurrentUser;
+    use test_doubles::serenity::{client::MockContext, model::user::CurrentUser};
 
     #[test]
     fn ready_event() -> Result<(), L10NError> {
-        let ctx = Context::_new(None);
+        let mut mock_context = MockContext::new();
+        mock_context.expect_set_activity().once().return_const(());
+        let ctx = Context::_new(None, Some(mock_context));
+        {
+            let mut data = ctx.data.write();
+            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")?));
+            data.insert::<config::Config>(RwLock::new(config::Config::default()));
+        }
+
+        Handler.ready(
+            ctx,
+            Ready {
+                user: CurrentUser {
+                    id: 0,
+                    name: "TestBot".to_string(),
+                },
+            },
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn ready_event_but_missing_config() -> Result<(), L10NError> {
+        let mock_context = MockContext::new();
+        let ctx = Context::_new(None, Some(mock_context));
         {
             let mut data = ctx.data.write();
             data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")?));
         }
+
         Handler.ready(
             ctx,
             Ready {
@@ -195,7 +235,7 @@ mod tests {
 
     #[test]
     fn resume_event() -> Result<(), L10NError> {
-        let ctx = Context::_new(None);
+        let ctx = Context::_new(None, None);
         {
             let mut data = ctx.data.write();
             data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")?));

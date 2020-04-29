@@ -12,3 +12,6 @@ info-embed = __**~Info~**__
     .config-title = **Config**
     .config-body = **Language:** { $langid }
     .footer = Client ID: { $id }
+
+set-activity-some = Activity successfully modified!
+set-activity-none = Activity successfully removed!

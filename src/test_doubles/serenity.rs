@@ -5,7 +5,10 @@ pub mod client {
     use model::event::ResumedEvent;
 
     use model::{gateway::Ready, id::MessageData};
-    use serenity::prelude::{RwLock, ShareMap};
+    use serenity::{
+        model::gateway::Activity,
+        prelude::{RwLock, ShareMap},
+    };
 
     pub trait EventHandler {
         fn ready(&self, ctx: Context, ready: Ready);
@@ -27,15 +30,24 @@ pub mod client {
         }
     }
 
+    mockall::mock! {
+        pub Context {
+            fn set_activity(&self, activity: Activity);
+            fn reset_presence(&self);
+        }
+    }
+
+    // Wrapper around a mock so that we can have fields
     pub struct Context {
         pub data: Arc<RwLock<ShareMap>>,
         pub shard_id: u64,
         pub http: Arc<http::client::Http>,
         pub cache: Arc<RwLock<super::cache::Cache>>,
+        pub _inner: Option<MockContext>,
     }
 
     impl Context {
-        pub fn _new(sender: Option<Sender<MessageData>>) -> Self {
+        pub fn _new(sender: Option<Sender<MessageData>>, inner: Option<MockContext>) -> Self {
             let map = ShareMap::custom();
 
             Self {
@@ -48,7 +60,17 @@ pub mod client {
                         name: "TestUser".to_string(),
                     },
                 })),
+                _inner: inner,
             }
+        }
+
+        pub fn set_activity(&self, activity: Activity) {
+            // Only for tests, panicking is ok
+            self._inner.as_ref().unwrap().set_activity(activity);
+        }
+
+        pub fn reset_presence(&self) {
+            self._inner.as_ref().unwrap().reset_presence();
         }
     }
 
@@ -122,6 +144,7 @@ pub mod model {
                 Ok(Message {
                     id: MessageId::new(),
                     channel_id: self,
+                    content: content.to_string(),
                 })
             }
 
@@ -132,11 +155,14 @@ pub mod model {
                 let mut msg = CreateMessage { _embed: None };
                 f(&mut msg);
 
+                let content = format!("{:?}", msg);
+
                 (**http)._send(MessageData::CreateMessage(msg));
 
                 Ok(Message {
                     id: MessageId::new(),
                     channel_id: self,
+                    content,
                 })
             }
         }
@@ -155,13 +181,15 @@ pub mod model {
         pub struct Message {
             pub id: MessageId,
             pub channel_id: ChannelId,
+            pub content: String,
         }
 
         impl Message {
-            pub fn _new(id: MessageId) -> Self {
+            pub fn _new(id: MessageId, content: String) -> Self {
                 Self {
                     id,
                     channel_id: ChannelId {},
+                    content,
                 }
             }
         }

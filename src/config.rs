@@ -80,7 +80,7 @@ impl Default for Metrics {
 /// These options cannot be changed by a server configuration.
 struct Global {
     /// What status should the bot display.
-    current_status: String,
+    current_activity: Option<String>,
     /// The path to the SQLite database.
     path_database: PathBuf,
     /// A list of users that can bypass the permission checks. This field uses user ids.
@@ -94,7 +94,7 @@ struct Global {
 impl Default for Global {
     fn default() -> Self {
         Self {
-            current_status: "Type $help".to_string(),
+            current_activity: Some("Type $help".to_string()),
             path_database: PathBuf::from("./storage/data.db"),
             superusers: None,
             xp_cooldown: 3000,
@@ -185,7 +185,7 @@ impl Config {
             // This message is not localized because english is the default language
             info!("Creating the configuration file at {:?}", config_path);
             let default = Self::default();
-            Self::write_config_file(&config_path, &default)?;
+            default.write_config_file(&config_path)?;
             Ok(default)
         }
     }
@@ -202,13 +202,34 @@ impl Config {
         self.server_specific.locale.as_str()
     }
 
-    fn write_config_file(path: &Path, config: &Self) -> Result<()> {
+    pub fn get_activity(&self) -> Option<&str> {
+        self.global.current_activity.as_deref()
+    }
+
+    pub fn change_activity(&mut self, new_activity: Option<String>) -> Result<()> {
+        self.global.current_activity = new_activity;
+
+        // Get the path to the config file
+        let project_dir = util::get_project_dir()
+            .ok_or_else(|| io::Error::new(ErrorKind::NotFound, "Project dir not found"))?;
+        let config_path = project_dir.config_dir().join("config.toml");
+
+        // Write
+        self.write_config_file(&config_path)?;
+
+        Ok(())
+    }
+
+    fn write_config_file(&self, path: &Path) -> Result<()> {
         // Before writing, create folder for config
         fs::create_dir_all(
             path.parent()
                 .ok_or_else(|| io::Error::new(ErrorKind::NotFound, "Config dir not found"))?,
         )?;
-        File::create(path)?.write_all(toml::to_string(&config)?.as_ref())?;
+        File::create(path)?.write_all(toml::to_string(&self)?.as_ref())?;
+
+        debug!("Config file written");
+
         Ok(())
     }
 
@@ -221,7 +242,7 @@ impl Config {
 }
 
 impl TypeMapKey for Config {
-    type Value = Config;
+    type Value = RwLock<Config>;
 }
 
 #[cfg(test)]
@@ -372,5 +393,70 @@ mod tests {
         let config = Config::default();
 
         assert_eq!(config.get_locale(), config.server_specific.locale.as_str());
+    }
+
+    #[test]
+    fn borrow_activity() {
+        let config = Config::default();
+
+        assert_eq!(
+            config.get_activity(),
+            config.global.current_activity.as_deref()
+        );
+    }
+
+    #[test]
+    fn modify_activity() -> Result<()> {
+        // Mock config dir
+        let mut config_dir = Path::default();
+        config_dir.expect_join().once().returning(|_| {
+            // Mock config path
+            // As Path
+            let mut config_path = Path::default();
+            config_path
+                .expect_parent()
+                .once()
+                .returning(|| Some(Path::default()));
+
+            // As PathBuf
+            let mut config_path_buf = PathBuf::new();
+            config_path_buf
+                .expect_deref()
+                .once()
+                .return_const(config_path);
+            config_path_buf
+        });
+
+        // Guards for mock contexts
+        let _guards = CONTEXT_SYNCHRONIZER.get_ctx_guards(vec!["project_dirs_from", "file_create"]);
+
+        // Mock project dir
+        let project_dirs_ctx = ProjectDirs::from_context();
+        project_dirs_ctx.expect().once().return_once(|_, _, _| {
+            let mut project_dir = ProjectDirs::new();
+            project_dir
+                .expect_config_dir()
+                .once()
+                .return_const(config_dir);
+            Some(project_dir)
+        });
+
+        // Mock config file
+        let file_ctx = File::create_context();
+        file_ctx.expect().once().return_once(|_| {
+            let mut config_file = File::new();
+            config_file
+                .expect_write()
+                .once()
+                .return_once(|x| Ok(x.len()));
+            Ok(config_file)
+        });
+
+        let mut config = Config::default();
+        config.change_activity(Some("This a test".to_string()))?;
+
+        assert_eq!(config.get_activity(), Some("This a test"));
+
+        Ok(())
     }
 }
