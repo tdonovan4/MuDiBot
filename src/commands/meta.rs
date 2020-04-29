@@ -187,17 +187,24 @@ pub mod commands {
     };
 
     #[command]
+    #[description("Replies `Pong!` with some information about the latency")]
     fn ping(ctx: &mut Context, msg: &Message) -> CommandResult {
         super::ping(ctx, msg)
     }
 
     #[command]
+    #[description("Get information on the bot and it's current state")]
     fn info(ctx: &mut Context, msg: &Message) -> CommandResult {
         super::info(ctx, msg)
     }
 
     #[command]
     #[owners_only]
+    #[description(
+        "Set a new activity (playing ...) for the bot. \
+        Running this command without an argument will remove any activity."
+    )]
+    #[usage("[activity]")]
     fn setactivity(ctx: &mut Context, msg: &Message) -> CommandResult {
         super::set_activity(ctx, msg)
     }
