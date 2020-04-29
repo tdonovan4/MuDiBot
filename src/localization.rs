@@ -5,7 +5,7 @@ use std::{
 };
 
 use fluent::{concurrent::FluentBundle, FluentArgs, FluentError, FluentMessage, FluentResource};
-use serenity::prelude::{Mutex, TypeMapKey};
+use serenity::prelude::{RwLock, TypeMapKey};
 use thiserror::Error;
 use unic_langid::{LanguageIdentifier, LanguageIdentifierError};
 
@@ -148,7 +148,7 @@ impl Localize for L10NBundle {
 }
 
 impl TypeMapKey for L10NBundle {
-    type Value = Mutex<L10NBundle>;
+    type Value = RwLock<L10NBundle>;
 }
 
 impl Localize for Context {
@@ -162,7 +162,7 @@ impl Localize for Context {
                 .read()
                 .get::<L10NBundle>()
                 .ok_or(L10NError::MissingFromShareMap)?
-                .lock()
+                .read()
                 .localize_msg(msg_id, args)?
                 .into_owned(),
         ))
@@ -180,7 +180,7 @@ impl Localize for Client {
                 .read()
                 .get::<L10NBundle>()
                 .ok_or(L10NError::MissingFromShareMap)?
-                .lock()
+                .read()
                 .localize_msg(msg_id, args)?
                 .into_owned(),
         ))
@@ -246,7 +246,7 @@ mod tests {
         let ctx = Context::_new(None, None);
         {
             let mut data = ctx.data.write();
-            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")?));
+            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
         }
         assert_eq!(ctx.localize_msg("info-embed", None)?, "__**~Info~**__");
 
@@ -258,7 +258,7 @@ mod tests {
         let client = Client::_new();
         {
             let mut data = client.data.write();
-            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")?));
+            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
         }
         assert_eq!(client.localize_msg("info-embed", None)?, "__**~Info~**__");
 

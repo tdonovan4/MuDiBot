@@ -145,7 +145,7 @@ fn run_bot() -> Result<(), BotError> {
         let mut data = client.data.write();
         data.insert::<ShardManagerContainer>(Arc::clone(&client.shard_manager));
         data.insert::<config::Config>(RwLock::new(config));
-        data.insert::<localization::L10NBundle>(Mutex::new(bundle));
+        data.insert::<localization::L10NBundle>(RwLock::new(bundle));
     }
 
     let info = client.cache_and_http.http.get_current_application_info()?;
@@ -194,7 +194,7 @@ mod tests {
         let ctx = Context::_new(None, Some(mock_context));
         {
             let mut data = ctx.data.write();
-            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")?));
+            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
             data.insert::<config::Config>(RwLock::new(config::Config::default()));
         }
 
@@ -217,7 +217,7 @@ mod tests {
         let ctx = Context::_new(None, Some(mock_context));
         {
             let mut data = ctx.data.write();
-            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")?));
+            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
         }
 
         Handler.ready(
@@ -238,7 +238,7 @@ mod tests {
         let ctx = Context::_new(None, None);
         {
             let mut data = ctx.data.write();
-            data.insert::<L10NBundle>(serenity::prelude::Mutex::new(L10NBundle::new("en-US")?));
+            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
         }
         Handler.resume(ctx, ResumedEvent {});
 

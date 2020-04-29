@@ -103,7 +103,7 @@ fn info(ctx: &mut Context, msg: &Message) -> CommandResult {
     let l10n = data
         .get::<L10NBundle>()
         .ok_or(L10NError::MissingFromShareMap)?
-        .lock();
+        .read();
 
     let embed_msg = l10n.get_message("info-embed")?;
 
@@ -256,7 +256,7 @@ mod tests {
             let mut data = ctx.data.write();
             let map = HashMap::new();
             data.insert::<ShardManagerContainer>(Arc::new(Mutex::new(ShardManager::_new(map))));
-            data.insert::<L10NBundle>(Mutex::new(L10NBundle::new("en-US")?));
+            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
         }
 
         // Mock message
@@ -301,7 +301,7 @@ mod tests {
                 },
             );
             data.insert::<ShardManagerContainer>(Arc::new(Mutex::new(ShardManager::_new(map))));
-            data.insert::<L10NBundle>(Mutex::new(L10NBundle::new("en-US")?));
+            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
         }
 
         // Mock message
@@ -344,7 +344,7 @@ mod tests {
             let map = HashMap::new();
             data.insert::<ShardManagerContainer>(Arc::new(Mutex::new(ShardManager::_new(map))));
             data.insert::<Config>(RwLock::new(Config::default()));
-            data.insert::<L10NBundle>(Mutex::new(L10NBundle::new("en-US")?));
+            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
         }
 
         // Mock message
@@ -420,7 +420,7 @@ mod tests {
         {
             let mut data = ctx.data.write();
             data.insert::<Config>(RwLock::new(Config::default()));
-            data.insert::<L10NBundle>(Mutex::new(L10NBundle::new("en-US")?));
+            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
         }
 
         // Mock message
@@ -501,7 +501,7 @@ mod tests {
         {
             let mut data = ctx.data.write();
             data.insert::<Config>(RwLock::new(Config::default()));
-            data.insert::<L10NBundle>(Mutex::new(L10NBundle::new("en-US")?));
+            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
         }
 
         // Mock message
