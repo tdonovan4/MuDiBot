@@ -32,13 +32,19 @@ cfg_if::cfg_if! {
         };
         use thiserror::Error;
 
-        use commands::meta::commands::*;
+        use commands::{meta::commands::*, owner::commands::*};
 
         #[group]
-        #[commands(ping, info, setactivity)]
+        #[commands(ping, info)]
         struct General;
+
+        #[group]
+        #[owners_only]
+        #[commands(setactivity)]
+        struct Owner;
     }
 }
+
 struct ShardManagerContainer;
 
 impl TypeMapKey for ShardManagerContainer {
@@ -171,6 +177,7 @@ fn run_bot() -> Result<(), BotError> {
                 }
             })
             .group(&GENERAL_GROUP)
+            .group(&OWNER_GROUP)
             .help(&HELP),
     );
 

@@ -9,11 +9,7 @@ use std::{
 
 use chrono::DateTime;
 use fluent::fluent_args;
-use serenity::{
-    client::bridge::gateway::ShardId,
-    framework::standard::{Args, CommandResult, Delimiter},
-    model::gateway::Activity,
-};
+use serenity::{client::bridge::gateway::ShardId, framework::standard::CommandResult};
 
 cfg_if::cfg_if! {
     if #[cfg(test)] {
@@ -141,37 +137,6 @@ fn info(ctx: &mut Context, msg: &Message) -> CommandResult {
     Ok(())
 }
 
-fn set_activity(ctx: &mut Context, msg: &Message) -> CommandResult {
-    let mut args = Args::new(msg.content.as_str(), &[Delimiter::Single(' ')]);
-    // Skip cmd
-    args.advance();
-    let activity = args.remains();
-
-    // Update config
-    let data = ctx.data.read();
-    let mut config = data
-        .get::<Config>()
-        .ok_or(ConfigError::MissingFromShareMap)?
-        .write();
-    config.change_activity(activity.map(|s| s.to_string()))?;
-
-    // Set new activity and generate the message
-    let success_msg = match activity {
-        Some(activity_text) => {
-            ctx.set_activity(Activity::playing(activity_text));
-            ctx.localize_msg("set-activity-some", None)?
-        }
-        None => {
-            ctx.reset_presence();
-            ctx.localize_msg("set-activity-none", None)?
-        }
-    };
-
-    msg.channel_id.say(&ctx.http, success_msg.as_ref())?;
-
-    Ok(())
-}
-
 #[cfg(not(test))]
 pub mod commands {
     use std::collections::HashSet;
@@ -198,17 +163,6 @@ pub mod commands {
         super::info(ctx, msg)
     }
 
-    #[command]
-    #[owners_only]
-    #[description(
-        "Set a new activity (playing ...) for the bot. \
-        Running this command without an argument will remove any activity."
-    )]
-    #[usage("[activity]")]
-    fn setactivity(ctx: &mut Context, msg: &Message) -> CommandResult {
-        super::set_activity(ctx, msg)
-    }
-
     #[help]
     #[individual_command_tip = "Type the name of a command to get more info about it"]
     #[max_levenshtein_distance(3)]
@@ -231,16 +185,10 @@ pub mod commands {
 mod tests {
     use super::*;
 
-    use crate::test_doubles::directories::ProjectDirs;
     use crate::test_doubles::serenity::{
         builder::CreateMessage,
         client::bridge::gateway::{ShardManager, ShardRunnerInfo},
-        client::MockContext,
         model::id::{MessageData, MessageId},
-    };
-    use crate::test_doubles::std::{
-        fs::File,
-        path::{Path, PathBuf},
     };
     use crate::test_doubles::sysinfo::MockProcess;
     use crate::test_doubles::CONTEXT_SYNCHRONIZER;
@@ -412,171 +360,6 @@ mod tests {
             MessageData::CreateMessage(CreateMessage {
                 _embed: Some(embed),
             })
-        );
-
-        Ok(())
-    }
-
-    #[test]
-    fn set_activity_to_none() -> CommandResult {
-        // Mock context
-        let (sender, receiver) = channel();
-        let mut inner_ctx = MockContext::new();
-        inner_ctx.expect_reset_presence().once().return_const(());
-        let mut ctx = Context::_new(Some(sender), Some(inner_ctx));
-        {
-            let mut data = ctx.data.write();
-            data.insert::<Config>(RwLock::new(Config::default()));
-            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
-        }
-
-        // Mock message
-        let msg = Message::_new(MessageId::new(), "$setactivity".to_string());
-
-        // Mock config dir
-        let mut config_dir = Path::default();
-        config_dir.expect_join().once().returning(|_| {
-            // Mock config path
-            // As Path
-            let mut config_path = Path::default();
-            config_path
-                .expect_parent()
-                .once()
-                .returning(|| Some(Path::default()));
-
-            // As PathBuf
-            let mut config_path_buf = PathBuf::new();
-            config_path_buf
-                .expect_deref()
-                .once()
-                .return_const(config_path);
-            config_path_buf
-        });
-
-        // Guards for mock contexts
-        let _guards = CONTEXT_SYNCHRONIZER.get_ctx_guards(vec!["project_dirs_from", "file_create"]);
-
-        // Mock project dir
-        let project_dirs_ctx = ProjectDirs::from_context();
-        project_dirs_ctx.expect().once().return_once(|_, _, _| {
-            let mut project_dir = ProjectDirs::new();
-            project_dir
-                .expect_config_dir()
-                .once()
-                .return_const(config_dir);
-            Some(project_dir)
-        });
-
-        // Mock config file
-        let file_ctx = File::create_context();
-        file_ctx.expect().once().return_once(|_| {
-            let mut config_file = File::new();
-            config_file
-                .expect_write()
-                .once()
-                .return_once(|x| Ok(x.len()));
-            Ok(config_file)
-        });
-
-        set_activity(&mut ctx, &msg)?;
-
-        assert_eq!(
-            ctx.data
-                .read()
-                .get::<Config>()
-                .unwrap()
-                .read()
-                .get_activity(),
-            None
-        );
-
-        assert_eq!(
-            receiver.recv()?,
-            MessageData::StrMsg("Activity successfully removed!".to_string())
-        );
-
-        Ok(())
-    }
-
-    #[test]
-    fn set_activity_to_some() -> CommandResult {
-        // Mock context
-        let (sender, receiver) = channel();
-        let mut inner_ctx = MockContext::new();
-        inner_ctx.expect_set_activity().once().return_const(());
-        let mut ctx = Context::_new(Some(sender), Some(inner_ctx));
-        {
-            let mut data = ctx.data.write();
-            data.insert::<Config>(RwLock::new(Config::default()));
-            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
-        }
-
-        // Mock message
-        let msg = Message::_new(
-            MessageId::new(),
-            "$setactivity Hello, this is a test!".to_string(),
-        );
-
-        // Mock config dir
-        let mut config_dir = Path::default();
-        config_dir.expect_join().once().returning(|_| {
-            // Mock config path
-            // As Path
-            let mut config_path = Path::default();
-            config_path
-                .expect_parent()
-                .once()
-                .returning(|| Some(Path::default()));
-
-            // As PathBuf
-            let mut config_path_buf = PathBuf::new();
-            config_path_buf
-                .expect_deref()
-                .once()
-                .return_const(config_path);
-            config_path_buf
-        });
-
-        // Guards for mock contexts
-        let _guards = CONTEXT_SYNCHRONIZER.get_ctx_guards(vec!["project_dirs_from", "file_create"]);
-
-        // Mock project dir
-        let project_dirs_ctx = ProjectDirs::from_context();
-        project_dirs_ctx.expect().once().return_once(|_, _, _| {
-            let mut project_dir = ProjectDirs::new();
-            project_dir
-                .expect_config_dir()
-                .once()
-                .return_const(config_dir);
-            Some(project_dir)
-        });
-
-        // Mock config file
-        let file_ctx = File::create_context();
-        file_ctx.expect().once().return_once(|_| {
-            let mut config_file = File::new();
-            config_file
-                .expect_write()
-                .once()
-                .return_once(|x| Ok(x.len()));
-            Ok(config_file)
-        });
-
-        set_activity(&mut ctx, &msg)?;
-
-        assert_eq!(
-            ctx.data
-                .read()
-                .get::<Config>()
-                .unwrap()
-                .read()
-                .get_activity(),
-            Some("Hello, this is a test!")
-        );
-
-        assert_eq!(
-            receiver.recv()?,
-            MessageData::StrMsg("Activity successfully modified!".to_string())
         );
 
         Ok(())
