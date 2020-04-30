@@ -32,7 +32,7 @@ cfg_if::cfg_if! {
         };
         use thiserror::Error;
 
-        use commands::{meta::commands::*, owner::commands::*};
+        use commands::{general::commands::*, owner::commands::*};
 
         #[group]
         #[commands(ping, info)]
