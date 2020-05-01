@@ -276,7 +276,7 @@ mod tests {
     fn send_ping_without_heartbeat() -> CommandResult {
         // Mock context
         let (sender, receiver) = channel();
-        let mut ctx = Context::_new(Some(sender), None, None);
+        let mut ctx = Context::_new(Some(sender), None, None, None);
         {
             let mut data = ctx.data.write();
             let map = HashMap::new();
@@ -316,7 +316,7 @@ mod tests {
     fn send_ping_with_heartbeat() -> CommandResult {
         // Mock context
         let (sender, receiver) = channel();
-        let mut ctx = Context::_new(Some(sender), None, None);
+        let mut ctx = Context::_new(Some(sender), None, None, None);
         {
             let mut data = ctx.data.write();
             let mut map = HashMap::new();
@@ -365,7 +365,7 @@ mod tests {
     fn send_info() -> CommandResult {
         // Mock context
         let (sender, receiver) = channel();
-        let mut ctx = Context::_new(Some(sender), None, None);
+        let mut ctx = Context::_new(Some(sender), None, None, None);
         {
             let mut data = ctx.data.write();
             let map = HashMap::new();
@@ -447,7 +447,7 @@ mod tests {
     fn say_something_current() -> CommandResult {
         // Mock context
         let (sender, receiver) = channel();
-        let mut ctx = Context::_new(Some(sender), None, None);
+        let mut ctx = Context::_new(Some(sender), None, None, None);
         {
             let mut data = ctx.data.write();
             data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
@@ -484,6 +484,7 @@ mod tests {
             Some(Channel::Guild(Arc::new(RwLock::new(GuildChannel {
                 guild_id: 0,
             })))),
+            None,
         );
         {
             let mut data = ctx.data.write();
@@ -522,6 +523,7 @@ mod tests {
             Some(Channel::Guild(Arc::new(RwLock::new(GuildChannel {
                 guild_id: 0,
             })))),
+            None,
         );
         {
             let mut data = ctx.data.write();
@@ -560,6 +562,7 @@ mod tests {
             Some(sender),
             None,
             Some(Channel::Private(Arc::new(RwLock::new(PrivateChannel)))),
+            None,
         );
         {
             let mut data = ctx.data.write();
@@ -603,6 +606,7 @@ mod tests {
             Some(Channel::Guild(Arc::new(RwLock::new(GuildChannel {
                 guild_id: 1,
             })))),
+            None,
         );
         {
             let mut data = ctx.data.write();

@@ -2,7 +2,9 @@ use std::sync::{mpsc::Sender, Arc};
 
 pub mod client {
     use super::*;
-    use model::{channel::Channel, event::ResumedEvent, gateway::Ready, id::MessageData};
+    use model::{
+        channel::Channel, event::ResumedEvent, gateway::Ready, id::MessageData, user::User,
+    };
 
     use serenity::{
         model::gateway::Activity,
@@ -50,20 +52,32 @@ pub mod client {
             sender: Option<Sender<(u64, MessageData)>>,
             inner: Option<MockContext>,
             channel: Option<Channel>,
+            user: Option<User>,
         ) -> Self {
             let map = ShareMap::custom();
 
             Self {
                 data: Arc::new(RwLock::new(map)),
                 shard_id: 0,
-                http: Arc::new(http::client::Http::_new(sender, channel)),
+                http: Arc::new(http::client::Http::_new(sender, channel, user)),
                 cache: Arc::new(RwLock::new(cache::Cache {
-                    user: model::user::CurrentUser {
-                        id: 0,
-                        name: "TestUser".to_string(),
-                    },
+                    user: model::user::CurrentUser::_new(0, "TestBot".to_string()),
                 })),
                 _inner: inner,
+            }
+        }
+
+        pub fn _new_bare() -> Self {
+            let map = ShareMap::custom();
+
+            Self {
+                data: Arc::new(RwLock::new(map)),
+                shard_id: 0,
+                http: Arc::new(http::client::Http::_new(None, None, None)),
+                cache: Arc::new(RwLock::new(cache::Cache {
+                    user: model::user::CurrentUser::_new(0, "TestBot".to_string()),
+                })),
+                _inner: None,
             }
         }
 
@@ -118,24 +132,72 @@ pub mod model {
     pub mod user {
         use super::id::UserId;
 
+        #[derive(Clone)]
+        pub struct User {
+            pub avatar: Option<String>,
+        }
+
         pub struct CurrentUser {
             pub id: UserId,
             pub name: String,
+        }
+
+        impl CurrentUser {
+            pub fn _new(id: u64, name: String) -> Self {
+                Self {
+                    id: UserId(id),
+                    name,
+                }
+            }
         }
     }
 
     pub mod id {
         use super::*;
 
+        use user::User;
+
         use channel::Channel;
 
-        use std::{fmt::Display, str::FromStr};
+        use std::{
+            fmt::{self, Display},
+            str::FromStr,
+        };
 
         use chrono::{offset::FixedOffset, DateTime};
-        use serenity::model::misc::ChannelIdParseError;
+        use serenity::model::misc::{ChannelIdParseError, UserIdParseError};
 
         pub type GuildId = u64;
-        pub type UserId = u64;
+
+        // Used to get a ChannelId from a str, not actually used as a type
+        mockall::mock! {
+            pub UserId {
+                fn from_str(_s: &str) -> Result<UserId, UserIdParseError>;
+            }
+        }
+
+        pub struct UserId(pub u64);
+
+        impl UserId {
+            pub fn to_user(&self, cache_http: &Arc<Http>) -> Result<User, serenity::Error> {
+                cache_http._get_user()
+            }
+        }
+
+        impl FromStr for UserId {
+            type Err = UserIdParseError;
+
+            fn from_str(s: &str) -> Result<Self, Self::Err> {
+                MockUserId::from_str(s)
+            }
+        }
+
+        impl Display for UserId {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                let Self(id) = self;
+                write!(f, "{}", id)
+            }
+        }
 
         #[derive(Debug, PartialEq)]
         pub enum MessageData {
@@ -280,27 +342,31 @@ pub mod model {
 }
 
 pub mod http {
-    use super::model::{channel::Channel, id::MessageData};
+    use super::model::{channel::Channel, id::MessageData, user::User};
 
     pub mod client {
         use super::Channel;
         use super::MessageData;
+        use super::User;
         use std::sync::mpsc::Sender;
 
         // Sneaky way to old information for manual mocks
         pub struct Http {
             _mock_sender: Option<Sender<(u64, MessageData)>>,
             _mock_channel: Option<Channel>,
+            _mock_user: Option<User>,
         }
 
         impl Http {
             pub fn _new(
                 sender: Option<Sender<(u64, MessageData)>>,
                 channel: Option<Channel>,
+                user: Option<User>,
             ) -> Self {
                 Self {
                     _mock_sender: sender,
                     _mock_channel: channel,
+                    _mock_user: user,
                 }
             }
 
@@ -318,6 +384,13 @@ pub mod http {
                     .as_ref()
                     .cloned()
                     .ok_or(serenity::Error::Other("no channel"))
+            }
+
+            pub fn _get_user(&self) -> Result<User, serenity::Error> {
+                self._mock_user
+                    .as_ref()
+                    .cloned()
+                    .ok_or(serenity::Error::Other("no user"))
             }
         }
     }

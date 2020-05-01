@@ -91,7 +91,7 @@ mod tests {
         let (sender, receiver) = channel();
         let mut inner_ctx = MockContext::new();
         inner_ctx.expect_reset_presence().once().return_const(());
-        let mut ctx = Context::_new(Some(sender), Some(inner_ctx), None);
+        let mut ctx = Context::_new(Some(sender), Some(inner_ctx), None, None);
         {
             let mut data = ctx.data.write();
             data.insert::<Config>(RwLock::new(Config::default()));
@@ -173,7 +173,7 @@ mod tests {
         let (sender, receiver) = channel();
         let mut inner_ctx = MockContext::new();
         inner_ctx.expect_set_activity().once().return_const(());
-        let mut ctx = Context::_new(Some(sender), Some(inner_ctx), None);
+        let mut ctx = Context::_new(Some(sender), Some(inner_ctx), None, None);
         {
             let mut data = ctx.data.write();
             data.insert::<Config>(RwLock::new(Config::default()));

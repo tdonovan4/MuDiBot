@@ -32,11 +32,15 @@ cfg_if::cfg_if! {
         };
         use thiserror::Error;
 
-        use commands::{general::commands::*, owner::commands::*};
+        use commands::{general::commands::*, owner::commands::*, user::commands::*};
 
         #[group]
         #[commands(ping, info, say)]
         struct General;
+
+        #[group]
+        #[commands(avatar)]
+        struct User;
 
         #[group]
         #[owners_only]
@@ -178,6 +182,7 @@ fn run_bot() -> Result<(), BotError> {
             })
             .group(&GENERAL_GROUP)
             .group(&OWNER_GROUP)
+            .group(&USER_GROUP)
             .help(&HELP),
     );
 
@@ -198,7 +203,7 @@ mod tests {
     fn ready_event() -> Result<(), L10NError> {
         let mut mock_context = MockContext::new();
         mock_context.expect_set_activity().once().return_const(());
-        let ctx = Context::_new(None, Some(mock_context), None);
+        let ctx = Context::_new(None, Some(mock_context), None, None);
         {
             let mut data = ctx.data.write();
             data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
@@ -208,10 +213,7 @@ mod tests {
         Handler.ready(
             ctx,
             Ready {
-                user: CurrentUser {
-                    id: 0,
-                    name: "TestBot".to_string(),
-                },
+                user: CurrentUser::_new(0, "TestBot".to_string()),
             },
         );
 
@@ -221,7 +223,7 @@ mod tests {
     #[test]
     fn ready_event_but_missing_config() -> Result<(), L10NError> {
         let mock_context = MockContext::new();
-        let ctx = Context::_new(None, Some(mock_context), None);
+        let ctx = Context::_new(None, Some(mock_context), None, None);
         {
             let mut data = ctx.data.write();
             data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
@@ -230,10 +232,7 @@ mod tests {
         Handler.ready(
             ctx,
             Ready {
-                user: CurrentUser {
-                    id: 0,
-                    name: "TestBot".to_string(),
-                },
+                user: CurrentUser::_new(0, "TestBot".to_string()),
             },
         );
 
@@ -242,7 +241,7 @@ mod tests {
 
     #[test]
     fn resume_event() -> Result<(), L10NError> {
-        let ctx = Context::_new(None, None, None);
+        let ctx = Context::_new_bare();
         {
             let mut data = ctx.data.write();
             data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
