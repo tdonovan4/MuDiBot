@@ -316,7 +316,7 @@ pub mod http {
             pub fn _get_channel(&self) -> Result<Channel, serenity::Error> {
                 self._mock_channel
                     .as_ref()
-                    .map(|x| x.clone())
+                    .cloned()
                     .ok_or(serenity::Error::Other("no channel"))
             }
         }
