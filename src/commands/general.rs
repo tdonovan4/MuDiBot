@@ -9,16 +9,25 @@ use std::{
 
 use chrono::DateTime;
 use fluent::fluent_args;
-use serenity::{client::bridge::gateway::ShardId, framework::standard::CommandResult};
+use serenity::{
+    client::bridge::gateway::ShardId,
+    framework::standard::{Args, CommandResult, Delimiter},
+};
 
 cfg_if::cfg_if! {
     if #[cfg(test)] {
-        use crate::test_doubles::serenity::{model::channel::Message, client::Context};
+        use crate::test_doubles::serenity::{
+            client::Context,
+            model::{channel::{Channel, Message}, id::ChannelId},
+        };
         use crate::test_doubles::chrono::offset::Utc;
         use crate::test_doubles::sysinfo::{ProcessExt, System, SystemExt};
         use crate::test_doubles::std::time::SystemTime;
     } else {
-        use serenity::{model::channel::Message, client::Context};
+        use serenity::{
+            client::Context,
+            model::{channel::{Channel, Message}, id::ChannelId},
+        };
         use chrono::offset::Utc;
         use sysinfo::{ProcessExt, System, SystemExt};
         use std::time::SystemTime;
@@ -137,6 +146,50 @@ fn info(ctx: &mut Context, msg: &Message) -> CommandResult {
     Ok(())
 }
 
+fn say(ctx: &mut Context, msg: &Message) -> CommandResult {
+    let mut args = Args::new(msg.content.as_str(), &[Delimiter::Single(' ')]);
+    // Skip cmd (we know we have at least one argument)
+    args.advance();
+    // Try to parse the channel id
+    let channel_id = match args.parse::<ChannelId>() {
+        Ok(id) => {
+            // First, check if the chosen channel is in a guild
+            if let Channel::Guild(guild_channel) = id.to_channel(&ctx.http)? {
+                // Then check if it is not in the same guild
+                if msg.guild_id != Some(guild_channel.read().guild_id) {
+                    // Lastly, we need to check if the user has permission to use
+                    // this command in this guild.
+
+                    //TODO: implement when permission groups are done
+                    msg.channel_id
+                        .say(&ctx.http, ctx.localize_msg("external-guild-channel", None)?)?;
+
+                    return Ok(());
+                }
+
+                // We don't want to include the id in the message
+                args.advance();
+                id
+            } else {
+                msg.channel_id
+                    .say(&ctx.http, ctx.localize_msg("not-guild-channel", None)?)?;
+
+                return Ok(());
+            }
+        }
+        Err(_) => msg.channel_id,
+    };
+    // Try to get the message and send it
+    match args.remains() {
+        Some(message_to_send) => channel_id.say(&ctx.http, message_to_send),
+        None => msg
+            .channel_id
+            .say(&ctx.http, ctx.localize_msg("missing-message", None)?),
+    }?;
+
+    Ok(())
+}
+
 #[cfg(not(test))]
 pub mod commands {
     use std::collections::HashSet;
@@ -161,6 +214,19 @@ pub mod commands {
     #[description("Get information on the bot and it's current state")]
     fn info(ctx: &mut Context, msg: &Message) -> CommandResult {
         super::info(ctx, msg)
+    }
+
+    #[command]
+    // TODO: remove when permission groups are done
+    #[required_permissions("ADMINISTRATOR")]
+    #[min_args(1)]
+    #[description(
+        "Makes the bot say a message in a channel. \
+        If no channel is specified, it sends the message to the current channel."
+    )]
+    #[usage("[channel] <msg>")]
+    fn say(ctx: &mut Context, msg: &Message) -> CommandResult {
+        super::say(ctx, msg)
     }
 
     #[help]
@@ -188,13 +254,17 @@ mod tests {
     use crate::test_doubles::serenity::{
         builder::CreateMessage,
         client::bridge::gateway::{ShardManager, ShardRunnerInfo},
-        model::id::{MessageData, MessageId},
+        model::{
+            channel::{GuildChannel, PrivateChannel},
+            id::{ChannelId, MessageData, MessageId, MockChannelId},
+        },
     };
     use crate::test_doubles::sysinfo::MockProcess;
     use crate::test_doubles::CONTEXT_SYNCHRONIZER;
 
     use serenity::{
         builder::CreateEmbed,
+        model::misc::ChannelIdParseError,
         prelude::{Mutex, RwLock},
     };
     use std::{
@@ -206,7 +276,7 @@ mod tests {
     fn send_ping_without_heartbeat() -> CommandResult {
         // Mock context
         let (sender, receiver) = channel();
-        let mut ctx = Context::_new(Some(sender), None);
+        let mut ctx = Context::_new(Some(sender), None, None);
         {
             let mut data = ctx.data.write();
             let map = HashMap::new();
@@ -220,7 +290,7 @@ mod tests {
             .expect_created_at()
             .times(1)
             .return_const(DateTime::parse_from_rfc3339("1999-12-31T23:59:59.9-05:00")?);
-        let msg = Message::_new(msg_id, "$ping".to_string());
+        let msg = Message::_new(msg_id, 0, "$ping".to_string(), 0);
 
         // Guards for mock contexts
         let _guards = CONTEXT_SYNCHRONIZER.get_ctx_guards(vec!["utc_now"]);
@@ -233,8 +303,9 @@ mod tests {
 
         ping(&mut ctx, &msg)?;
 
+        let (_, content) = receiver.recv()?;
         assert_eq!(
-            receiver.recv()?,
+            content,
             MessageData::StrMsg("Pong! *Ping received after \u{2068}100\u{2069} ms.*".to_string())
         );
 
@@ -245,7 +316,7 @@ mod tests {
     fn send_ping_with_heartbeat() -> CommandResult {
         // Mock context
         let (sender, receiver) = channel();
-        let mut ctx = Context::_new(Some(sender), None);
+        let mut ctx = Context::_new(Some(sender), None, None);
         {
             let mut data = ctx.data.write();
             let mut map = HashMap::new();
@@ -265,7 +336,7 @@ mod tests {
             .expect_created_at()
             .once()
             .return_const(DateTime::parse_from_rfc3339("1999-12-31T23:59:59.9-05:00")?);
-        let msg = Message::_new(msg_id, "$ping".to_string());
+        let msg = Message::_new(msg_id, 0, "$ping".to_string(), 0);
 
         // Guards for mock contexts
         let _guards = CONTEXT_SYNCHRONIZER.get_ctx_guards(vec!["utc_now"]);
@@ -278,8 +349,9 @@ mod tests {
 
         ping(&mut ctx, &msg)?;
 
+        let (_, content) = receiver.recv()?;
         assert_eq!(
-            receiver.recv()?,
+            content,
             MessageData::StrMsg(
                 "Pong! *Ping received after \u{2068}1100\u{2069} ms.* *Current shard heartbeat ping of \u{2068}64\u{2069} ms.*"
                     .to_string()
@@ -293,7 +365,7 @@ mod tests {
     fn send_info() -> CommandResult {
         // Mock context
         let (sender, receiver) = channel();
-        let mut ctx = Context::_new(Some(sender), None);
+        let mut ctx = Context::_new(Some(sender), None, None);
         {
             let mut data = ctx.data.write();
             let map = HashMap::new();
@@ -303,7 +375,7 @@ mod tests {
         }
 
         // Mock message
-        let msg = Message::_new(MessageId::new(), "$info".to_string());
+        let msg = Message::_new(MessageId::new(), 0, "$info".to_string(), 0);
 
         // Mock current process
         let mut current_proc = MockProcess::new();
@@ -355,11 +427,207 @@ mod tests {
 
         info(&mut ctx, &msg)?;
 
+        let (_, content) = receiver.recv()?;
         assert_eq!(
-            receiver.recv()?,
+            content,
             MessageData::CreateMessage(CreateMessage {
                 _embed: Some(embed),
             })
+        );
+
+        Ok(())
+    }
+
+    /*
+     * No need to test say for an empty channel and message, the command framework is
+     * protecting us against this situation (min argument is 1)
+     */
+
+    #[test]
+    fn say_something_current() -> CommandResult {
+        // Mock context
+        let (sender, receiver) = channel();
+        let mut ctx = Context::_new(Some(sender), None, None);
+        {
+            let mut data = ctx.data.write();
+            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
+        }
+
+        // Mock message
+        let msg = Message::_new(MessageId::new(), 0, "$say This is a test".to_string(), 0);
+
+        // Guards for mock contexts
+        let _guards = CONTEXT_SYNCHRONIZER.get_ctx_guards(vec!["channel_id_from_str"]);
+
+        let mock_channel_ctx = MockChannelId::from_str_context();
+        mock_channel_ctx
+            .expect()
+            .return_once(|_| Err(ChannelIdParseError::InvalidFormat));
+
+        say(&mut ctx, &msg)?;
+
+        assert_eq!(
+            receiver.recv()?,
+            (0, MessageData::StrMsg("This is a test".to_string()))
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn say_nothing_channel() -> CommandResult {
+        // Mock context
+        let (sender, receiver) = channel();
+        let mut ctx = Context::_new(
+            Some(sender),
+            None,
+            Some(Channel::Guild(Arc::new(RwLock::new(GuildChannel {
+                guild_id: 0,
+            })))),
+        );
+        {
+            let mut data = ctx.data.write();
+            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
+        }
+
+        // Mock message
+        let msg = Message::_new(MessageId::new(), 0, "$say a_good_channel".to_string(), 0);
+
+        // Guards for mock contexts
+        let _guards = CONTEXT_SYNCHRONIZER.get_ctx_guards(vec!["channel_id_from_str"]);
+
+        let mock_channel_ctx = MockChannelId::from_str_context();
+        mock_channel_ctx.expect().return_once(|_| Ok(ChannelId(1)));
+
+        say(&mut ctx, &msg)?;
+
+        assert_eq!(
+            receiver.recv()?,
+            (
+                0,
+                MessageData::StrMsg("Missing argument: message.".to_string())
+            )
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn say_something_channel() -> CommandResult {
+        // Mock context
+        let (sender, receiver) = channel();
+        let mut ctx = Context::_new(
+            Some(sender),
+            None,
+            Some(Channel::Guild(Arc::new(RwLock::new(GuildChannel {
+                guild_id: 0,
+            })))),
+        );
+        {
+            let mut data = ctx.data.write();
+            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
+        }
+
+        // Mock message
+        let msg = Message::_new(
+            MessageId::new(),
+            0,
+            "$say a_good_channel test".to_string(),
+            0,
+        );
+
+        // Guards for mock contexts
+        let _guards = CONTEXT_SYNCHRONIZER.get_ctx_guards(vec!["channel_id_from_str"]);
+
+        let mock_channel_ctx = MockChannelId::from_str_context();
+        mock_channel_ctx.expect().return_once(|_| Ok(ChannelId(1)));
+
+        say(&mut ctx, &msg)?;
+
+        assert_eq!(
+            receiver.recv()?,
+            (1, MessageData::StrMsg("test".to_string()))
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn say_something_not_guild_channel() -> CommandResult {
+        // Mock context
+        let (sender, receiver) = channel();
+        let mut ctx = Context::_new(
+            Some(sender),
+            None,
+            Some(Channel::Private(Arc::new(RwLock::new(PrivateChannel)))),
+        );
+        {
+            let mut data = ctx.data.write();
+            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
+        }
+
+        // Mock message
+        let msg = Message::_new(
+            MessageId::new(),
+            0,
+            "$say a_good_channel test".to_string(),
+            0,
+        );
+
+        // Guards for mock contexts
+        let _guards = CONTEXT_SYNCHRONIZER.get_ctx_guards(vec!["channel_id_from_str"]);
+
+        let mock_channel_ctx = MockChannelId::from_str_context();
+        mock_channel_ctx.expect().return_once(|_| Ok(ChannelId(1)));
+
+        say(&mut ctx, &msg)?;
+
+        assert_eq!(
+            receiver.recv()?,
+            (
+                0,
+                MessageData::StrMsg("This channel is a not in a server!".to_string())
+            )
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn say_something_external_channel() -> CommandResult {
+        // Mock context
+        let (sender, receiver) = channel();
+        let mut ctx = Context::_new(
+            Some(sender),
+            None,
+            Some(Channel::Guild(Arc::new(RwLock::new(GuildChannel {
+                guild_id: 1,
+            })))),
+        );
+        {
+            let mut data = ctx.data.write();
+            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
+        }
+
+        // Mock message
+        let msg = Message::_new(
+            MessageId::new(),
+            0,
+            "$say a_good_channel test".to_string(),
+            0,
+        );
+
+        // Guards for mock contexts
+        let _guards = CONTEXT_SYNCHRONIZER.get_ctx_guards(vec!["channel_id_from_str"]);
+
+        let mock_channel_ctx = MockChannelId::from_str_context();
+        mock_channel_ctx.expect().return_once(|_| Ok(ChannelId(1)));
+
+        say(&mut ctx, &msg)?;
+
+        assert_eq!(
+            receiver.recv()?,
+            (0, MessageData::StrMsg("Sending a message in an external guild channel is not yet supported. :confused:".to_string()))
         );
 
         Ok(())

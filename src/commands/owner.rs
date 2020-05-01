@@ -91,7 +91,7 @@ mod tests {
         let (sender, receiver) = channel();
         let mut inner_ctx = MockContext::new();
         inner_ctx.expect_reset_presence().once().return_const(());
-        let mut ctx = Context::_new(Some(sender), Some(inner_ctx));
+        let mut ctx = Context::_new(Some(sender), Some(inner_ctx), None);
         {
             let mut data = ctx.data.write();
             data.insert::<Config>(RwLock::new(Config::default()));
@@ -99,7 +99,7 @@ mod tests {
         }
 
         // Mock message
-        let msg = Message::_new(MessageId::new(), "$setactivity".to_string());
+        let msg = Message::_new(MessageId::new(), 0, "$setactivity".to_string(), 0);
 
         // Mock config dir
         let mut config_dir = Path::default();
@@ -158,8 +158,9 @@ mod tests {
             None
         );
 
+        let (_, content) = receiver.recv()?;
         assert_eq!(
-            receiver.recv()?,
+            content,
             MessageData::StrMsg("Activity successfully removed!".to_string())
         );
 
@@ -172,7 +173,7 @@ mod tests {
         let (sender, receiver) = channel();
         let mut inner_ctx = MockContext::new();
         inner_ctx.expect_set_activity().once().return_const(());
-        let mut ctx = Context::_new(Some(sender), Some(inner_ctx));
+        let mut ctx = Context::_new(Some(sender), Some(inner_ctx), None);
         {
             let mut data = ctx.data.write();
             data.insert::<Config>(RwLock::new(Config::default()));
@@ -182,7 +183,9 @@ mod tests {
         // Mock message
         let msg = Message::_new(
             MessageId::new(),
+            0,
             "$setactivity Hello, this is a test!".to_string(),
+            0,
         );
 
         // Mock config dir
@@ -242,8 +245,9 @@ mod tests {
             Some("Hello, this is a test!")
         );
 
+        let (_, content) = receiver.recv()?;
         assert_eq!(
-            receiver.recv()?,
+            content,
             MessageData::StrMsg("Activity successfully modified!".to_string())
         );
 

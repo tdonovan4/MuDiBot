@@ -2,9 +2,8 @@ use std::sync::{mpsc::Sender, Arc};
 
 pub mod client {
     use super::*;
-    use model::event::ResumedEvent;
+    use model::{channel::Channel, event::ResumedEvent, gateway::Ready, id::MessageData};
 
-    use model::{gateway::Ready, id::MessageData};
     use serenity::{
         model::gateway::Activity,
         prelude::{RwLock, ShareMap},
@@ -47,13 +46,17 @@ pub mod client {
     }
 
     impl Context {
-        pub fn _new(sender: Option<Sender<MessageData>>, inner: Option<MockContext>) -> Self {
+        pub fn _new(
+            sender: Option<Sender<(u64, MessageData)>>,
+            inner: Option<MockContext>,
+            channel: Option<Channel>,
+        ) -> Self {
             let map = ShareMap::custom();
 
             Self {
                 data: Arc::new(RwLock::new(map)),
                 shard_id: 0,
-                http: Arc::new(http::client::Http::_new(sender)),
+                http: Arc::new(http::client::Http::_new(sender, channel)),
                 cache: Arc::new(RwLock::new(cache::Cache {
                     user: model::user::CurrentUser {
                         id: 0,
@@ -123,8 +126,15 @@ pub mod model {
 
     pub mod id {
         use super::*;
-        use chrono::{offset::FixedOffset, DateTime};
 
+        use channel::Channel;
+
+        use std::{fmt::Display, str::FromStr};
+
+        use chrono::{offset::FixedOffset, DateTime};
+        use serenity::model::misc::ChannelIdParseError;
+
+        pub type GuildId = u64;
         pub type UserId = u64;
 
         #[derive(Debug, PartialEq)]
@@ -133,18 +143,36 @@ pub mod model {
             CreateMessage(CreateMessage),
         }
 
+        // Used to get a ChannelId from a str, not actually used as a type
+        mockall::mock! {
+            pub ChannelId {
+                fn from_str(_s: &str) -> Result<ChannelId, ChannelIdParseError>;
+            }
+        }
+
         #[derive(Clone, Copy)]
-        pub struct ChannelId {}
+        pub struct ChannelId(pub u64);
 
         // Manual mock because we cannot use mockall because closure without 'static are not supported
         impl ChannelId {
-            pub fn say(self, http: &Arc<Http>, content: &str) -> Result<Message, serenity::Error> {
-                (**http)._send(MessageData::StrMsg(content.to_string()));
+            pub fn say(
+                self,
+                http: &Arc<Http>,
+                content: impl Display,
+            ) -> Result<Message, serenity::Error> {
+                let Self(id) = self;
+                (**http)._send(id, MessageData::StrMsg(content.to_string()));
+
+                let guild_id = match self.to_channel(http) {
+                    Ok(Channel::Guild(guild)) => Some(guild.read().guild_id),
+                    _ => None,
+                };
 
                 Ok(Message {
                     id: MessageId::new(),
                     channel_id: self,
                     content: content.to_string(),
+                    guild_id,
                 })
             }
 
@@ -157,13 +185,32 @@ pub mod model {
 
                 let content = format!("{:?}", msg);
 
-                (**http)._send(MessageData::CreateMessage(msg));
+                let Self(id) = self;
+                (**http)._send(id, MessageData::CreateMessage(msg));
+
+                let guild_id = match self.to_channel(http) {
+                    Ok(Channel::Guild(guild)) => Some(guild.read().guild_id),
+                    _ => None,
+                };
 
                 Ok(Message {
                     id: MessageId::new(),
                     channel_id: self,
                     content,
+                    guild_id,
                 })
+            }
+
+            pub fn to_channel(self, cache_http: &Http) -> Result<Channel, serenity::Error> {
+                cache_http._get_channel()
+            }
+        }
+
+        impl FromStr for ChannelId {
+            type Err = ChannelIdParseError;
+
+            fn from_str(s: &str) -> Result<Self, Self::Err> {
+                MockChannelId::from_str(s)
             }
         }
 
@@ -176,20 +223,45 @@ pub mod model {
     }
 
     pub mod channel {
-        use super::id::{ChannelId, MessageId};
+        use super::id::{ChannelId, GuildId, MessageId};
+        use super::Arc;
+        use serenity::prelude::RwLock;
+
+        pub struct Group;
+        pub struct GuildChannel {
+            pub guild_id: GuildId,
+        }
+        pub struct PrivateChannel;
+        pub struct ChannelCategory;
+
+        #[allow(dead_code)]
+        #[derive(Clone)]
+        pub enum Channel {
+            Group(Arc<RwLock<Group>>),
+            Guild(Arc<RwLock<GuildChannel>>),
+            Private(Arc<RwLock<PrivateChannel>>),
+            Category(Arc<RwLock<ChannelCategory>>),
+        }
 
         pub struct Message {
             pub id: MessageId,
             pub channel_id: ChannelId,
             pub content: String,
+            pub guild_id: Option<GuildId>,
         }
 
         impl Message {
-            pub fn _new(id: MessageId, content: String) -> Self {
+            pub fn _new(
+                id: MessageId,
+                channel_id: u64,
+                content: String,
+                guild_id: GuildId,
+            ) -> Self {
                 Self {
                     id,
-                    channel_id: ChannelId {},
+                    channel_id: ChannelId(channel_id),
                     content,
+                    guild_id: Some(guild_id),
                 }
             }
         }
@@ -208,27 +280,44 @@ pub mod model {
 }
 
 pub mod http {
-    use super::model::id::MessageData;
+    use super::model::{channel::Channel, id::MessageData};
 
     pub mod client {
+        use super::Channel;
         use super::MessageData;
         use std::sync::mpsc::Sender;
 
         // Sneaky way to old information for manual mocks
         pub struct Http {
-            _mock_sender: Option<Sender<MessageData>>,
+            _mock_sender: Option<Sender<(u64, MessageData)>>,
+            _mock_channel: Option<Channel>,
         }
 
         impl Http {
-            pub fn _new(sender: Option<Sender<MessageData>>) -> Self {
+            pub fn _new(
+                sender: Option<Sender<(u64, MessageData)>>,
+                channel: Option<Channel>,
+            ) -> Self {
                 Self {
                     _mock_sender: sender,
+                    _mock_channel: channel,
                 }
             }
 
-            pub fn _send(&self, data: MessageData) {
+            pub fn _send(&self, channel_id: u64, data: MessageData) {
                 // Used only for tests so panicking is ok
-                self._mock_sender.as_ref().unwrap().send(data).unwrap();
+                self._mock_sender
+                    .as_ref()
+                    .unwrap()
+                    .send((channel_id, data))
+                    .unwrap();
+            }
+
+            pub fn _get_channel(&self) -> Result<Channel, serenity::Error> {
+                self._mock_channel
+                    .as_ref()
+                    .map(|x| x.clone())
+                    .ok_or(serenity::Error::Other("no channel"))
             }
         }
     }

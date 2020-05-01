@@ -35,7 +35,7 @@ cfg_if::cfg_if! {
         use commands::{general::commands::*, owner::commands::*};
 
         #[group]
-        #[commands(ping, info)]
+        #[commands(ping, info, say)]
         struct General;
 
         #[group]
@@ -198,7 +198,7 @@ mod tests {
     fn ready_event() -> Result<(), L10NError> {
         let mut mock_context = MockContext::new();
         mock_context.expect_set_activity().once().return_const(());
-        let ctx = Context::_new(None, Some(mock_context));
+        let ctx = Context::_new(None, Some(mock_context), None);
         {
             let mut data = ctx.data.write();
             data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
@@ -221,7 +221,7 @@ mod tests {
     #[test]
     fn ready_event_but_missing_config() -> Result<(), L10NError> {
         let mock_context = MockContext::new();
-        let ctx = Context::_new(None, Some(mock_context));
+        let ctx = Context::_new(None, Some(mock_context), None);
         {
             let mut data = ctx.data.write();
             data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
@@ -242,7 +242,7 @@ mod tests {
 
     #[test]
     fn resume_event() -> Result<(), L10NError> {
-        let ctx = Context::_new(None, None);
+        let ctx = Context::_new(None, None, None);
         {
             let mut data = ctx.data.write();
             data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));

@@ -17,6 +17,7 @@ pub struct ContextSynchronizer {
     file_open: Mutex<()>,
     system_new: Mutex<()>,
     system_time_now: Mutex<()>,
+    channel_id_from_str: Mutex<()>,
 }
 
 impl ContextSynchronizer {
@@ -29,6 +30,7 @@ impl ContextSynchronizer {
             file_open: Mutex::new(()),
             system_new: Mutex::new(()),
             system_time_now: Mutex::new(()),
+            channel_id_from_str: Mutex::new(()),
         }
     }
 
@@ -40,6 +42,7 @@ impl ContextSynchronizer {
             "file_open" => self.file_open.lock(),
             "system_new" => self.system_new.lock(),
             "system_time_now" => self.system_time_now.lock(),
+            "channel_id_from_str" => self.channel_id_from_str.lock(),
             _ => return None,
         })
     }
