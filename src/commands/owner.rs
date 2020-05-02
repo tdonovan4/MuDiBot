@@ -74,6 +74,7 @@ mod tests {
     use crate::test_doubles::directories::ProjectDirs;
     use crate::test_doubles::serenity::{
         client::MockContext,
+        http::client::Http,
         model::id::{MessageData, MessageId},
     };
     use crate::test_doubles::std::{
@@ -82,16 +83,28 @@ mod tests {
     };
     use crate::test_doubles::CONTEXT_SYNCHRONIZER;
 
+    use mockall::predicate::{always, eq};
     use serenity::prelude::RwLock;
-    use std::sync::mpsc::channel;
 
     #[test]
     fn set_activity_to_none() -> CommandResult {
+        // Main mock
+        let mut http = Http::new();
+        http.expect_mock_send()
+            .with(
+                always(),
+                eq(MessageData::StrMsg(
+                    "Activity successfully removed!".to_string(),
+                )),
+            )
+            .return_const(());
+        http.expect_mock_get_channel()
+            .returning(|| Err(serenity::Error::Other("Not important for test")));
+
         // Mock context
-        let (sender, receiver) = channel();
         let mut inner_ctx = MockContext::new();
         inner_ctx.expect_reset_presence().once().return_const(());
-        let mut ctx = Context::_new(Some(sender), Some(inner_ctx), None, None);
+        let mut ctx = Context::_new(Some(inner_ctx), http);
         {
             let mut data = ctx.data.write();
             data.insert::<Config>(RwLock::new(Config::default()));
@@ -158,22 +171,28 @@ mod tests {
             None
         );
 
-        let (_, content) = receiver.recv()?;
-        assert_eq!(
-            content,
-            MessageData::StrMsg("Activity successfully removed!".to_string())
-        );
-
         Ok(())
     }
 
     #[test]
     fn set_activity_to_some() -> CommandResult {
+        // Main mock
+        let mut http = Http::new();
+        http.expect_mock_send()
+            .with(
+                always(),
+                eq(MessageData::StrMsg(
+                    "Activity successfully modified!".to_string(),
+                )),
+            )
+            .return_const(());
+        http.expect_mock_get_channel()
+            .returning(|| Err(serenity::Error::Other("Not important for test")));
+
         // Mock context
-        let (sender, receiver) = channel();
         let mut inner_ctx = MockContext::new();
         inner_ctx.expect_set_activity().once().return_const(());
-        let mut ctx = Context::_new(Some(sender), Some(inner_ctx), None, None);
+        let mut ctx = Context::_new(Some(inner_ctx), http);
         {
             let mut data = ctx.data.write();
             data.insert::<Config>(RwLock::new(Config::default()));
@@ -243,12 +262,6 @@ mod tests {
                 .read()
                 .get_activity(),
             Some("Hello, this is a test!")
-        );
-
-        let (_, content) = receiver.recv()?;
-        assert_eq!(
-            content,
-            MessageData::StrMsg("Activity successfully modified!".to_string())
         );
 
         Ok(())

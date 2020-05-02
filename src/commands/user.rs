@@ -65,20 +65,33 @@ mod tests {
 
     use crate::localization::L10NBundle;
 
-    use crate::test_doubles::serenity::model::{
-        id::{MessageData, MessageId, MockUserId},
-        user::User,
+    use crate::test_doubles::serenity::{
+        http::client::Http,
+        model::{
+            id::{MessageData, MessageId, MockUserId},
+            user::User,
+        },
     };
     use crate::test_doubles::CONTEXT_SYNCHRONIZER;
 
+    use mockall::predicate::{always, eq};
     use serenity::{model::misc::UserIdParseError, prelude::RwLock};
-    use std::sync::mpsc::channel;
 
     #[test]
     fn avatar_missing_user() -> CommandResult {
+        // Main mock
+        let mut http = Http::new();
+        http.expect_mock_send()
+            .with(
+                always(),
+                eq(MessageData::StrMsg("Missing argument: user.".to_string())),
+            )
+            .return_const(());
+        http.expect_mock_get_channel()
+            .returning(|| Err(serenity::Error::Other("Not important for test")));
+
         // Mock context
-        let (sender, receiver) = channel();
-        let mut ctx = Context::_new(Some(sender), None, None, None);
+        let mut ctx = Context::_new(None, http);
         {
             let mut data = ctx.data.write();
             data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
@@ -97,20 +110,26 @@ mod tests {
 
         avatar(&mut ctx, &msg)?;
 
-        let (_, content) = receiver.recv()?;
-        assert_eq!(
-            content,
-            MessageData::StrMsg("Missing argument: user.".to_string())
-        );
-
         Ok(())
     }
 
     #[test]
     fn avatar_wrong_user() -> CommandResult {
+        // Main mock
+        let mut http = Http::new();
+        http.expect_mock_get_user()
+            .returning(|| Err(serenity::Error::Other("Wrong user")));
+        http.expect_mock_send()
+            .with(
+                always(),
+                eq(MessageData::StrMsg("Wrong user id.".to_string())),
+            )
+            .return_const(());
+        http.expect_mock_get_channel()
+            .returning(|| Err(serenity::Error::Other("Not important for test")));
+
         // Mock context
-        let (sender, receiver) = channel();
-        let mut ctx = Context::_new(Some(sender), None, None, None);
+        let mut ctx = Context::_new(None, http);
         {
             let mut data = ctx.data.write();
             data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
@@ -132,17 +151,28 @@ mod tests {
 
         avatar(&mut ctx, &msg)?;
 
-        let (_, content) = receiver.recv()?;
-        assert_eq!(content, MessageData::StrMsg("Wrong user id.".to_string()));
-
         Ok(())
     }
 
     #[test]
     fn avatar_no_custom_avatar() -> CommandResult {
+        // Main mock
+        let mut http = Http::new();
+        http.expect_mock_get_user()
+            .returning(|| Ok(User { avatar: None }));
+        http.expect_mock_send()
+            .with(
+                always(),
+                eq(MessageData::StrMsg(
+                    "This user doesn't have a custom avatar.".to_string(),
+                )),
+            )
+            .return_const(());
+        http.expect_mock_get_channel()
+            .returning(|| Err(serenity::Error::Other("Not important for test")));
+
         // Mock context
-        let (sender, receiver) = channel();
-        let mut ctx = Context::_new(Some(sender), None, None, Some(User { avatar: None }));
+        let mut ctx = Context::_new(None, http);
         {
             let mut data = ctx.data.write();
             data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
@@ -163,28 +193,32 @@ mod tests {
         mock_channel_ctx.expect().return_once(|_| Ok(UserId(2)));
 
         avatar(&mut ctx, &msg)?;
-
-        let (_, content) = receiver.recv()?;
-        assert_eq!(
-            content,
-            MessageData::StrMsg("This user doesn't have a custom avatar.".to_string())
-        );
 
         Ok(())
     }
 
     #[test]
     fn avatar_custom_avatar() -> CommandResult {
-        // Mock context
-        let (sender, receiver) = channel();
-        let mut ctx = Context::_new(
-            Some(sender),
-            None,
-            None,
-            Some(User {
+        // Main mock
+        let mut http = Http::new();
+        http.expect_mock_get_user().returning(|| {
+            Ok(User {
                 avatar: Some("some_id".to_string()),
-            }),
-        );
+            })
+        });
+        http.expect_mock_send()
+            .with(
+                always(),
+                eq(MessageData::StrMsg(
+                    "https://cdn.discordapp.com/avatars/2/some_id.png?size=2048".to_string(),
+                )),
+            )
+            .return_const(());
+        http.expect_mock_get_channel()
+            .returning(|| Err(serenity::Error::Other("Not important for test")));
+
+        // Mock context
+        let mut ctx = Context::_new(None, http);
         {
             let mut data = ctx.data.write();
             data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
@@ -205,14 +239,6 @@ mod tests {
         mock_channel_ctx.expect().return_once(|_| Ok(UserId(2)));
 
         avatar(&mut ctx, &msg)?;
-
-        let (_, content) = receiver.recv()?;
-        assert_eq!(
-            content,
-            MessageData::StrMsg(
-                "https://cdn.discordapp.com/avatars/2/some_id.png?size=2048".to_string()
-            )
-        );
 
         Ok(())
     }

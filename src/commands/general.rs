@@ -254,6 +254,7 @@ mod tests {
     use crate::test_doubles::serenity::{
         builder::CreateMessage,
         client::bridge::gateway::{ShardManager, ShardRunnerInfo},
+        http::client::Http,
         model::{
             channel::{GuildChannel, PrivateChannel},
             id::{ChannelId, MessageData, MessageId, MockChannelId},
@@ -262,21 +263,32 @@ mod tests {
     use crate::test_doubles::sysinfo::MockProcess;
     use crate::test_doubles::CONTEXT_SYNCHRONIZER;
 
+    use std::{collections::HashMap, sync::Arc};
+
+    use mockall::predicate::{always, eq};
     use serenity::{
         builder::CreateEmbed,
         model::misc::ChannelIdParseError,
         prelude::{Mutex, RwLock},
     };
-    use std::{
-        collections::HashMap,
-        sync::{mpsc::channel, Arc},
-    };
 
     #[test]
     fn send_ping_without_heartbeat() -> CommandResult {
+        // Main mock
+        let mut http = Http::new();
+        http.expect_mock_send()
+            .with(
+                always(),
+                eq(MessageData::StrMsg(
+                    "Pong! *Ping received after \u{2068}100\u{2069} ms.*".to_string(),
+                )),
+            )
+            .return_const(());
+        http.expect_mock_get_channel()
+            .returning(|| Err(serenity::Error::Other("Not important for test")));
+
         // Mock context
-        let (sender, receiver) = channel();
-        let mut ctx = Context::_new(Some(sender), None, None, None);
+        let mut ctx = Context::_new(None, http);
         {
             let mut data = ctx.data.write();
             let map = HashMap::new();
@@ -303,20 +315,25 @@ mod tests {
 
         ping(&mut ctx, &msg)?;
 
-        let (_, content) = receiver.recv()?;
-        assert_eq!(
-            content,
-            MessageData::StrMsg("Pong! *Ping received after \u{2068}100\u{2069} ms.*".to_string())
-        );
-
         Ok(())
     }
 
     #[test]
     fn send_ping_with_heartbeat() -> CommandResult {
+        // Main mock
+        let mut http = Http::new();
+        http.expect_mock_send().with(
+            always(),
+            eq(MessageData::StrMsg(
+                "Pong! *Ping received after \u{2068}1100\u{2069} ms.* *Current shard heartbeat ping of \u{2068}64\u{2069} ms.*"
+                    .to_string()
+            )),
+        ).return_const(());
+        http.expect_mock_get_channel()
+            .returning(|| Err(serenity::Error::Other("Not important for test")));
+
         // Mock context
-        let (sender, receiver) = channel();
-        let mut ctx = Context::_new(Some(sender), None, None, None);
+        let mut ctx = Context::_new(None, http);
         {
             let mut data = ctx.data.write();
             let mut map = HashMap::new();
@@ -349,23 +366,45 @@ mod tests {
 
         ping(&mut ctx, &msg)?;
 
-        let (_, content) = receiver.recv()?;
-        assert_eq!(
-            content,
-            MessageData::StrMsg(
-                "Pong! *Ping received after \u{2068}1100\u{2069} ms.* *Current shard heartbeat ping of \u{2068}64\u{2069} ms.*"
-                    .to_string()
-            )
-        );
-
         Ok(())
     }
 
     #[test]
     fn send_info() -> CommandResult {
+        // The expected embed
+        let mut embed = CreateEmbed(HashMap::new());
+        embed.title("__**~Info~**__");
+        embed.colour(0x0000_80c0);
+        embed.field(
+            "**General**",
+            format!(
+                "**Name:** MuDiBot\n\
+            **Description:** A multipurpose Discord bot (MuDiBot) made using serenity\n\
+            **Author:** Thomas Donovan (tdonovan4)\n\
+            **Version:** \u{2068}{}\u{2069}\n\
+            **Uptime:** \u{2068}\u{2068}1\u{2069}d:\u{2068}3\u{2069}h:\u{2068}45\u{2069}m:\u{2068}0\u{2069}s\u{2069}\u{2069}",
+                env::var("CARGO_PKG_VERSION")?,
+            ),
+            false,
+        );
+        embed.field("**Config**", "**Language:** \u{2068}en-US\u{2069}", false);
+        embed.footer(|f| f.text("Client ID: \u{2068}0\u{2069}"));
+
+        // Main mock
+        let mut http = Http::new();
+        http.expect_mock_send()
+            .with(
+                always(),
+                eq(MessageData::CreateMessage(CreateMessage {
+                    _embed: Some(embed),
+                })),
+            )
+            .return_const(());
+        http.expect_mock_get_channel()
+            .returning(|| Err(serenity::Error::Other("Not important for test")));
+
         // Mock context
-        let (sender, receiver) = channel();
-        let mut ctx = Context::_new(Some(sender), None, None, None);
+        let mut ctx = Context::_new(None, http);
         {
             let mut data = ctx.data.write();
             let map = HashMap::new();
@@ -406,34 +445,7 @@ mod tests {
         let sys_time_ctx = SystemTime::now_context();
         sys_time_ctx.expect().return_once(|| mock_sys_time);
 
-        // The expected embed
-        let mut embed = CreateEmbed(HashMap::new());
-        embed.title("__**~Info~**__");
-        embed.colour(0x0000_80c0);
-        embed.field(
-            "**General**",
-            format!(
-                "**Name:** MuDiBot\n\
-            **Description:** A multipurpose Discord bot (MuDiBot) made using serenity\n\
-            **Author:** Thomas Donovan (tdonovan4)\n\
-            **Version:** \u{2068}{}\u{2069}\n\
-            **Uptime:** \u{2068}\u{2068}1\u{2069}d:\u{2068}3\u{2069}h:\u{2068}45\u{2069}m:\u{2068}0\u{2069}s\u{2069}\u{2069}",
-                env::var("CARGO_PKG_VERSION")?,
-            ),
-            false,
-        );
-        embed.field("**Config**", "**Language:** \u{2068}en-US\u{2069}", false);
-        embed.footer(|f| f.text("Client ID: \u{2068}0\u{2069}"));
-
         info(&mut ctx, &msg)?;
-
-        let (_, content) = receiver.recv()?;
-        assert_eq!(
-            content,
-            MessageData::CreateMessage(CreateMessage {
-                _embed: Some(embed),
-            })
-        );
 
         Ok(())
     }
@@ -445,9 +457,16 @@ mod tests {
 
     #[test]
     fn say_something_current() -> CommandResult {
+        // Main mock
+        let mut http = Http::new();
+        http.expect_mock_send()
+            .with(eq(0), eq(MessageData::StrMsg("This is a test".to_string())))
+            .return_const(());
+        http.expect_mock_get_channel()
+            .returning(|| Err(serenity::Error::Other("Not important for test")));
+
         // Mock context
-        let (sender, receiver) = channel();
-        let mut ctx = Context::_new(Some(sender), None, None, None);
+        let mut ctx = Context::_new(None, http);
         {
             let mut data = ctx.data.write();
             data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
@@ -466,26 +485,29 @@ mod tests {
 
         say(&mut ctx, &msg)?;
 
-        assert_eq!(
-            receiver.recv()?,
-            (0, MessageData::StrMsg("This is a test".to_string()))
-        );
-
         Ok(())
     }
 
     #[test]
     fn say_nothing_channel() -> CommandResult {
-        // Mock context
-        let (sender, receiver) = channel();
-        let mut ctx = Context::_new(
-            Some(sender),
-            None,
-            Some(Channel::Guild(Arc::new(RwLock::new(GuildChannel {
+        // Main mock
+        let mut http = Http::new();
+        http.expect_mock_get_channel().returning(|| {
+            Ok(Channel::Guild(Arc::new(RwLock::new(GuildChannel {
                 guild_id: 0,
-            })))),
-            None,
-        );
+            }))))
+        });
+        http.expect_mock_send()
+            .with(
+                eq(0),
+                eq(MessageData::StrMsg(
+                    "Missing argument: message.".to_string(),
+                )),
+            )
+            .return_const(());
+
+        // Mock context
+        let mut ctx = Context::_new(None, http);
         {
             let mut data = ctx.data.write();
             data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
@@ -502,29 +524,24 @@ mod tests {
 
         say(&mut ctx, &msg)?;
 
-        assert_eq!(
-            receiver.recv()?,
-            (
-                0,
-                MessageData::StrMsg("Missing argument: message.".to_string())
-            )
-        );
-
         Ok(())
     }
 
     #[test]
     fn say_something_channel() -> CommandResult {
-        // Mock context
-        let (sender, receiver) = channel();
-        let mut ctx = Context::_new(
-            Some(sender),
-            None,
-            Some(Channel::Guild(Arc::new(RwLock::new(GuildChannel {
+        // Main mock
+        let mut http = Http::new();
+        http.expect_mock_get_channel().returning(|| {
+            Ok(Channel::Guild(Arc::new(RwLock::new(GuildChannel {
                 guild_id: 0,
-            })))),
-            None,
-        );
+            }))))
+        });
+        http.expect_mock_send()
+            .with(eq(1), eq(MessageData::StrMsg("test".to_string())))
+            .return_const(());
+
+        // Mock context
+        let mut ctx = Context::_new(None, http);
         {
             let mut data = ctx.data.write();
             data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
@@ -545,25 +562,27 @@ mod tests {
         mock_channel_ctx.expect().return_once(|_| Ok(ChannelId(1)));
 
         say(&mut ctx, &msg)?;
-
-        assert_eq!(
-            receiver.recv()?,
-            (1, MessageData::StrMsg("test".to_string()))
-        );
 
         Ok(())
     }
 
     #[test]
     fn say_something_not_guild_channel() -> CommandResult {
+        // Main mock
+        let mut http = Http::new();
+        http.expect_mock_get_channel()
+            .returning(|| Ok(Channel::Private(Arc::new(RwLock::new(PrivateChannel)))));
+        http.expect_mock_send()
+            .with(
+                eq(0),
+                eq(MessageData::StrMsg(
+                    "This channel is a not in a server!".to_string(),
+                )),
+            )
+            .return_const(());
+
         // Mock context
-        let (sender, receiver) = channel();
-        let mut ctx = Context::_new(
-            Some(sender),
-            None,
-            Some(Channel::Private(Arc::new(RwLock::new(PrivateChannel)))),
-            None,
-        );
+        let mut ctx = Context::_new(None, http);
         {
             let mut data = ctx.data.write();
             data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
@@ -584,30 +603,29 @@ mod tests {
         mock_channel_ctx.expect().return_once(|_| Ok(ChannelId(1)));
 
         say(&mut ctx, &msg)?;
-
-        assert_eq!(
-            receiver.recv()?,
-            (
-                0,
-                MessageData::StrMsg("This channel is a not in a server!".to_string())
-            )
-        );
 
         Ok(())
     }
 
     #[test]
     fn say_something_external_channel() -> CommandResult {
-        // Mock context
-        let (sender, receiver) = channel();
-        let mut ctx = Context::_new(
-            Some(sender),
-            None,
-            Some(Channel::Guild(Arc::new(RwLock::new(GuildChannel {
+        // Main mock
+        let mut http = Http::new();
+        http.expect_mock_get_channel().returning(|| {
+            Ok(Channel::Guild(Arc::new(RwLock::new(GuildChannel {
                 guild_id: 1,
-            })))),
-            None,
-        );
+            }))))
+        });
+        http.expect_mock_send().with(
+            eq(0),
+            eq(MessageData::StrMsg(
+                "Sending a message in an external guild channel is not yet supported. :confused:"
+                    .to_string(),
+            )),
+        ).return_const(());
+
+        // Mock context
+        let mut ctx = Context::_new(None, http);
         {
             let mut data = ctx.data.write();
             data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
@@ -628,11 +646,6 @@ mod tests {
         mock_channel_ctx.expect().return_once(|_| Ok(ChannelId(1)));
 
         say(&mut ctx, &msg)?;
-
-        assert_eq!(
-            receiver.recv()?,
-            (0, MessageData::StrMsg("Sending a message in an external guild channel is not yet supported. :confused:".to_string()))
-        );
 
         Ok(())
     }
