@@ -1,5 +1,6 @@
 pub mod chrono;
 pub mod directories;
+pub mod reqwest;
 pub mod serenity;
 pub mod std;
 pub mod sysinfo;

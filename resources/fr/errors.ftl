@@ -9,3 +9,6 @@ external-guild-channel = Envoyer un message dans un salon d'un serveur externe n
 wrong-user-id = Mauvais id d'utilisateur
 
 no-custom-avatar = Cet utilisateur n'a pas d'avatar personnalisé.
+
+no-gif = Aucun GIF correspondant aux critères n'a pu être trouvé.
+giphy-response-parsing = Erreur lors de l'analyse de la réponse de GIPHY.

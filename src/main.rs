@@ -11,12 +11,14 @@ use serenity::{
     model::gateway::Activity,
     prelude::{Mutex, RwLock, TypeMapKey},
 };
+use thiserror::Error;
 
 #[macro_use]
 extern crate log;
 
 cfg_if::cfg_if! {
     if #[cfg(test)] {
+        use crate::test_doubles::reqwest::blocking::Client as ReqwestClient;
         use test_doubles::serenity::{
             client::{bridge::gateway::ShardManager, Context, EventHandler},
             model::{gateway::Ready, event::ResumedEvent},
@@ -25,14 +27,14 @@ cfg_if::cfg_if! {
         use std::{collections::HashSet, env};
 
         use env_logger::{Env, Builder, Target};
+        use reqwest::blocking::Client as ReqwestClient;
         use serenity::{
             client::{bridge::gateway::ShardManager, Client, Context, EventHandler},
             framework::{standard::macros::group, StandardFramework},
             model::{gateway::Ready, event::ResumedEvent},
         };
-        use thiserror::Error;
 
-        use commands::{general::commands::*, owner::commands::*, user::commands::*};
+        use commands::{general::commands::*, owner::commands::*, user::commands::*, fun::commands::*};
 
         #[group]
         #[commands(ping, info, say)]
@@ -46,6 +48,10 @@ cfg_if::cfg_if! {
         #[owners_only]
         #[commands(setactivity)]
         struct Owner;
+
+        #[group]
+        #[commands(gif, gifrandom)]
+        struct Fun;
     }
 }
 
@@ -53,6 +59,18 @@ struct ShardManagerContainer;
 
 impl TypeMapKey for ShardManagerContainer {
     type Value = Arc<Mutex<ShardManager>>;
+}
+
+struct ClientContainer;
+
+impl TypeMapKey for ClientContainer {
+    type Value = ReqwestClient;
+}
+
+#[derive(Error, Debug)]
+pub enum ClientError {
+    #[error("Could not find client in share map.")]
+    MissingFromShareMap,
 }
 
 struct Handler;
@@ -156,6 +174,7 @@ fn run_bot() -> Result<(), BotError> {
         data.insert::<ShardManagerContainer>(Arc::clone(&client.shard_manager));
         data.insert::<config::Config>(RwLock::new(config));
         data.insert::<localization::L10NBundle>(RwLock::new(bundle));
+        data.insert::<ClientContainer>(ReqwestClient::new());
     }
 
     let info = client.cache_and_http.http.get_current_application_info()?;
@@ -183,6 +202,7 @@ fn run_bot() -> Result<(), BotError> {
             .group(&GENERAL_GROUP)
             .group(&OWNER_GROUP)
             .group(&USER_GROUP)
+            .group(&FUN_GROUP)
             .help(&HELP),
     );
 

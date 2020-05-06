@@ -246,6 +246,14 @@ impl TypeMapKey for Config {
 }
 
 #[cfg(test)]
+pub mod test_utils {
+    // External module can't edit credentials because it is private, this is useful in tests
+    pub fn modify_creds(config: &mut super::Config, creds: super::Credentials) {
+        config.credentials = creds;
+    }
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::test_doubles::directories::ProjectDirs;

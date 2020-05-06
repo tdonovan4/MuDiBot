@@ -9,3 +9,6 @@ external-guild-channel = Sending a message in an external guild channel is not y
 wrong-user-id = Wrong user id.
 
 no-custom-avatar = This user doesn't have a custom avatar.
+
+no-gif = Couldn't find any matching GIF.
+giphy-response-parsing = Couldn't parse the GIPHY response.
