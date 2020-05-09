@@ -77,18 +77,22 @@ mod tests {
     use mockall::predicate::{always, eq};
     use serenity::{model::misc::UserIdParseError, prelude::RwLock};
 
-    #[test]
-    fn avatar_missing_user() -> CommandResult {
-        // Main mock
-        let mut http = Http::new();
+    // TODO: Put in test utils module
+    fn check_response_msg(http: &mut Http, msg: &str) {
         http.expect_mock_send()
-            .with(
-                always(),
-                eq(MessageData::StrMsg("Missing argument: user.".to_string())),
-            )
+            .with(always(), eq(MessageData::StrMsg(msg.to_string())))
             .return_const(());
         http.expect_mock_get_channel()
             .returning(|| Err(serenity::Error::Other("Not important for test")));
+    }
+
+    fn test_avatar(
+        msg: &str,
+        response_msg: &str,
+        mut http: Http,
+        user_id: Result<UserId, UserIdParseError>,
+    ) -> CommandResult {
+        check_response_msg(&mut http, response_msg);
 
         // Mock context
         let mut ctx = Context::_new(None, http);
@@ -98,19 +102,27 @@ mod tests {
         }
 
         // Mock message
-        let msg = Message::_new(MessageId::new(), 0, "$avatar bad_user".to_string(), 0);
+        let msg = Message::_new(MessageId::new(), 0, msg.to_string(), 0);
 
         // Guards for mock contexts
         let _guards = CONTEXT_SYNCHRONIZER.get_ctx_guards(vec!["user_id_from_str"]);
 
-        let mock_channel_ctx = MockUserId::from_str_context();
-        mock_channel_ctx
-            .expect()
-            .return_once(|_| Err(UserIdParseError::InvalidFormat));
+        let mock_user_id_ctx = MockUserId::from_str_context();
+        mock_user_id_ctx.expect().once().return_once(|_| user_id);
 
         avatar(&mut ctx, &msg)?;
 
         Ok(())
+    }
+
+    #[test]
+    fn avatar_missing_user() -> CommandResult {
+        test_avatar(
+            "$avatar bad_user",
+            "Missing argument: user.",
+            Http::new(),
+            Err(UserIdParseError::InvalidFormat),
+        )
     }
 
     #[test]
@@ -119,39 +131,13 @@ mod tests {
         let mut http = Http::new();
         http.expect_mock_get_user()
             .returning(|| Err(serenity::Error::Other("Wrong user")));
-        http.expect_mock_send()
-            .with(
-                always(),
-                eq(MessageData::StrMsg("Wrong user id.".to_string())),
-            )
-            .return_const(());
-        http.expect_mock_get_channel()
-            .returning(|| Err(serenity::Error::Other("Not important for test")));
 
-        // Mock context
-        let mut ctx = Context::_new(None, http);
-        {
-            let mut data = ctx.data.write();
-            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
-        }
-
-        // Mock message
-        let msg = Message::_new(
-            MessageId::new(),
-            0,
-            "$avatar bad_user_but_better".to_string(),
-            0,
-        );
-
-        // Guards for mock contexts
-        let _guards = CONTEXT_SYNCHRONIZER.get_ctx_guards(vec!["user_id_from_str"]);
-
-        let mock_channel_ctx = MockUserId::from_str_context();
-        mock_channel_ctx.expect().return_once(|_| Ok(UserId(2)));
-
-        avatar(&mut ctx, &msg)?;
-
-        Ok(())
+        test_avatar(
+            "$avatar bad_user_but_better",
+            "Wrong user id.",
+            http,
+            Ok(UserId(2)),
+        )
     }
 
     #[test]
@@ -160,41 +146,13 @@ mod tests {
         let mut http = Http::new();
         http.expect_mock_get_user()
             .returning(|| Ok(User { avatar: None }));
-        http.expect_mock_send()
-            .with(
-                always(),
-                eq(MessageData::StrMsg(
-                    "This user doesn't have a custom avatar.".to_string(),
-                )),
-            )
-            .return_const(());
-        http.expect_mock_get_channel()
-            .returning(|| Err(serenity::Error::Other("Not important for test")));
 
-        // Mock context
-        let mut ctx = Context::_new(None, http);
-        {
-            let mut data = ctx.data.write();
-            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
-        }
-
-        // Mock message
-        let msg = Message::_new(
-            MessageId::new(),
-            0,
-            "$avatar good_user_but_default_avatar".to_string(),
-            0,
-        );
-
-        // Guards for mock contexts
-        let _guards = CONTEXT_SYNCHRONIZER.get_ctx_guards(vec!["user_id_from_str"]);
-
-        let mock_channel_ctx = MockUserId::from_str_context();
-        mock_channel_ctx.expect().return_once(|_| Ok(UserId(2)));
-
-        avatar(&mut ctx, &msg)?;
-
-        Ok(())
+        test_avatar(
+            "$avatar good_user_but_default_avatar",
+            "This user doesn't have a custom avatar.",
+            http,
+            Ok(UserId(2)),
+        )
     }
 
     #[test]
@@ -206,40 +164,12 @@ mod tests {
                 avatar: Some("some_id".to_string()),
             })
         });
-        http.expect_mock_send()
-            .with(
-                always(),
-                eq(MessageData::StrMsg(
-                    "https://cdn.discordapp.com/avatars/2/some_id.png?size=2048".to_string(),
-                )),
-            )
-            .return_const(());
-        http.expect_mock_get_channel()
-            .returning(|| Err(serenity::Error::Other("Not important for test")));
 
-        // Mock context
-        let mut ctx = Context::_new(None, http);
-        {
-            let mut data = ctx.data.write();
-            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
-        }
-
-        // Mock message
-        let msg = Message::_new(
-            MessageId::new(),
-            0,
-            "$avatar good_user_but_default_avatar".to_string(),
-            0,
-        );
-
-        // Guards for mock contexts
-        let _guards = CONTEXT_SYNCHRONIZER.get_ctx_guards(vec!["user_id_from_str"]);
-
-        let mock_channel_ctx = MockUserId::from_str_context();
-        mock_channel_ctx.expect().return_once(|_| Ok(UserId(2)));
-
-        avatar(&mut ctx, &msg)?;
-
-        Ok(())
+        test_avatar(
+            "$avatar good_user_but_default_avatar",
+            "https://cdn.discordapp.com/avatars/2/some_id.png?size=2048",
+            http,
+            Ok(UserId(2)),
+        )
     }
 }

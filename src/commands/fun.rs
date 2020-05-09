@@ -199,102 +199,75 @@ mod tests {
         config
     }
 
-    #[test]
-    fn no_giphy_api_key() {
+    fn test_giphy_api_key_check(config: Option<Config>) -> CheckResult {
         // Mock context
         let mut ctx = Context::_new_bare();
-        {
+        if let Some(config) = config {
             let mut data = ctx.data.write();
-            data.insert::<Config>(RwLock::new(Config::default()));
+            data.insert::<Config>(RwLock::new(config));
         }
 
         // Mock message
         let msg = Message::_new(MessageId::new(), 0, "$gif".to_string(), 0);
 
-        let result = has_giphy_api_key_check(
+        has_giphy_api_key_check(
             &mut ctx,
             &msg,
             &mut Args::new("$gif", &[Delimiter::Single(' ')]),
             &CommandOptions::default(),
-        );
+        )
+    }
+
+    #[test]
+    fn no_giphy_api_key() {
+        let result = test_giphy_api_key_check(Some(Config::default()));
 
         assert!(!result.is_success())
     }
 
     #[test]
     fn has_giphy_api_key() {
-        // Mock context
-        let mut ctx = Context::_new_bare();
-        {
-            let mut data = ctx.data.write();
-            data.insert::<Config>(RwLock::new(config_with_giphy_api()));
-        }
-
-        // Mock message
-        let msg = Message::_new(MessageId::new(), 0, "$gif".to_string(), 0);
-
-        let result = has_giphy_api_key_check(
-            &mut ctx,
-            &msg,
-            &mut Args::new("$gif", &[Delimiter::Single(' ')]),
-            &CommandOptions::default(),
-        );
+        let result = test_giphy_api_key_check(Some(config_with_giphy_api()));
 
         assert!(result.is_success())
     }
 
     #[test]
     fn giphy_api_key_no_config() {
-        // Mock context
-        let mut ctx = Context::_new_bare();
-
-        // Mock message
-        let msg = Message::_new(MessageId::new(), 0, "$gif".to_string(), 0);
-
-        let result = has_giphy_api_key_check(
-            &mut ctx,
-            &msg,
-            &mut Args::new("$gif", &[Delimiter::Single(' ')]),
-            &CommandOptions::default(),
-        );
+        let result = test_giphy_api_key_check(None);
 
         assert!(!result.is_success())
     }
 
-    #[test]
-    fn gif_alone() -> CommandResult {
+    fn test_gif_commands(
+        msg: &str,
+        url: &'static str,
+        response_json: Value,
+        response_msg: &str,
+        search_type: GifSearchType,
+    ) -> CommandResult {
         // Main mock
         let mut http = Http::new();
         http.expect_mock_send()
-            .with(always(), eq(MessageData::StrMsg("the.url".to_string())))
+            .with(always(), eq(MessageData::StrMsg(response_msg.to_string())))
             .return_const(());
         http.expect_mock_get_channel()
             .returning(|| Err(serenity::Error::Other("Not important for test")));
 
         // Mock reqwest client
         let mut client = Client::new();
-        client
-            .expect_get()
-            .once()
-            .with(eq(
-                "https://api.giphy.com/v1/gifs/trending?&limit=1&rating=g&api_key=1234",
-            ))
-            .returning(|_| {
-                let mut builder = RequestBuilder::new();
-                builder.expect_send().once().returning(|| {
-                    let mut response = Response::new();
-                    response.expect_text().once().returning(|| {
-                        let json = json!({
-                            "data": [{
-                                "url": "the.url"
-                            }]
-                        });
-                        Ok(json.to_string())
-                    });
-                    Ok(response)
-                });
-                builder
+        client.expect_get().once().with(eq(url)).return_once(|_| {
+            let mut builder = RequestBuilder::new();
+            builder.expect_send().once().return_once(|| {
+                let mut response = Response::new();
+                response
+                    .expect_text()
+                    .once()
+                    .return_once(move || Ok(response_json.to_string()));
+                Ok(response)
             });
+            builder
+        });
 
         // Mock context
         let mut ctx = Context::_new(None, http);
@@ -306,278 +279,110 @@ mod tests {
         }
 
         // Mock message
-        let msg = Message::_new(MessageId::new(), 0, "$gif".to_string(), 0);
+        let msg = Message::_new(MessageId::new(), 0, msg.to_string(), 0);
 
-        get_gif(&mut ctx, &msg, GifSearchType::Trending)?;
+        get_gif(&mut ctx, &msg, search_type)?;
 
         Ok(())
+    }
+
+    #[test]
+    fn gif_alone() -> CommandResult {
+        let json = json!({
+            "data": [{
+                "url": "the.url"
+            }]
+        });
+
+        test_gif_commands(
+            "$gif",
+            "https://api.giphy.com/v1/gifs/trending?&limit=1&rating=g&api_key=1234",
+            json,
+            "the.url",
+            GifSearchType::Trending,
+        )
     }
 
     #[test]
     fn gif_with_tag() -> CommandResult {
-        // Main mock
-        let mut http = Http::new();
-        http.expect_mock_send()
-            .with(always(), eq(MessageData::StrMsg("the.url".to_string())))
-            .return_const(());
-        http.expect_mock_get_channel()
-            .returning(|| Err(serenity::Error::Other("Not important for test")));
+        let json = json!({
+            "data": [{
+                "url": "the.url"
+            }]
+        });
 
-        // Mock reqwest client
-        let mut client = Client::new();
-        client
-            .expect_get()
-            .once()
-            .with(eq(
-                "https://api.giphy.com/v1/gifs/search?q=test&limit=1&rating=g&api_key=1234",
-            ))
-            .returning(|_| {
-                let mut builder = RequestBuilder::new();
-                builder.expect_send().once().returning(|| {
-                    let mut response = Response::new();
-                    response.expect_text().once().returning(|| {
-                        let json = json!({
-                            "data": [{
-                                "url": "the.url"
-                            }]
-                        });
-                        Ok(json.to_string())
-                    });
-                    Ok(response)
-                });
-                builder
-            });
-
-        // Mock context
-        let mut ctx = Context::_new(None, http);
-        {
-            let mut data = ctx.data.write();
-            data.insert::<Config>(RwLock::new(config_with_giphy_api()));
-            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
-            data.insert::<ClientContainer>(client);
-        }
-
-        // Mock message
-        let msg = Message::_new(MessageId::new(), 0, "$gif test".to_string(), 0);
-
-        get_gif(&mut ctx, &msg, GifSearchType::Trending)?;
-
-        Ok(())
+        test_gif_commands(
+            "$gif test",
+            "https://api.giphy.com/v1/gifs/search?q=test&limit=1&rating=g&api_key=1234",
+            json,
+            "the.url",
+            GifSearchType::Trending,
+        )
     }
 
     #[test]
     fn gif_random_alone() -> CommandResult {
-        // Main mock
-        let mut http = Http::new();
-        http.expect_mock_send()
-            .with(always(), eq(MessageData::StrMsg("the.url".to_string())))
-            .return_const(());
-        http.expect_mock_get_channel()
-            .returning(|| Err(serenity::Error::Other("Not important for test")));
+        let json = json!({
+            "data": {
+                "url": "the.url"
+            }
+        });
 
-        // Mock reqwest client
-        let mut client = Client::new();
-        client
-            .expect_get()
-            .once()
-            .with(eq(
-                "https://api.giphy.com/v1/gifs/random?&limit=1&rating=g&api_key=1234",
-            ))
-            .returning(|_| {
-                let mut builder = RequestBuilder::new();
-                builder.expect_send().once().returning(|| {
-                    let mut response = Response::new();
-                    response.expect_text().once().returning(|| {
-                        let json = json!({
-                            "data": {
-                                "url": "the.url"
-                            }
-                        });
-                        Ok(json.to_string())
-                    });
-                    Ok(response)
-                });
-                builder
-            });
-
-        // Mock context
-        let mut ctx = Context::_new(None, http);
-        {
-            let mut data = ctx.data.write();
-            data.insert::<Config>(RwLock::new(config_with_giphy_api()));
-            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
-            data.insert::<ClientContainer>(client);
-        }
-
-        // Mock message
-        let msg = Message::_new(MessageId::new(), 0, "$gifrandom".to_string(), 0);
-
-        get_gif(&mut ctx, &msg, GifSearchType::Random)?;
-
-        Ok(())
+        test_gif_commands(
+            "$gifrandom",
+            "https://api.giphy.com/v1/gifs/random?&limit=1&rating=g&api_key=1234",
+            json,
+            "the.url",
+            GifSearchType::Random,
+        )
     }
 
     #[test]
     fn gif_random_tag() -> CommandResult {
-        // Main mock
-        let mut http = Http::new();
-        http.expect_mock_send()
-            .with(always(), eq(MessageData::StrMsg("the.url".to_string())))
-            .return_const(());
-        http.expect_mock_get_channel()
-            .returning(|| Err(serenity::Error::Other("Not important for test")));
+        let json = json!({
+            "data": {
+                "url": "the.url"
+            }
+        });
 
-        // Mock reqwest client
-        let mut client = Client::new();
-        client
-            .expect_get()
-            .once()
-            .with(eq(
-                "https://api.giphy.com/v1/gifs/random?tag=test&limit=1&rating=g&api_key=1234",
-            ))
-            .returning(|_| {
-                let mut builder = RequestBuilder::new();
-                builder.expect_send().once().returning(|| {
-                    let mut response = Response::new();
-                    response.expect_text().once().returning(|| {
-                        let json = json!({
-                            "data": {
-                                "url": "the.url"
-                            }
-                        });
-                        Ok(json.to_string())
-                    });
-                    Ok(response)
-                });
-                builder
-            });
-
-        // Mock context
-        let mut ctx = Context::_new(None, http);
-        {
-            let mut data = ctx.data.write();
-            data.insert::<Config>(RwLock::new(config_with_giphy_api()));
-            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
-            data.insert::<ClientContainer>(client);
-        }
-
-        // Mock message
-        let msg = Message::_new(MessageId::new(), 0, "$gifrandom test".to_string(), 0);
-
-        get_gif(&mut ctx, &msg, GifSearchType::Random)?;
-
-        Ok(())
+        test_gif_commands(
+            "$gifrandom test",
+            "https://api.giphy.com/v1/gifs/random?tag=test&limit=1&rating=g&api_key=1234",
+            json,
+            "the.url",
+            GifSearchType::Random,
+        )
     }
 
     #[test]
     fn gif_no_result() -> CommandResult {
-        // Main mock
-        let mut http = Http::new();
-        http.expect_mock_send()
-            .with(
-                always(),
-                eq(MessageData::StrMsg(
-                    "Couldn't find any matching GIF.".to_string(),
-                )),
-            )
-            .return_const(());
-        http.expect_mock_get_channel()
-            .returning(|| Err(serenity::Error::Other("Not important for test")));
+        let json = json!({
+            "data": []
+        });
 
-        // Mock reqwest client
-        let mut client = Client::new();
-        client
-            .expect_get()
-            .once()
-            .with(eq(
-                "https://api.giphy.com/v1/gifs/trending?&limit=1&rating=g&api_key=1234",
-            ))
-            .returning(|_| {
-                let mut builder = RequestBuilder::new();
-                builder.expect_send().once().returning(|| {
-                    let mut response = Response::new();
-                    response.expect_text().once().returning(|| {
-                        let json = json!({
-                            "data": []
-                        });
-                        Ok(json.to_string())
-                    });
-                    Ok(response)
-                });
-                builder
-            });
-
-        // Mock context
-        let mut ctx = Context::_new(None, http);
-        {
-            let mut data = ctx.data.write();
-            data.insert::<Config>(RwLock::new(config_with_giphy_api()));
-            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
-            data.insert::<ClientContainer>(client);
-        }
-
-        // Mock message
-        let msg = Message::_new(MessageId::new(), 0, "$gif".to_string(), 0);
-
-        get_gif(&mut ctx, &msg, GifSearchType::Trending)?;
-
-        Ok(())
+        test_gif_commands(
+            "$gif",
+            "https://api.giphy.com/v1/gifs/trending?&limit=1&rating=g&api_key=1234",
+            json,
+            "Couldn't find any matching GIF.",
+            GifSearchType::Trending,
+        )
     }
 
     #[test]
     fn gif_url_not_string() -> CommandResult {
-        // Main mock
-        let mut http = Http::new();
-        http.expect_mock_send()
-            .with(
-                always(),
-                eq(MessageData::StrMsg(
-                    "Couldn't parse the GIPHY response.".to_string(),
-                )),
-            )
-            .return_const(());
-        http.expect_mock_get_channel()
-            .returning(|| Err(serenity::Error::Other("Not important for test")));
+        let json = json!({
+            "data": [{
+                "url": 1
+            }]
+        });
 
-        // Mock reqwest client
-        let mut client = Client::new();
-        client
-            .expect_get()
-            .once()
-            .with(eq(
-                "https://api.giphy.com/v1/gifs/trending?&limit=1&rating=g&api_key=1234",
-            ))
-            .returning(|_| {
-                let mut builder = RequestBuilder::new();
-                builder.expect_send().once().returning(|| {
-                    let mut response = Response::new();
-                    response.expect_text().once().returning(|| {
-                        let json = json!({
-                            "data": [{
-                                "url": 1
-                            }]
-                        });
-                        Ok(json.to_string())
-                    });
-                    Ok(response)
-                });
-                builder
-            });
-
-        // Mock context
-        let mut ctx = Context::_new(None, http);
-        {
-            let mut data = ctx.data.write();
-            data.insert::<Config>(RwLock::new(config_with_giphy_api()));
-            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
-            data.insert::<ClientContainer>(client);
-        }
-
-        // Mock message
-        let msg = Message::_new(MessageId::new(), 0, "$gif".to_string(), 0);
-
-        get_gif(&mut ctx, &msg, GifSearchType::Trending)?;
-
-        Ok(())
+        test_gif_commands(
+            "$gif",
+            "https://api.giphy.com/v1/gifs/trending?&limit=1&rating=g&api_key=1234",
+            json,
+            "Couldn't parse the GIPHY response.",
+            GifSearchType::Trending,
+        )
     }
 }
