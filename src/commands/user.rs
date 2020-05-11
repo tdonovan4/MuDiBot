@@ -67,24 +67,12 @@ mod tests {
 
     use crate::test_doubles::serenity::{
         http::client::Http,
-        model::{
-            id::{MessageData, MessageId, MockUserId},
-            user::User,
-        },
+        model::{id::MockUserId, user::User},
     };
     use crate::test_doubles::CONTEXT_SYNCHRONIZER;
+    use crate::test_utils;
 
-    use mockall::predicate::{always, eq};
     use serenity::{model::misc::UserIdParseError, prelude::RwLock};
-
-    // TODO: Put in test utils module
-    fn check_response_msg(http: &mut Http, msg: &str) {
-        http.expect_mock_send()
-            .with(always(), eq(MessageData::StrMsg(msg.to_string())))
-            .return_const(());
-        http.expect_mock_get_channel()
-            .returning(|| Err(serenity::Error::Other("Not important for test")));
-    }
 
     fn test_avatar(
         msg: &str,
@@ -92,7 +80,7 @@ mod tests {
         mut http: Http,
         user_id: Result<UserId, UserIdParseError>,
     ) -> CommandResult {
-        check_response_msg(&mut http, response_msg);
+        test_utils::check_response_msg(&mut http, response_msg);
 
         // Mock context
         let mut ctx = Context::_new(None, http);
@@ -102,7 +90,7 @@ mod tests {
         }
 
         // Mock message
-        let msg = Message::_new(MessageId::new(), 0, msg.to_string(), 0);
+        let msg = Message::_from_str(msg);
 
         // Guards for mock contexts
         let _guards = CONTEXT_SYNCHRONIZER.get_ctx_guards(vec!["user_id_from_str"]);

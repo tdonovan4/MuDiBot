@@ -72,18 +72,14 @@ mod tests {
     use crate::localization::L10NBundle;
 
     use crate::test_doubles::directories::ProjectDirs;
-    use crate::test_doubles::serenity::{
-        client::MockContext,
-        http::client::Http,
-        model::id::{MessageData, MessageId},
-    };
+    use crate::test_doubles::serenity::{client::MockContext, http::client::Http};
     use crate::test_doubles::std::{
         fs::File,
         path::{Path, PathBuf},
     };
     use crate::test_doubles::CONTEXT_SYNCHRONIZER;
+    use crate::test_utils;
 
-    use mockall::predicate::{always, eq};
     use serenity::prelude::RwLock;
 
     fn test_activity(
@@ -94,11 +90,7 @@ mod tests {
     ) -> CommandResult {
         // Main mock
         let mut http = Http::new();
-        http.expect_mock_send()
-            .with(always(), eq(MessageData::StrMsg(response_msg.to_string())))
-            .return_const(());
-        http.expect_mock_get_channel()
-            .returning(|| Err(serenity::Error::Other("Not important for test")));
+        test_utils::check_response_msg(&mut http, response_msg);
 
         // Mock context
         let mut ctx = Context::_new(Some(inner_ctx), http);
@@ -109,7 +101,7 @@ mod tests {
         }
 
         // Mock message
-        let msg = Message::_new(MessageId::new(), 0, msg.to_string(), 0);
+        let msg = Message::_from_str(msg);
 
         // Mock config dir
         let mut config_dir = Path::default();

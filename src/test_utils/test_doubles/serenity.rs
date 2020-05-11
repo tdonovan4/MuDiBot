@@ -319,6 +319,15 @@ pub mod model {
                     guild_id: Some(guild_id),
                 }
             }
+
+            pub fn _from_str(content: &str) -> Self {
+                Self {
+                    id: MessageId::new(),
+                    channel_id: ChannelId(0),
+                    content: content.to_string(),
+                    guild_id: Some(0),
+                }
+            }
         }
     }
 

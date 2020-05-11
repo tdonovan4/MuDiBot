@@ -178,12 +178,10 @@ mod tests {
     use crate::localization::L10NBundle;
 
     use crate::test_doubles::reqwest::blocking::{Client, RequestBuilder, Response};
-    use crate::test_doubles::serenity::{
-        http::client::Http,
-        model::{id::MessageData, id::MessageId},
-    };
+    use crate::test_doubles::serenity::http::client::Http;
+    use crate::test_utils;
 
-    use mockall::predicate::{always, eq};
+    use mockall::predicate::eq;
     use serde_json::json;
     use serenity::prelude::RwLock;
 
@@ -208,8 +206,7 @@ mod tests {
         }
 
         // Mock message
-        let msg = Message::_new(MessageId::new(), 0, "$gif".to_string(), 0);
-
+        let msg = Message::_from_str("$gif");
         has_giphy_api_key_check(
             &mut ctx,
             &msg,
@@ -246,13 +243,8 @@ mod tests {
         response_msg: &str,
         search_type: GifSearchType,
     ) -> CommandResult {
-        // Main mock
         let mut http = Http::new();
-        http.expect_mock_send()
-            .with(always(), eq(MessageData::StrMsg(response_msg.to_string())))
-            .return_const(());
-        http.expect_mock_get_channel()
-            .returning(|| Err(serenity::Error::Other("Not important for test")));
+        test_utils::check_response_msg(&mut http, response_msg);
 
         // Mock reqwest client
         let mut client = Client::new();
@@ -279,7 +271,7 @@ mod tests {
         }
 
         // Mock message
-        let msg = Message::_new(MessageId::new(), 0, msg.to_string(), 0);
+        let msg = Message::_from_str(msg);
 
         get_gif(&mut ctx, &msg, search_type)?;
 

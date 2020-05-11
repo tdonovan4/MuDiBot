@@ -2,7 +2,7 @@ mod commands;
 mod config;
 mod localization;
 #[cfg(test)]
-mod test_doubles;
+mod test_utils;
 mod util;
 
 use std::sync::Arc;
@@ -18,6 +18,8 @@ extern crate log;
 
 cfg_if::cfg_if! {
     if #[cfg(test)] {
+        pub use test_utils::test_doubles as test_doubles;
+
         use crate::test_doubles::reqwest::blocking::Client as ReqwestClient;
         use test_doubles::serenity::{
             client::{bridge::gateway::ShardManager, Context, EventHandler},
