@@ -256,7 +256,10 @@ pub mod test_utils {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_doubles::directories::ProjectDirs;
+    use crate::test_doubles::directories::{
+        ProjectDirs, __mock_ProjectDirs::from::Context as ProjectDirsCtx,
+    };
+    use crate::test_doubles::std::fs::__mock_File::create::Context as FileCtx;
     use crate::test_doubles::{std::path::PathBuf, CONTEXT_SYNCHRONIZER};
 
     use std::cell::RefCell;
@@ -265,22 +268,32 @@ mod tests {
         static READ_INDEX: RefCell<usize> = RefCell::new(0);
     }
 
-    #[test]
-    fn create_new_config() -> Result<()> {
+    // If expectation_config_exists is None, the expectation is not set
+    fn mock_project_and_config_dirs(
+        expectation_config_exists: Option<bool>,
+        expect_parent: bool,
+    ) -> ProjectDirsCtx {
         // Mock config dir
         let mut config_dir = Path::default();
-        config_dir.expect_join().once().returning(|_| {
+        config_dir.expect_join().once().returning(move |_| {
             // Mock config path
             // As Path
             let mut config_path = Path::default();
-            config_path
-                .expect_parent()
-                .once()
-                .returning(|| Some(Path::default()));
+            if expect_parent {
+                config_path
+                    .expect_parent()
+                    .once()
+                    .returning(|| Some(Path::default()));
+            }
 
             // As PathBuf
             let mut config_path_buf = PathBuf::new();
-            config_path_buf.expect_exists().once().return_const(false);
+            if let Some(config_exists) = expectation_config_exists {
+                config_path_buf
+                    .expect_exists()
+                    .once()
+                    .return_const(config_exists);
+            }
             config_path_buf
                 .expect_deref()
                 .once()
@@ -288,10 +301,6 @@ mod tests {
             config_path_buf
         });
 
-        // Guards for mock contexts
-        let _guards = CONTEXT_SYNCHRONIZER.get_ctx_guards(vec!["project_dirs_from", "file_create"]);
-
-        // Mock project dir
         let project_dirs_ctx = ProjectDirs::from_context();
         project_dirs_ctx.expect().once().return_once(|_, _, _| {
             let mut project_dir = ProjectDirs::new();
@@ -301,8 +310,10 @@ mod tests {
                 .return_const(config_dir);
             Some(project_dir)
         });
+        project_dirs_ctx
+    }
 
-        // Mock config file
+    fn mock_write_config() -> FileCtx {
         let file_ctx = File::create_context();
         file_ctx.expect().once().return_once(|_| {
             let mut config_file = File::new();
@@ -312,6 +323,19 @@ mod tests {
                 .return_once(|x| Ok(x.len()));
             Ok(config_file)
         });
+        file_ctx
+    }
+
+    #[test]
+    fn create_new_config() -> Result<()> {
+        // Guards for mock contexts
+        let _guards = CONTEXT_SYNCHRONIZER.get_ctx_guards(vec!["project_dirs_from", "file_create"]);
+
+        // Mock project dir
+        let _project_dirs_ctx = mock_project_and_config_dirs(Some(false), true);
+
+        // Mock config file
+        let _file_ctx = mock_write_config();
 
         Config::new()?;
 
@@ -320,33 +344,11 @@ mod tests {
 
     #[test]
     fn read_config() -> Result<()> {
-        // Mock config dir
-        let mut config_dir = Path::default();
-        config_dir.expect_join().once().returning(|_| {
-            // Mock config path
-            // As PathBuf
-            let mut config_path_buf = PathBuf::new();
-            config_path_buf.expect_exists().once().return_const(true);
-            config_path_buf
-                .expect_deref()
-                .once()
-                .return_const(Path::default());
-            config_path_buf
-        });
-
         // Guards for mock contexts
         let _guards = CONTEXT_SYNCHRONIZER.get_ctx_guards(vec!["project_dirs_from", "file_open"]);
 
         // Mock project dir
-        let project_dirs_ctx = ProjectDirs::from_context();
-        project_dirs_ctx.expect().once().return_once(|_, _, _| {
-            let mut project_dir = ProjectDirs::new();
-            project_dir
-                .expect_config_dir()
-                .once()
-                .return_const(config_dir);
-            Some(project_dir)
-        });
+        let _project_dirs_ctx = mock_project_and_config_dirs(Some(true), false);
 
         // Mock config file
         let toml_string = toml::to_string(&Config::default())?;
@@ -415,50 +417,14 @@ mod tests {
 
     #[test]
     fn modify_activity() -> Result<()> {
-        // Mock config dir
-        let mut config_dir = Path::default();
-        config_dir.expect_join().once().returning(|_| {
-            // Mock config path
-            // As Path
-            let mut config_path = Path::default();
-            config_path
-                .expect_parent()
-                .once()
-                .returning(|| Some(Path::default()));
-
-            // As PathBuf
-            let mut config_path_buf = PathBuf::new();
-            config_path_buf
-                .expect_deref()
-                .once()
-                .return_const(config_path);
-            config_path_buf
-        });
-
         // Guards for mock contexts
         let _guards = CONTEXT_SYNCHRONIZER.get_ctx_guards(vec!["project_dirs_from", "file_create"]);
 
         // Mock project dir
-        let project_dirs_ctx = ProjectDirs::from_context();
-        project_dirs_ctx.expect().once().return_once(|_, _, _| {
-            let mut project_dir = ProjectDirs::new();
-            project_dir
-                .expect_config_dir()
-                .once()
-                .return_const(config_dir);
-            Some(project_dir)
-        });
+        let _project_dirs_ctx = mock_project_and_config_dirs(None, true);
 
         // Mock config file
-        let file_ctx = File::create_context();
-        file_ctx.expect().once().return_once(|_| {
-            let mut config_file = File::new();
-            config_file
-                .expect_write()
-                .once()
-                .return_once(|x| Ok(x.len()));
-            Ok(config_file)
-        });
+        let _file_ctx = mock_write_config();
 
         let mut config = Config::default();
         config.change_activity(Some("This a test".to_string()))?;
