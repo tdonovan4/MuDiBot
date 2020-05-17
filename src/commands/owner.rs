@@ -1,5 +1,6 @@
 use crate::config::{Config, ConfigError};
 use crate::localization::Localize;
+use crate::ShardManagerContainer;
 
 use serenity::{
     framework::standard::{Args, CommandResult, Delimiter},
@@ -45,6 +46,40 @@ fn set_activity(ctx: &mut Context, msg: &Message) -> CommandResult {
     Ok(())
 }
 
+fn kill(ctx: &mut Context, msg: &Message) -> CommandResult {
+    msg.channel_id
+        .say(&ctx.http, ctx.localize_msg("shutting-down", None)?)?;
+
+    let data = ctx.data.read();
+    // If we can't get ShardManager, we panic to exit
+    let mut manager = data
+        .get::<ShardManagerContainer>()
+        .expect("Could not tell ShardManager to exit gracefully")
+        .lock();
+
+    manager.shutdown_all();
+
+    Ok(())
+}
+
+fn restart_shards(ctx: &mut Context, msg: &Message) -> CommandResult {
+    msg.channel_id
+        .say(&ctx.http, ctx.localize_msg("restarting-shards", None)?)?;
+
+    let data = ctx.data.read();
+
+    let mut manager = data
+        .get::<ShardManagerContainer>()
+        .ok_or(crate::ShardManagerError::MissingFromShareMap)?
+        .lock();
+
+    for shard_id in manager.shards_instantiated() {
+        manager.restart(shard_id);
+    }
+
+    Ok(())
+}
+
 #[cfg(not(test))]
 pub mod commands {
     use serenity::{
@@ -63,6 +98,20 @@ pub mod commands {
     fn setactivity(ctx: &mut Context, msg: &Message) -> CommandResult {
         super::set_activity(ctx, msg)
     }
+
+    #[command]
+    #[owners_only]
+    #[description("Shutdown the bot")]
+    fn kill(ctx: &mut Context, msg: &Message) -> CommandResult {
+        super::kill(ctx, msg)
+    }
+
+    #[command]
+    #[owners_only]
+    #[description("Restart the shards. This will not restart the main process.")]
+    fn restart(ctx: &mut Context, msg: &Message) -> CommandResult {
+        super::restart_shards(ctx, msg)
+    }
 }
 
 #[cfg(test)]
@@ -72,7 +121,13 @@ mod tests {
     use crate::localization::L10NBundle;
 
     use crate::test_doubles::directories::ProjectDirs;
-    use crate::test_doubles::serenity::{client::MockContext, http::client::Http};
+    use crate::test_doubles::serenity::{
+        client::{
+            bridge::gateway::{MockShardManager, ShardManager},
+            MockContext,
+        },
+        http::client::Http,
+    };
     use crate::test_doubles::std::{
         fs::File,
         path::{Path, PathBuf},
@@ -80,7 +135,12 @@ mod tests {
     use crate::test_doubles::CONTEXT_SYNCHRONIZER;
     use crate::test_utils;
 
-    use serenity::prelude::RwLock;
+    use std::{collections::HashMap, sync::Arc};
+
+    use serenity::{
+        client::bridge::gateway::ShardId,
+        prelude::{Mutex, RwLock},
+    };
 
     fn test_activity(
         msg: &str,
@@ -189,5 +249,57 @@ mod tests {
             inner_ctx,
             Some("Hello, this is a test!"),
         )
+    }
+
+    #[test]
+    fn should_shutdown_shards() -> CommandResult {
+        // Main mock
+        let mut http = Http::new();
+        test_utils::check_response_msg(&mut http, "Shutting down...");
+        // Mock context
+        let mut ctx = Context::_new(None, http);
+        {
+            let mut data = ctx.data.write();
+            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
+
+            let mut manager = MockShardManager::new();
+            manager.expect_shutdown_all().once().return_const(());
+            data.insert::<ShardManagerContainer>(Arc::new(Mutex::new(ShardManager::_new(
+                HashMap::new(),
+                Some(manager),
+            ))));
+        }
+
+        let msg = Message::_from_str("$kill");
+
+        kill(&mut ctx, &msg)
+    }
+
+    #[test]
+    fn should_restart_shards() -> CommandResult {
+        // Main mock
+        let mut http = Http::new();
+        test_utils::check_response_msg(&mut http, "Restarting shards...");
+        // Mock context
+        let mut ctx = Context::_new(None, http);
+        {
+            let mut data = ctx.data.write();
+            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
+
+            let mut manager = MockShardManager::new();
+            manager
+                .expect_shards_instantiated()
+                .once()
+                .return_const(vec![ShardId(0), ShardId(1), ShardId(3), ShardId(4)]);
+            manager.expect_restart().times(4).return_const(());
+            data.insert::<ShardManagerContainer>(Arc::new(Mutex::new(ShardManager::_new(
+                HashMap::new(),
+                Some(manager),
+            ))));
+        }
+
+        let msg = Message::_from_str("$restart");
+
+        restart_shards(&mut ctx, &msg)
     }
 }

@@ -48,7 +48,7 @@ cfg_if::cfg_if! {
 
         #[group]
         #[owners_only]
-        #[commands(setactivity)]
+        #[commands(setactivity, kill, restart)]
         struct Owner;
 
         #[group]
@@ -61,6 +61,12 @@ struct ShardManagerContainer;
 
 impl TypeMapKey for ShardManagerContainer {
     type Value = Arc<Mutex<ShardManager>>;
+}
+
+#[derive(Error, Debug)]
+pub enum ShardManagerError {
+    #[error("Could not find shard manager in share map.")]
+    MissingFromShareMap,
 }
 
 struct ClientContainer;
@@ -122,8 +128,6 @@ fn main() {
     if let Err(e) = run_bot() {
         error!("{}", e);
         std::process::exit(1);
-    } else {
-        std::process::exit(0);
     }
 }
 

@@ -15,3 +15,6 @@ info-embed = __**~Infos~**__
 
 set-activity-some = Activité modifiée avec succès!
 set-activity-none = Activité enlevée avec succès!
+
+shutting-down = Fermeture...
+restarting-shards = Redémarrage des shards...

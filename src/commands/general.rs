@@ -288,6 +288,7 @@ mod tests {
             let mut data = ctx.data.write();
             data.insert::<ShardManagerContainer>(Arc::new(Mutex::new(ShardManager::_new(
                 shard_manager_map,
+                None,
             ))));
             data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
         }
@@ -379,7 +380,9 @@ mod tests {
         {
             let mut data = ctx.data.write();
             let map = HashMap::new();
-            data.insert::<ShardManagerContainer>(Arc::new(Mutex::new(ShardManager::_new(map))));
+            data.insert::<ShardManagerContainer>(Arc::new(Mutex::new(ShardManager::_new(
+                map, None,
+            ))));
             data.insert::<Config>(RwLock::new(Config::default()));
             data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
         }

@@ -93,15 +93,40 @@ pub mod client {
                 pub latency: Option<Duration>,
             }
 
+            mockall::mock! {
+                pub ShardManager {
+                    fn shutdown_all(&mut self);
+                    fn restart(&mut self, shard_id: ShardId);
+                    fn shards_instantiated(&self) -> Vec<ShardId>;
+                }
+            }
+
             pub struct ShardManager {
                 pub runners: Arc<Mutex<HashMap<ShardId, ShardRunnerInfo>>>,
+                _inner: Option<MockShardManager>,
             }
 
             impl ShardManager {
-                pub fn _new(map: HashMap<ShardId, ShardRunnerInfo>) -> Self {
+                pub fn _new(
+                    map: HashMap<ShardId, ShardRunnerInfo>,
+                    inner: Option<MockShardManager>,
+                ) -> Self {
                     Self {
                         runners: Arc::new(Mutex::new(map)),
+                        _inner: inner,
                     }
+                }
+
+                pub fn shutdown_all(&mut self) {
+                    self._inner.as_mut().unwrap().shutdown_all();
+                }
+
+                pub fn restart(&mut self, shard_id: ShardId) {
+                    self._inner.as_mut().unwrap().restart(shard_id);
+                }
+
+                pub fn shards_instantiated(&self) -> Vec<ShardId> {
+                    self._inner.as_ref().unwrap().shards_instantiated()
                 }
             }
         }
