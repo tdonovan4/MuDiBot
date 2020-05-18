@@ -1,4 +1,4 @@
-use std::{borrow::Cow, io};
+use std::borrow::Cow;
 
 use fluent::{concurrent::FluentBundle, FluentArgs, FluentError, FluentMessage, FluentResource};
 use serenity::prelude::{RwLock, TypeMapKey};
@@ -18,8 +18,6 @@ include!(concat!(env!("OUT_DIR"), "/l10n_res.rs"));
 
 #[derive(Error, Debug)]
 pub enum L10NError {
-    #[error(transparent)]
-    Io(#[from] io::Error),
     #[error("Error(s) while parsing localization file: {0:?}")]
     Fluent(Vec<FluentError>),
     #[error("The localization bundle could not be extracted from the ShareMap")]
