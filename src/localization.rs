@@ -1,8 +1,4 @@
-use std::{
-    borrow::Cow,
-    fs::File,
-    io::{self, Read},
-};
+use std::{borrow::Cow, io};
 
 use fluent::{concurrent::FluentBundle, FluentArgs, FluentError, FluentMessage, FluentResource};
 use serenity::prelude::{RwLock, TypeMapKey};
@@ -16,6 +12,9 @@ cfg_if::cfg_if! {
         use serenity::client::{Client, Context};
     }
 }
+
+// This includes the consts containing the localization data built by the build script
+include!(concat!(env!("OUT_DIR"), "/l10n_res.rs"));
 
 #[derive(Error, Debug)]
 pub enum L10NError {
@@ -33,6 +32,8 @@ pub enum L10NError {
     MissingAttribute(String, String),
     #[error("Wrong locale: {0}")]
     LanguageIdentifierError(#[from] LanguageIdentifierError),
+    #[error("Locale not translated: {0}")]
+    NotLocalizedLocale(String),
 }
 
 impl From<Vec<FluentError>> for L10NError {
@@ -56,6 +57,14 @@ pub trait Localize {
     ) -> Result<Cow<str>>;
 }
 
+fn str_to_locale(locale: &str) -> Option<&[&str]> {
+    Some(match locale {
+        "en-US" => &EN_US,
+        "fr" => &FR,
+        _ => return None,
+    })
+}
+
 pub struct L10NBundle {
     bundle: FluentBundle<FluentResource>,
 }
@@ -66,11 +75,11 @@ impl L10NBundle {
         let mut bundle = FluentBundle::new(&[langid]);
 
         // Add ressources
-        for res_name in ["errors", "commands"].iter() {
-            let mut file = File::open(format!("resources/{}/{}.ftl", locale, res_name))?;
-            let mut contents = String::new();
-            file.read_to_string(&mut contents)?;
-            bundle.add_resource(Self::load_res_file(contents)?)?;
+        for res in str_to_locale(locale)
+            .ok_or_else(|| L10NError::NotLocalizedLocale(locale.to_string()))?
+            .iter()
+        {
+            bundle.add_resource(Self::load_res_file((*res).to_string())?)?;
         }
 
         Ok(Self { bundle })
@@ -314,5 +323,10 @@ mod tests {
             .is_ok());
 
         Ok(())
+    }
+
+    #[test]
+    fn locale_not_localized() {
+        assert!(L10NBundle::new("sr-Latn-ME").is_err());
     }
 }
