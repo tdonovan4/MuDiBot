@@ -9,16 +9,14 @@ fn build_localization_resources() -> io::Result<()> {
     println!("cargo:rerun-if-changed=resources");
 
     // Get where the localization resources files are located
-    let manifest_dir = env::var_os("CARGO_MANIFEST_DIR").ok_or(io::Error::new(
-        ErrorKind::NotFound,
-        "missing CARGO_MANIFEST_DIR",
-    ))?;
+    let manifest_dir = env::var_os("CARGO_MANIFEST_DIR")
+        .ok_or_else(|| io::Error::new(ErrorKind::NotFound, "missing CARGO_MANIFEST_DIR"))?;
     let manifest_dir_path = Path::new(&manifest_dir);
     let resources_dir = manifest_dir_path.join("resources");
 
     // Get the output destination
-    let out_dir =
-        env::var_os("OUT_DIR").ok_or(io::Error::new(ErrorKind::NotFound, "missing OUT_DIR"))?;
+    let out_dir = env::var_os("OUT_DIR")
+        .ok_or_else(|| io::Error::new(ErrorKind::NotFound, "missing OUT_DIR"))?;
     let out_dir_path = Path::new(&out_dir);
     let destination = out_dir_path.join("l10n_res.rs");
 
