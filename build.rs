@@ -51,11 +51,12 @@ fn build_localization_resources() -> io::Result<()> {
                     );
 
                     // We include the content of the file so we have it in the binary
+                    let mut include_path = resources_dir.join(locale.as_ref());
+                    include_path.push(file_name);
+                    include_path.set_extension("ftl");
                     Ok(format!(
-                        "  include_str!(\"{}/{}/{}.ftl\"),\n",
-                        resources_dir.display(),
-                        locale,
-                        file_name
+                        "  include_str!(r#\"{}\"#),\n",
+                        include_path.display(),
                     ))
                 })
                 .collect::<io::Result<String>>()?;
