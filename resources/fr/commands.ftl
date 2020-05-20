@@ -18,3 +18,7 @@ set-activity-none = Activité enlevée avec succès!
 
 shutting-down = Fermeture...
 restarting-shards = Redémarrage des shards...
+
+flipcoin = *La pièce tombe sur { $side }.*
+    .heads = face
+    .tails = pile

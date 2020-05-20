@@ -1,9 +1,10 @@
 use crate::config::{Config, ConfigError};
-use crate::localization::Localize;
+use crate::localization::{L10NBundle, L10NError, Localize};
 use crate::{ClientContainer, ClientError};
 
 use std::borrow::Cow;
 
+use fluent::fluent_args;
 use serde_json::Value;
 use serenity::framework::standard::{Args, CheckResult, CommandOptions, CommandResult, Delimiter};
 use thiserror::Error;
@@ -127,6 +128,29 @@ fn get_gif(ctx: &mut Context, msg: &Message, search_type: GifSearchType) -> Comm
     Ok(())
 }
 
+fn flip_coin(ctx: &mut Context, msg: &Message) -> CommandResult {
+    let data = ctx.data.read();
+    let l10n = data
+        .get::<L10NBundle>()
+        .ok_or(L10NError::MissingFromShareMap)?
+        .read();
+
+    let flip_msg = l10n.get_message("flipcoin")?;
+    // 50% chance
+    let side = if rand::random() {
+        l10n.get_msg_attribute(&flip_msg, "tails", None)
+    } else {
+        l10n.get_msg_attribute(&flip_msg, "heads", None)
+    }?;
+
+    msg.channel_id.say(
+        &ctx.http,
+        l10n.get_msg_value(&flip_msg, Some(&fluent_args!["side" => side]))?,
+    )?;
+
+    Ok(())
+}
+
 #[cfg(not(test))]
 pub mod commands {
     use super::GifSearchType;
@@ -168,6 +192,12 @@ pub mod commands {
     fn gifrandom(ctx: &mut Context, msg: &Message) -> CommandResult {
         super::get_gif(ctx, msg, GifSearchType::Random)
     }
+
+    #[command]
+    #[description("Flip a virtual coin")]
+    fn flipcoin(ctx: &mut Context, msg: &Message) -> CommandResult {
+        super::flip_coin(ctx, msg)
+    }
 }
 
 #[cfg(test)]
@@ -178,10 +208,10 @@ mod tests {
     use crate::localization::L10NBundle;
 
     use crate::test_doubles::reqwest::blocking::{Client, RequestBuilder, Response};
-    use crate::test_doubles::serenity::http::client::Http;
+    use crate::test_doubles::serenity::{http::client::Http, model::id::MessageData};
     use crate::test_utils;
 
-    use mockall::predicate::eq;
+    use mockall::predicate::{always, eq, function};
     use serde_json::json;
     use serenity::prelude::RwLock;
 
@@ -376,5 +406,42 @@ mod tests {
             "Couldn't parse the GIPHY response.",
             GifSearchType::Trending,
         )
+    }
+
+    #[test]
+    fn flip_a_coin() -> CommandResult {
+        let mut http = Http::new();
+        http.expect_mock_send()
+            .with(
+                always(),
+                function(|response| {
+                    if let MessageData::StrMsg(str_msg) = response {
+                        // Both variants are valid because random (don't want to mock it)
+                        println!("{:?}", str_msg.as_str());
+                        match str_msg.as_str() {
+                            "*The coin lands on \u{2068}tails\u{2069}.*"
+                            | "*The coin lands on \u{2068}heads\u{2069}.*" => true,
+                            _ => false,
+                        }
+                    } else {
+                        false
+                    }
+                }),
+            )
+            .return_const(());
+        http.expect_mock_get_channel()
+            .returning(|| Err(serenity::Error::Other("Not important for test")));
+
+        // Mock context
+        let mut ctx = Context::_new(None, http);
+        {
+            let mut data = ctx.data.write();
+            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
+        }
+
+        // Mock message
+        let msg = Message::_from_str("flipcoin");
+
+        flip_coin(&mut ctx, &msg)
     }
 }

@@ -18,3 +18,7 @@ set-activity-none = Activity successfully removed!
 
 shutting-down = Shutting down...
 restarting-shards = Restarting shards...
+
+flipcoin = *The coin lands on { $side }.*
+    .heads = heads
+    .tails = tails

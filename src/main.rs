@@ -52,7 +52,7 @@ cfg_if::cfg_if! {
         struct Owner;
 
         #[group]
-        #[commands(gif, gifrandom)]
+        #[commands(gif, gifrandom, flipcoin)]
         struct Fun;
     }
 }

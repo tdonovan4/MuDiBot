@@ -20,6 +20,7 @@ unic-langid = "0.9"
 log = "0.4"
 env_logger = "0.7"
 thiserror = "1.0"
+rand = "0.7"
 
 [dependencies.reqwest]
 version = "0.10"
