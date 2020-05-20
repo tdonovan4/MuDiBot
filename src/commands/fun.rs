@@ -417,7 +417,6 @@ mod tests {
                 function(|response| {
                     if let MessageData::StrMsg(str_msg) = response {
                         // Both variants are valid because random (don't want to mock it)
-                        println!("{:?}", str_msg.as_str());
                         match str_msg.as_str() {
                             "*The coin lands on \u{2068}tails\u{2069}.*"
                             | "*The coin lands on \u{2068}heads\u{2069}.*" => true,
