@@ -15,6 +15,7 @@ cfg_if::cfg_if! {
             client::Context,
             model::{channel::Message},
         };
+        use crate::test_doubles::rand;
     } else {
         use serenity::{
             client::Context,
@@ -207,11 +208,14 @@ mod tests {
     use crate::config;
     use crate::localization::L10NBundle;
 
+    use crate::test_doubles::rand::MockRandom;
     use crate::test_doubles::reqwest::blocking::{Client, RequestBuilder, Response};
-    use crate::test_doubles::serenity::{http::client::Http, model::id::MessageData};
+    use crate::test_doubles::serenity::http::client::Http;
+
+    use crate::test_doubles::CONTEXT_SYNCHRONIZER;
     use crate::test_utils;
 
-    use mockall::predicate::{always, eq, function};
+    use mockall::predicate::eq;
     use serde_json::json;
     use serenity::prelude::RwLock;
 
@@ -408,28 +412,12 @@ mod tests {
         )
     }
 
-    #[test]
-    fn flip_a_coin() -> CommandResult {
+    fn test_flip_coin(random_bool: bool, side: &str) -> CommandResult {
         let mut http = Http::new();
-        http.expect_mock_send()
-            .with(
-                always(),
-                function(|response| {
-                    if let MessageData::StrMsg(str_msg) = response {
-                        // Both variants are valid because random (don't want to mock it)
-                        match str_msg.as_str() {
-                            "*The coin lands on \u{2068}tails\u{2069}.*"
-                            | "*The coin lands on \u{2068}heads\u{2069}.*" => true,
-                            _ => false,
-                        }
-                    } else {
-                        false
-                    }
-                }),
-            )
-            .return_const(());
-        http.expect_mock_get_channel()
-            .returning(|| Err(serenity::Error::Other("Not important for test")));
+        test_utils::check_response_msg(
+            &mut http,
+            format!("*The coin lands on \u{2068}{}\u{2069}.*", side).as_str(),
+        );
 
         // Mock context
         let mut ctx = Context::_new(None, http);
@@ -441,6 +429,22 @@ mod tests {
         // Mock message
         let msg = Message::_from_str("flipcoin");
 
+        // Guards for mock contexts
+        let _guards = CONTEXT_SYNCHRONIZER.get_ctx_guards(vec!["random"]);
+
+        let random_ctx = MockRandom::random_context();
+        random_ctx.expect().returning(move || random_bool);
+
         flip_coin(&mut ctx, &msg)
+    }
+
+    #[test]
+    fn flip_a_coin_tails() -> CommandResult {
+        test_flip_coin(true, "tails")
+    }
+
+    #[test]
+    fn flip_a_coin_heads() -> CommandResult {
+        test_flip_coin(false, "heads")
     }
 }

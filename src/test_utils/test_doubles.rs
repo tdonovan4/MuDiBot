@@ -1,5 +1,6 @@
 pub mod chrono;
 pub mod directories;
+pub mod rand;
 pub mod reqwest;
 pub mod serenity;
 pub mod std;
@@ -20,6 +21,7 @@ pub struct ContextSynchronizer {
     system_time_now: Mutex<()>,
     channel_id_from_str: Mutex<()>,
     user_id_from_str: Mutex<()>,
+    random: Mutex<()>,
 }
 
 impl ContextSynchronizer {
@@ -34,6 +36,7 @@ impl ContextSynchronizer {
             system_time_now: Mutex::new(()),
             channel_id_from_str: Mutex::new(()),
             user_id_from_str: Mutex::new(()),
+            random: Mutex::new(()),
         }
     }
 
@@ -47,6 +50,7 @@ impl ContextSynchronizer {
             "system_time_now" => self.system_time_now.lock(),
             "channel_id_from_str" => self.channel_id_from_str.lock(),
             "user_id_from_str" => self.user_id_from_str.lock(),
+            "random" => self.random.lock(),
             _ => return None,
         })
     }
