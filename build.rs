@@ -45,7 +45,10 @@ fn build_localization_resources() -> io::Result<()> {
             let middle = FILE_NAMES
                 .iter()
                 .map(|file_name| {
-                    println!("cargo:rerun-if-changed=resources/{}/{}", locale, file_name);
+                    println!(
+                        "cargo:rerun-if-changed=resources/{}/{}.ftl",
+                        locale, file_name
+                    );
 
                     // We include the content of the file so we have it in the binary
                     Ok(format!(
