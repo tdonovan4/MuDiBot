@@ -12,3 +12,5 @@ no-custom-avatar = Cet utilisateur n'a pas d'avatar personnalisé.
 
 no-gif = Aucun GIF correspondant aux critères n'a pu être trouvé.
 giphy-response-parsing = Erreur lors de l'analyse de la réponse de GIPHY.
+
+roll-parsing-error = Ce lancer n'a pas pu être analysé. Assurez-vous d'utiliser des nombres en bas de 256 et de suivre ceci: `[nombre de dés]d<nombre de faces>[modificateur (+ ou - un nombre)]`

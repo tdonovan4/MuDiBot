@@ -12,3 +12,5 @@ no-custom-avatar = This user doesn't have a custom avatar.
 
 no-gif = Couldn't find any matching GIF.
 giphy-response-parsing = Couldn't parse the GIPHY response.
+
+roll-parsing-error = This roll could not be parsed. Make sure to include numbers smaller than 256 and follow this syntax: `[num of dice]d<num of sides>[modifier (+ or - a number)]`
