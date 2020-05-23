@@ -22,3 +22,6 @@ restarting-shards = Restarting shards...
 flipcoin = *The coin lands on { $side }.*
     .heads = heads
     .tails = tails
+
+roll-no-die = Alright then, no virtual die for you. :game_die:
+roll-no-side = *Throws a die but it keeps rolling forever because it doesn't have a face to land on.*

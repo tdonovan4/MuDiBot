@@ -96,6 +96,23 @@ impl fmt::Display for DiceRollResult {
         }
     }
 }
+#[derive(Error, Debug)]
+enum DiceRollParseError {
+    #[error("The 'd' is missing")]
+    MissingD,
+    #[error("Invalid number of dice: {0:?}")]
+    InvalidDiceNum(String),
+    #[error("Invalid number of sides: {0:?}")]
+    InvalidSidesNum(String),
+    #[error("Invalid modifier: {0:?}")]
+    InvalidModifier(String),
+    #[error("Out of bound dice number: {0}")]
+    OutOfBoundDiceNum(BoundedIntegerError),
+    #[error("Out of bound sides number: {0}")]
+    OutOfBoundSidesNum(BoundedIntegerError),
+    #[error("Out of bound modifier: {0}")]
+    OutOfBoundModifier(BoundedIntegerError),
+}
 
 // This uses u16 and i16 because I don't want it too fail when parsing
 // a slighty out of bound number. The numbers are also bounded.
@@ -111,21 +128,22 @@ impl DiceRoll {
     const MAX_SIZE: u16 = 255;
     const MAX_MODIFIER: i16 = 255;
 
-    fn new(dice: u16, sides: u16, modifier: Option<i16>) -> Result<Self, BoundedIntegerError> {
+    fn new(dice: u16, sides: u16, modifier: Option<i16>) -> Result<Self, DiceRollParseError> {
         // A way to convert modifier because map() can't use the '?' operator
         let modifier = if let Some(modifier) = modifier {
-            Some(BoundedInteger::new(
-                modifier,
-                -Self::MAX_MODIFIER,
-                Self::MAX_MODIFIER,
-            )?)
+            Some(
+                BoundedInteger::new(modifier, -Self::MAX_MODIFIER, Self::MAX_MODIFIER)
+                    .map_err(DiceRollParseError::OutOfBoundModifier)?,
+            )
         } else {
             None
         };
 
         Ok(Self {
-            dice: BoundedInteger::new(dice, 0, Self::MAX_DICE)?,
-            sides: BoundedInteger::new(sides, 0, Self::MAX_SIZE)?,
+            dice: BoundedInteger::new(dice, 1, Self::MAX_DICE)
+                .map_err(DiceRollParseError::OutOfBoundDiceNum)?,
+            sides: BoundedInteger::new(sides, 1, Self::MAX_SIZE)
+                .map_err(DiceRollParseError::OutOfBoundSidesNum)?,
             modifier,
         })
     }
@@ -152,21 +170,6 @@ impl DiceRoll {
             modifier: self.modifier,
         }
     }
-}
-
-// TODO: better error message for number parsing (depends on https://github.com/rust-lang/rust/issues/22639)
-#[derive(Error, Debug)]
-enum DiceRollParseError {
-    #[error("The 'd' is missing")]
-    MissingD,
-    #[error("Invalid number of dice: {0:?}")]
-    InvalidDiceNum(String),
-    #[error("Invalid number of sides: {0:?}")]
-    InvalidSidesNum(String),
-    #[error("Invalid modifier: {0:?}")]
-    InvalidModifier(String),
-    #[error("{0}")]
-    BoundError(#[from] BoundedIntegerError),
 }
 
 impl FromStr for DiceRoll {
@@ -235,10 +238,20 @@ pub fn roll(ctx: &mut Context, msg: &Message) -> CommandResult {
 
     let message_to_send = match roll {
         Ok(roll) => Cow::Owned(roll.roll().to_string()),
-        Err(e) => {
-            log::debug!("{}", e);
-            ctx.localize_msg("roll-parsing-error", None)?
-        }
+        Err(e) => match e {
+            DiceRollParseError::OutOfBoundDiceNum(BoundedIntegerError::TooSmall(_)) => {
+                // Can only be 0 die because -1 won't parse into u16 and 1 is in bound
+                ctx.localize_msg("roll-no-die", None)?
+            }
+            DiceRollParseError::OutOfBoundSidesNum(BoundedIntegerError::TooSmall(_)) => {
+                // Can only be 0 side because -1 won't parse into u16 and 1 is in bound
+                ctx.localize_msg("roll-no-side", None)?
+            }
+            _ => {
+                log::debug!("{}", e);
+                ctx.localize_msg("roll-parsing-error", None)?
+            }
+        },
     };
 
     msg.channel_id.say(&ctx.http, message_to_send)?;
@@ -412,5 +425,23 @@ mod tests {
     #[test]
     fn roll_out_of_bound_modifier() -> CommandResult {
         test_roll("$roll 2d3-300", ROLL_INVALID_USE, None)
+    }
+
+    #[test]
+    fn roll_no_die() -> CommandResult {
+        test_roll(
+            "$roll 0d0+5",
+            "Alright then, no virtual die for you. :game_die:",
+            None,
+        )
+    }
+
+    #[test]
+    fn roll_no_sides() -> CommandResult {
+        test_roll(
+            "$roll 2d0",
+            "*Throws a die but it keeps rolling forever because it doesn't have a face to land on.*",
+            None,
+        )
     }
 }

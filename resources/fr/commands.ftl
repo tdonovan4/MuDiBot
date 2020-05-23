@@ -22,3 +22,6 @@ restarting-shards = Redémarrage des shards...
 flipcoin = *La pièce tombe sur { $side }.*
     .heads = face
     .tails = pile
+
+roll-no-die = D'accord, aucun dé virtuel pour vous. :game_die:
+roll-no-side = *Lance un dé mais celui-ci continue de rouler pour toujours puisqu'il n'a pas face pour atterir.*
