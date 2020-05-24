@@ -192,6 +192,8 @@ fn say(ctx: &mut Context, msg: &Message) -> CommandResult {
 
 #[cfg(not(test))]
 pub mod commands {
+    #![allow(clippy::implicit_hasher)]
+
     use std::collections::HashSet;
 
     use serenity::{
