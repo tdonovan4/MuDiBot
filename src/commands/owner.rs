@@ -1,6 +1,6 @@
 use crate::config::{Config, ConfigError};
+use crate::containers::ShardManagerContainer;
 use crate::localization::Localize;
-use crate::ShardManagerContainer;
 
 use serenity::{
     framework::standard::{Args, CommandResult, Delimiter},
@@ -70,7 +70,7 @@ fn restart_shards(ctx: &mut Context, msg: &Message) -> CommandResult {
 
     let mut manager = data
         .get::<ShardManagerContainer>()
-        .ok_or(crate::ShardManagerError::MissingFromShareMap)?
+        .ok_or(crate::containers::ShardManagerError::MissingFromShareMap)?
         .lock();
 
     for shard_id in manager.shards_instantiated() {

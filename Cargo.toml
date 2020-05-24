@@ -32,3 +32,11 @@ features = ["rustls-tls", "blocking", "json"]
 mockall = "0.7"
 once_cell = "1.4"
 parking_lot = "0.10"
+
+[lib]
+doctest = false
+
+[[bin]]
+name = "main"
+path = "src/main.rs"
+test = false

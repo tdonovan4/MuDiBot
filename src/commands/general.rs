@@ -1,6 +1,6 @@
 use crate::config::{Config, ConfigError};
+use crate::containers::ShardManagerContainer;
 use crate::localization::{L10NBundle, L10NError, Localize};
-use crate::ShardManagerContainer;
 
 use std::{
     env,

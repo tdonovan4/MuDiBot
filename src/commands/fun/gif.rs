@@ -1,6 +1,6 @@
 use crate::config::{Config, ConfigError};
+use crate::containers::{ClientContainer, ClientError};
 use crate::localization::Localize;
-use crate::{ClientContainer, ClientError};
 
 use serde_json::Value;
 use serenity::framework::standard::{Args, CheckResult, CommandOptions, CommandResult, Delimiter};

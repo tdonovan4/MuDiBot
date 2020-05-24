@@ -1,111 +1,45 @@
-mod commands;
-mod config;
-mod localization;
-#[cfg(not(test))]
 mod logger;
-#[cfg(test)]
-mod test_utils;
-mod util;
 
-use std::sync::Arc;
+use std::{collections::HashSet, env, sync::Arc};
 
+use mudibot::commands::{
+    fun::commands::*, general::commands::*, owner::commands::*, user::commands::*,
+};
+use mudibot::{
+    config,
+    containers::{ClientContainer, ShardManagerContainer},
+    event_handler::Handler,
+    localization, util,
+};
+
+use reqwest::blocking::Client as ReqwestClient;
 use serenity::{
-    model::gateway::Activity,
-    prelude::{Mutex, RwLock, TypeMapKey},
+    client::Client,
+    framework::{standard::macros::group, StandardFramework},
+    prelude::RwLock,
 };
 use thiserror::Error;
 
 #[macro_use]
 extern crate log;
 
-cfg_if::cfg_if! {
-    if #[cfg(test)] {
-        pub use test_utils::test_doubles as test_doubles;
+#[group]
+#[commands(ping, info, say)]
+struct General;
 
-        use crate::test_doubles::reqwest::blocking::Client as ReqwestClient;
-        use test_doubles::serenity::{
-            client::{bridge::gateway::ShardManager, Context, EventHandler},
-            model::{gateway::Ready, event::ResumedEvent},
-        };
-    } else {
-        use std::{collections::HashSet, env};
+#[group]
+#[commands(avatar)]
+struct User;
 
-        use reqwest::blocking::Client as ReqwestClient;
-        use serenity::{
-            client::{bridge::gateway::ShardManager, Client, Context, EventHandler},
-            framework::{standard::macros::group, StandardFramework},
-            model::{gateway::Ready, event::ResumedEvent},
-        };
+#[group]
+#[owners_only]
+#[commands(setactivity, kill, restart)]
+struct Owner;
 
-        use commands::{general::commands::*, owner::commands::*, user::commands::*, fun::commands::*};
+#[group]
+#[commands(gif, gifrandom, flipcoin, roll)]
+struct Fun;
 
-        #[group]
-        #[commands(ping, info, say)]
-        struct General;
-
-        #[group]
-        #[commands(avatar)]
-        struct User;
-
-        #[group]
-        #[owners_only]
-        #[commands(setactivity, kill, restart)]
-        struct Owner;
-
-        #[group]
-        #[commands(gif, gifrandom, flipcoin, roll)]
-        struct Fun;
-    }
-}
-
-struct ShardManagerContainer;
-
-impl TypeMapKey for ShardManagerContainer {
-    type Value = Arc<Mutex<ShardManager>>;
-}
-
-#[derive(Error, Debug)]
-pub enum ShardManagerError {
-    #[error("Could not find shard manager in share map.")]
-    MissingFromShareMap,
-}
-
-struct ClientContainer;
-
-impl TypeMapKey for ClientContainer {
-    type Value = ReqwestClient;
-}
-
-#[derive(Error, Debug)]
-pub enum ClientError {
-    #[error("Could not find client in share map.")]
-    MissingFromShareMap,
-}
-
-struct Handler;
-
-impl EventHandler for Handler {
-    fn ready(&self, ctx: Context, ready: Ready) {
-        //set activity
-        let data = ctx.data.read();
-        match data.get::<config::Config>() {
-            Some(config) => {
-                if let Some(activity) = config.read().get_activity() {
-                    ctx.set_activity(Activity::playing(activity));
-                }
-            }
-            None => warn!("{}", config::ConfigError::MissingFromShareMap),
-        }
-
-        info!("{} is connected!", ready.user.name);
-    }
-
-    fn resume(&self, _ctx: Context, _: ResumedEvent) {
-        info!("Resumed");
-    }
-}
-
-#[cfg(not(test))]
 #[derive(Error, Debug)]
 enum BotError {
     #[error(transparent)]
@@ -123,7 +57,6 @@ enum BotError {
     Client(#[from] serenity::client::ClientError),
 }
 
-#[cfg(not(test))]
 fn main() {
     // Ensure destructors are run bo moving main logic to run_bot()
     if let Err(e) = run_bot() {
@@ -132,7 +65,6 @@ fn main() {
     }
 }
 
-#[cfg(not(test))]
 fn run_bot() -> Result<(), BotError> {
     logger::init();
 
@@ -213,66 +145,4 @@ fn run_bot() -> Result<(), BotError> {
     client.start()?;
 
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    use localization::{L10NBundle, L10NError};
-    use test_doubles::serenity::{
-        client::MockContext, http::client::Http, model::user::CurrentUser,
-    };
-
-    #[test]
-    fn ready_event() -> Result<(), L10NError> {
-        // Mock ctx
-        let mut mock_context = MockContext::new();
-        mock_context.expect_set_activity().once().return_const(());
-        let ctx = Context::_new(Some(mock_context), Http::new());
-        {
-            let mut data = ctx.data.write();
-            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
-            data.insert::<config::Config>(RwLock::new(config::Config::default()));
-        }
-
-        Handler.ready(
-            ctx,
-            Ready {
-                user: CurrentUser::_new(0, "TestBot".to_string()),
-            },
-        );
-
-        Ok(())
-    }
-
-    #[test]
-    fn ready_event_but_missing_config() -> Result<(), L10NError> {
-        let ctx = Context::_new_bare();
-        {
-            let mut data = ctx.data.write();
-            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
-        }
-
-        Handler.ready(
-            ctx,
-            Ready {
-                user: CurrentUser::_new(0, "TestBot".to_string()),
-            },
-        );
-
-        Ok(())
-    }
-
-    #[test]
-    fn resume_event() -> Result<(), L10NError> {
-        let ctx = Context::_new_bare();
-        {
-            let mut data = ctx.data.write();
-            data.insert::<L10NBundle>(RwLock::new(L10NBundle::new("en-US")?));
-        }
-        Handler.resume(ctx, ResumedEvent {});
-
-        Ok(())
-    }
 }
