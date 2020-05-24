@@ -1,6 +1,8 @@
 mod commands;
 mod config;
 mod localization;
+#[cfg(not(test))]
+mod logger;
 #[cfg(test)]
 mod test_utils;
 mod util;
@@ -28,7 +30,6 @@ cfg_if::cfg_if! {
     } else {
         use std::{collections::HashSet, env};
 
-        use env_logger::{Env, Builder, Target};
         use reqwest::blocking::Client as ReqwestClient;
         use serenity::{
             client::{bridge::gateway::ShardManager, Client, Context, EventHandler},
@@ -133,11 +134,7 @@ fn main() {
 
 #[cfg(not(test))]
 fn run_bot() -> Result<(), BotError> {
-    let env = Env::default()
-        .filter_or("RUST_LOG", "info")
-        .write_style_or("RUST_LOG_STYLE", "auto");
-
-    Builder::from_env(env).target(Target::Stderr).init();
+    logger::init();
 
     let config = config::Config::new()?;
     // Init localization
@@ -194,9 +191,9 @@ fn run_bot() -> Result<(), BotError> {
                 let base_msg = format!("{}<{}> -> {}", msg.author.name, msg.author.id, msg.content);
 
                 if let Some(guild_id) = msg.guild_id {
-                    info!("[{}-{}] {}", guild_id, msg.channel_id, base_msg);
+                    info!(target: "cmd-guild","[{}-{}] {}", guild_id, msg.channel_id, base_msg);
                 } else {
-                    info!("[{}] {}", msg.channel_id, base_msg);
+                    info!(target: "cmd-not-guild", "[{}] {}", msg.channel_id, base_msg);
                 }
                 true
             })
