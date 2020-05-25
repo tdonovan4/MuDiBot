@@ -8,6 +8,7 @@ use env_logger::{
     Builder, Env, Target,
 };
 use log::Record;
+use once_cell::sync::Lazy;
 use regex::Regex;
 use thiserror::Error;
 
@@ -76,7 +77,7 @@ pub enum CmdLogParseError {
     #[error("{0}")]
     IO(#[from] io::Error),
     #[error("Regex compile error: {0}")]
-    Regex(#[from] regex::Error),
+    Regex(#[from] &'static regex::Error),
     #[error("Could not get the capture groups")]
     NoCaptures,
     #[error("Could not get a capture group")]
@@ -90,8 +91,12 @@ fn format_author_and_msg(buf: &mut Formatter, rest: &str) -> Result<(), CmdLogPa
     // 2: User_id
     // 3: Command
     // 4: Option<Arguments>
-    let regex = Regex::new(r"(.+)<(\d+)> -> (\S+)(.*)")?;
-    let caps = regex.captures(rest).ok_or(CmdLogParseError::NoCaptures)?;
+    static REGEX: Lazy<Result<Regex, regex::Error>> =
+        Lazy::new(|| Regex::new(r"(.+)<(\d+)> -> (\S+)(.*)"));
+    let caps = REGEX
+        .as_ref()?
+        .captures(rest)
+        .ok_or(CmdLogParseError::NoCaptures)?;
 
     let mut black_style = buf.style();
     black_style.set_color(Color::Black).set_intense(true);
@@ -141,8 +146,13 @@ fn format_cmd_guild(buf: &mut Formatter, log: &str) -> Result<(), CmdLogParseErr
     // 1: Guild_id
     // 2: Channed_id
     // 3: Rest
-    let regex = Regex::new(r"\[(\d+)-(\d+)\] (.+)")?;
-    let caps = regex.captures(log).ok_or(CmdLogParseError::NoCaptures)?;
+
+    static REGEX: Lazy<Result<Regex, regex::Error>> =
+        Lazy::new(|| Regex::new(r"\[(\d+)-(\d+)\] (.+)"));
+    let caps = REGEX
+        .as_ref()?
+        .captures(log)
+        .ok_or(CmdLogParseError::NoCaptures)?;
 
     let mut black_style = buf.style();
     black_style.set_color(Color::Black).set_intense(true);
@@ -199,8 +209,11 @@ fn format_cmd_not_guild(buf: &mut Formatter, log: &str) -> Result<(), CmdLogPars
     // 0: Entire string
     // 1: Channed_id
     // 2: Rest
-    let regex = Regex::new(r"\[(\d+)\] (.+)")?;
-    let caps = regex.captures(log).ok_or(CmdLogParseError::NoCaptures)?;
+    static REGEX: Lazy<Result<Regex, regex::Error>> = Lazy::new(|| Regex::new(r"\[(\d+)\] (.+)"));
+    let caps = REGEX
+        .as_ref()?
+        .captures(log)
+        .ok_or(CmdLogParseError::NoCaptures)?;
 
     let mut black_style = buf.style();
     black_style.set_color(Color::Black).set_intense(true);
