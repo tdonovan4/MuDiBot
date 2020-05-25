@@ -37,6 +37,6 @@ parking_lot = "0.10"
 doctest = false
 
 [[bin]]
-name = "main"
+name = "mudibot"
 path = "src/main.rs"
 test = false
