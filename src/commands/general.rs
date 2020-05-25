@@ -83,8 +83,7 @@ struct ProcessError {
 }
 
 fn info(ctx: &mut Context, msg: &Message) -> CommandResult {
-    let version = env::var("CARGO_PKG_VERSION")?;
-
+    const VERSION: &str = env!("CARGO_PKG_VERSION");
     let mut sys = System::new();
     sys.refresh_all();
     let process = sys
@@ -116,7 +115,7 @@ fn info(ctx: &mut Context, msg: &Message) -> CommandResult {
 
     let general_title = l10n.get_msg_attribute(&embed_msg, "general-title", None)?;
     let args_general = fluent_args![
-        "version" => version,
+        "version" => VERSION,
         "uptime" => duration_to_str(&*l10n, uptime)?
     ];
     let general_body = l10n.get_msg_attribute(&embed_msg, "general-body", Some(&args_general))?;
