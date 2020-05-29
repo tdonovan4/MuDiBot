@@ -877,7 +877,7 @@ dependencies = [
 
 [[package]]
 name = "mudibot"
-version = "0.8.0"
+version = "0.8.0-alpha.1"
 dependencies = [
  "cfg-if",
  "chrono",
