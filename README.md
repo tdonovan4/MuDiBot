@@ -1,3 +1,14 @@
+# :no_entry: [DEPRECATED] :no_entry:
+> This current version is no longer supported.
+
+This project has been going on for three years and during this time the codebase has become quite messy. 
+This is why I've decided to abandon this version.
+
+I'm doing a full rewrite in Rust. I plan to include all of the features available before and more in this rewrite.
+Its development is happening on the `rust` branch. Currently, the rewrite is not ready and missing a lot of features.
+
+---
+
 # MuDiBot
 
 ![node version](https://img.shields.io/badge/node-%3E%3D12.0.0-green.svg)
